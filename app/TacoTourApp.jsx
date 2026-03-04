@@ -270,7 +270,7 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
           ann.addEventListener("select", () => onSelectSpotRef.current(spot));
           map.addAnnotation(ann);
         });
-        // Tour date pins
+        // Tour date pins - bright yellow with star for visibility
         const seen = {};
         TOUR_DATES.forEach((td) => {
           if (!td.lat || !td.lng) return;
@@ -280,9 +280,10 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
           const coord = new mapkit.Coordinate(td.lat, td.lng);
           const ann = new mapkit.MarkerAnnotation(coord, {
             title: td.venue,
-            subtitle: td.date + " · " + td.city,
-            color: "#EF4444",
-            glyphText: "\uD83C\uDFB8",
+            subtitle: td.date + " \u00B7 " + td.city,
+            color: "#E8B100",
+            glyphColor: "#000",
+            glyphText: "\u2605",
           });
           map.addAnnotation(ann);
         });
@@ -326,7 +327,7 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
       {/* Legend */}
       <div style={{ position: "absolute", bottom: selectedSpot ? 140 : 12, left: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 6, fontSize: 9, color: "#aaa", zIndex: 10, pointerEvents: "none", display: "flex", flexDirection: "column", gap: 3, transition: "bottom 0.3s" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ fontSize: 12 }}>🌮</span> Taco Spots</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ fontSize: 12 }}>🎸</span> Tour Dates</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ fontSize: 12, color: "#E8B100" }}>★</span> Tour Dates</div>
       </div>
       {/* Selected spot card */}
       {selectedSpot && (
