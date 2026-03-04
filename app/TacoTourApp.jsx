@@ -386,24 +386,35 @@ function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
             </div>
           </div>
 
-          {/* Video */}
-          {spot.hasVideo && (
-            <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 12, height: 180, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14, border: "1px solid rgba(255,255,255,0.04)", position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(45deg, rgba(232,177,0,0.04), transparent)" }} />
-              <div style={{ position: "absolute", top: 10, left: 12, display: "flex", alignItems: "center", gap: 6 }}>
-                <div style={{ width: 24, height: 24, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 900, color: "#000" }}>R</div>
-                <div>
-                  <div style={{ fontSize: 10, color: "#fff", fontWeight: 600 }}>Rich O'Toole</div>
-                  <div style={{ fontSize: 9, color: "#888" }}>Taco Take #{spot.id}</div>
+          {/* Photo Gallery */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
+              {[0, 1, 2].map((i) => (
+                <div key={i} style={{
+                  flex: i === 0 ? "0 0 65%" : "0 0 30%", height: i === 0 ? 160 : 76,
+                  background: `linear-gradient(${120 + i * 40}deg, rgba(232,177,0,${0.08 + i * 0.03}), rgba(${50 + spot.id * 20},${30 + i * 15},${10 + i * 20},0.4))`,
+                  borderRadius: 10, position: "relative", overflow: "hidden",
+                  border: "1px solid rgba(255,255,255,0.04)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <span style={{ fontSize: i === 0 ? 48 : 28, opacity: 0.6 }}>🌮</span>
+                  {i === 0 && (
+                    <>
+                      <div style={{ position: "absolute", top: 8, left: 8, display: "flex", alignItems: "center", gap: 4 }}>
+                        <div style={{ width: 20, height: 20, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 7, fontWeight: 900, color: "#000" }}>R</div>
+                        <span style={{ fontSize: 9, color: "#fff", fontWeight: 600, textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>Rich O'Toole</span>
+                      </div>
+                      <div style={{ position: "absolute", bottom: 8, left: 8, fontSize: 9, color: "#ccc", textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>📸 {spot.name}</div>
+                      <div style={{ position: "absolute", bottom: 8, right: 8, fontSize: 8, color: "#999", background: "rgba(0,0,0,0.5)", padding: "2px 6px", borderRadius: 4 }}>📷 {spot.reviewDate}</div>
+                    </>
+                  )}
                 </div>
-              </div>
-              <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(232,177,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 0 24px rgba(232,177,0,0.35)" }}>
-                <span style={{ fontSize: 20, marginLeft: 3, color: "#000" }}>▶</span>
-              </div>
-              <div style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, color: "#aaa" }}>🎬 0:47</div>
-              <div style={{ position: "absolute", bottom: 10, right: 12, fontSize: 10, color: "#555" }}>{spot.name}</div>
+              ))}
             </div>
-          )}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+              <span style={{ fontSize: 9, color: "#666" }}>3 photos</span>
+            </div>
+          </div>
 
           {/* Rating comparison */}
           <div style={{ marginBottom: 14 }}>
