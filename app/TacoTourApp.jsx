@@ -541,7 +541,14 @@ function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
           </div>
 
           {/* Share */}
-          <button style={{ width: "100%", padding: "11px 0", borderRadius: 8, border: "1px solid rgba(232,177,0,0.25)", background: "rgba(232,177,0,0.04)", color: "#E8B100", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.5 }}>
+          <button onClick={() => {
+            const shareText = `🌮 ${spot.name} (${spot.city}) — Rich gave it a ${spot.richRating}! "${spot.richQuote}" — richstacotour.com`;
+            if (navigator.share) {
+              navigator.share({ title: "Rich O'Toole's Taco Tour", text: shareText, url: "https://tacos-lime.vercel.app" }).catch(() => {});
+            } else {
+              navigator.clipboard.writeText(shareText).then(() => alert("Copied to clipboard!")).catch(() => {});
+            }
+          }} style={{ width: "100%", padding: "11px 0", borderRadius: 8, border: "1px solid rgba(232,177,0,0.25)", background: "rgba(232,177,0,0.04)", color: "#E8B100", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.5 }}>
             📤 SHARE THIS TAKE
           </button>
 
@@ -601,8 +608,18 @@ function ShareCardPreview({ spot }) {
         </div>
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-        {["X / Twitter", "Instagram Story", "iMessage", "Copy Link"].map(p => (
-          <button key={p} style={{ flex: 1, padding: "8px 4px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", color: "#999", fontSize: 9, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>{p}</button>
+        {[
+          { label: "𝕏 Post", bg: "#fff", color: "#000", action: () => window.open("https://x.com/intent/tweet?text=" + encodeURIComponent(`🌮 ${spot.name} — Rich O'Toole gave it a ${spot.richRating}! "${spot.richQuote}" richstacotour.com @RichOToole`), "_blank") },
+          { label: "IG Story", bg: "linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)", color: "#fff", action: () => { if (navigator.share) navigator.share({ title: spot.name, text: `${spot.name} — ${spot.richRating}/10 🌮`, url: "https://tacos-lime.vercel.app" }).catch(()=>{}); else alert("Open Instagram and share from your camera roll!"); } },
+          { label: "iMessage", bg: "#34C759", color: "#fff", action: () => { const t = `🌮 Check out ${spot.name} — Rich O'Toole rated it ${spot.richRating}! richstacotour.com`; window.open("sms:&body=" + encodeURIComponent(t)); } },
+          { label: "Copy Link", bg: "rgba(255,255,255,0.15)", color: "#fff", action: () => { navigator.clipboard.writeText(`🌮 ${spot.name} (${spot.city}) — ${spot.richRating}/10 by Rich O'Toole. "${spot.richQuote}" https://tacos-lime.vercel.app`).then(() => alert("Copied!")).catch(()=>{}); } },
+        ].map(p => (
+          <button key={p.label} onClick={p.action} style={{
+            flex: 1, padding: "10px 4px", borderRadius: 10, border: "none",
+            background: p.bg, color: p.color, fontSize: 10, fontWeight: 800,
+            cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.3,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+          }}>{p.label}</button>
         ))}
       </div>
     </div>
