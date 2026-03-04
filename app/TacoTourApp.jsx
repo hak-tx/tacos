@@ -1418,9 +1418,9 @@ export default function TacoTourApp() {
       {/* Bottom nav */}
       <div className="shell-nav" style={{
         position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%",
-        background: "linear-gradient(180deg, rgba(20,20,30,0.92) 0%, rgba(10,10,16,0.99) 50%)", backdropFilter: "blur(24px)", borderTop: "1px solid rgba(232,177,0,0.15)",
-        display: "flex", justifyContent: "space-around", padding: "8px 0 env(safe-area-inset-bottom, 12px)", zIndex: 100,
-        boxShadow: "0 -4px 20px rgba(0,0,0,0.5), 0 -1px 0 rgba(232,177,0,0.06)",
+        background: "#1a1a28", backdropFilter: "blur(24px)", borderTop: "1px solid rgba(232,177,0,0.25)",
+        display: "flex", justifyContent: "space-around", padding: "10px 0 env(safe-area-inset-bottom, 14px)", zIndex: 100,
+        boxShadow: "0 -6px 30px rgba(0,0,0,0.6)",
       }}>
         {tabs.map(t => {
           const active = tab === t.id;
