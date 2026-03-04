@@ -1416,7 +1416,7 @@ export default function TacoTourApp() {
       </div>
 
       {/* Bottom nav */}
-      <div style={{
+      <div className="shell-nav" style={{
         position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", maxWidth: 430, width: "100%",
         background: "linear-gradient(180deg, rgba(13,13,20,0.85) 0%, rgba(13,13,20,0.98) 40%)", backdropFilter: "blur(24px)", borderTop: "1px solid rgba(232,177,0,0.08)",
         display: "flex", justifyContent: "space-around", padding: "8px 0 env(safe-area-inset-bottom, 12px)", zIndex: 100,
@@ -1449,16 +1449,33 @@ export default function TacoTourApp() {
 
 function Shell({ children }) {
   return (
-    <div style={{
-      maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#0d0d14",
-      fontFamily: "'DM Sans', -apple-system, sans-serif", position: "relative", overflow: "hidden",
-    }}>
-      {/* Ambient */}
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 0 }}>
-        <div style={{ position: "absolute", top: -80, right: -80, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(232,177,0,0.05) 0%, transparent 70%)" }} />
-        <div style={{ position: "absolute", bottom: -40, left: -40, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(239,68,68,0.03) 0%, transparent 70%)" }} />
+    <>
+      {/* Desktop background */}
+      <style>{`
+        html, body { background: #08080c; }
+        @media (min-width: 520px) {
+          .shell-frame {
+            max-width: 430px !important;
+            border-left: 1px solid rgba(255,255,255,0.06) !important;
+            border-right: 1px solid rgba(255,255,255,0.06) !important;
+            box-shadow: 0 0 80px rgba(232,177,0,0.04), 0 0 40px rgba(0,0,0,0.5) !important;
+          }
+          .shell-nav {
+            max-width: 430px !important;
+          }
+        }
+      `}</style>
+      <div className="shell-frame" style={{
+        maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#0d0d14",
+        fontFamily: "'DM Sans', -apple-system, sans-serif", position: "relative", overflow: "hidden",
+      }}>
+        {/* Ambient */}
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 0 }}>
+          <div style={{ position: "absolute", top: -80, right: -80, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(232,177,0,0.05) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", bottom: -40, left: -40, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(239,68,68,0.03) 0%, transparent 70%)" }} />
+        </div>
+        {children}
       </div>
-      {children}
-    </div>
+    </>
   );
 }

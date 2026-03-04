@@ -35,7 +35,7 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body style={{ margin: 0, padding: 0, background: "#0d0d14", minHeight: "100vh" }}>
+      <body style={{ margin: 0, padding: 0, background: "#08080c", minHeight: "100vh" }}>
         {children}
       </body>
     </html>
