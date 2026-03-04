@@ -60,18 +60,18 @@ const TACO_SPOTS = [
 
 // Real upcoming tour dates from Bandsintown
 const TOUR_DATES = [
-  { date: "Mar 7", day: "Fri", venue: "Round Mountain Cider Mill", city: "Round Mountain, TX", lat: 30.434, lng: -98.383, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 243 },
-  { date: "Mar 14", day: "Fri", venue: "Old Tomball Honky Tonk", city: "Tomball, TX", lat: 30.097, lng: -95.616, tacoHunt: "Scouting spots...", soldOut: false, free: false, rsvp: 187 },
-  { date: "Mar 20", day: "Thu", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 112 },
-  { date: "Mar 21", day: "Fri", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 98 },
-  { date: "Mar 27", day: "Thu", venue: "Lone Star Live", city: "Flower Mound, TX", lat: 33.014, lng: -97.097, tacoHunt: "Where should Rich eat? Vote!", soldOut: false, free: false, rsvp: 76 },
-  { date: "Apr 2", day: "Wed", venue: "Private Event", city: "Austin, TX", lat: 30.267, lng: -97.743, tacoHunt: "Invite only", soldOut: true, free: true, rsvp: null },
-  { date: "Apr 17", day: "Thu", venue: "LBK Fest 2026", city: "Lubbock, TX", lat: 33.577, lng: -101.855, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 340 },
-  { date: "Apr 18", day: "Fri", venue: "The Lumberyard", city: "Canyon, TX", lat: 34.980, lng: -101.919, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 55 },
-  { date: "Apr 23", day: "Wed", venue: "The Hall - Gainesville", city: "Gainesville, GA", lat: 34.297, lng: -83.824, tacoHunt: "Georgia taco hunt!", soldOut: false, free: false, rsvp: 63 },
-  { date: "Apr 30", day: "Wed", venue: "Chief's on Broadway", city: "Nashville, TN", lat: 36.156, lng: -86.776, tacoHunt: "Nashville taco hunt!", soldOut: false, free: true, rsvp: 201 },
-  { date: "May 21", day: "Wed", venue: "Kerrville Folk Festival 2026", city: "Kerrville, TX", lat: 30.047, lng: -99.140, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 158 },
-  { date: "May 30", day: "Fri", venue: "Boyz R Back Music Festival 2026", city: "Midland, TX", lat: 31.997, lng: -102.077, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 220 },
+  { date: "Mar 7", day: "Fri", venue: "Round Mountain Cider Mill", city: "Round Mountain, TX", lat: 30.434, lng: -98.383, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 243, url: "https://www.bandsintown.com/e/106145039-rich-o'toole-at-round-mountain-cider-mill" },
+  { date: "Mar 14", day: "Fri", venue: "Old Tomball Honky Tonk", city: "Tomball, TX", lat: 30.097, lng: -95.616, tacoHunt: "Scouting spots...", soldOut: false, free: false, rsvp: 187, url: "https://www.bandsintown.com/e/106145040-rich-o'toole-at-old-tomball-honky-tonk" },
+  { date: "Mar 20", day: "Thu", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 112, url: "https://www.bandsintown.com/e/106145041-rich-o'toole-at-junk-gypsy-company" },
+  { date: "Mar 21", day: "Fri", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 98, url: "https://www.bandsintown.com/e/106145042-rich-o'toole-at-junk-gypsy-company" },
+  { date: "Mar 27", day: "Thu", venue: "Lone Star Live", city: "Flower Mound, TX", lat: 33.014, lng: -97.097, tacoHunt: "Where should Rich eat? Vote!", soldOut: false, free: false, rsvp: 76, url: "https://www.bandsintown.com/e/106145043-rich-o'toole-at-lone-star-live" },
+  { date: "Apr 2", day: "Wed", venue: "Private Event", city: "Austin, TX", lat: 30.267, lng: -97.743, tacoHunt: "Invite only", soldOut: true, free: true, rsvp: null, url: null },
+  { date: "Apr 17", day: "Thu", venue: "LBK Fest 2026", city: "Lubbock, TX", lat: 33.577, lng: -101.855, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 340, url: "https://www.bandsintown.com/e/106145044-rich-o'toole-at-lbk-fest-2026" },
+  { date: "Apr 18", day: "Fri", venue: "The Lumberyard", city: "Canyon, TX", lat: 34.980, lng: -101.919, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 55, url: "https://www.bandsintown.com/e/106145045-rich-o'toole-at-the-lumberyard" },
+  { date: "Apr 23", day: "Wed", venue: "The Hall - Gainesville", city: "Gainesville, GA", lat: 34.297, lng: -83.824, tacoHunt: "Georgia taco hunt!", soldOut: false, free: false, rsvp: 63, url: "https://www.bandsintown.com/e/106145046-rich-o'toole-at-the-hall" },
+  { date: "Apr 30", day: "Wed", venue: "Chief's on Broadway", city: "Nashville, TN", lat: 36.156, lng: -86.776, tacoHunt: "Nashville taco hunt!", soldOut: false, free: true, rsvp: 201, url: "https://www.bandsintown.com/e/106145047-rich-o'toole-at-chiefs-on-broadway" },
+  { date: "May 21", day: "Wed", venue: "Kerrville Folk Festival 2026", city: "Kerrville, TX", lat: 30.047, lng: -99.140, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 158, url: "https://www.bandsintown.com/e/106145048-rich-o'toole-at-kerrville-folk-festival" },
+  { date: "May 30", day: "Fri", venue: "Boyz R Back Music Festival 2026", city: "Midland, TX", lat: 31.997, lng: -102.077, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 220, url: "https://www.bandsintown.com/e/106145049-rich-o'toole-at-boyz-r-back" },
 ];
 
 const PLAYLIST_TRACKS = [
@@ -914,6 +914,38 @@ function PollWidget({ debate, onVote, userVote }) {
 
 // 8. TOUR DATES
 function TourSection() {
+  const [suggestFor, setSuggestFor] = useState(null); // index of tour date to suggest for
+  const [spotName, setSpotName] = useState("");
+  const [spotWhy, setSpotWhy] = useState("");
+  const [submitted, setSubmitted] = useState({});
+  const [suggestions, setSuggestions] = useState({}); // { tourIndex: [{name, why, ts}] }
+
+  // Load suggestions from storage on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const result = await window.storage.get("taco-suggestions");
+        if (result && result.value) setSuggestions(JSON.parse(result.value));
+      } catch (e) { /* no data yet */ }
+    })();
+  }, []);
+
+  const handleSubmit = async (tourIndex) => {
+    if (!spotName.trim()) return;
+    const entry = { name: spotName.trim(), why: spotWhy.trim(), ts: Date.now() };
+    const updated = { ...suggestions };
+    if (!updated[tourIndex]) updated[tourIndex] = [];
+    updated[tourIndex].push(entry);
+    setSuggestions(updated);
+    setSubmitted(prev => ({ ...prev, [tourIndex]: true }));
+    setSpotName("");
+    setSpotWhy("");
+    // Save to persistent storage
+    try { await window.storage.set("taco-suggestions", JSON.stringify(updated), true); } catch (e) {}
+    // Auto-close after delay
+    setTimeout(() => { setSuggestFor(null); setSubmitted(prev => ({ ...prev, [tourIndex]: false })); }, 2000);
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
@@ -921,25 +953,84 @@ function TourSection() {
         <a href="https://www.bandsintown.com/a/39860-rich-otoole" target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#555", textDecoration: "none" }}>See all →</a>
       </div>
       {TOUR_DATES.map((d, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: 14, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12 }}>
-          <div style={{ minWidth: 50, textAlign: "center" }}>
-            <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase" }}>{d.day}</div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: "#E8B100", fontFamily: "'Bitter', serif" }}>{d.date.split(" ")[1]}</div>
-            <div style={{ fontSize: 9, color: "#666" }}>{d.date.split(" ")[0]}</div>
+        <div key={i} style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 14 }}>
+            <div style={{ minWidth: 50, textAlign: "center" }}>
+              <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase" }}>{d.day}</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: "#E8B100", fontFamily: "'Bitter', serif" }}>{d.date.split(" ")[1]}</div>
+              <div style={{ fontSize: 9, color: "#666" }}>{d.date.split(" ")[0]}</div>
+            </div>
+            <div style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,0.06)", paddingLeft: 12 }}>
+              <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Bitter', serif" }}>{d.venue}</div>
+              <div style={{ fontSize: 12, color: "#ccc", fontWeight: 500, marginTop: 2 }}>{d.city}</div>
+              <div style={{ fontSize: 10, color: "#E8B100", marginTop: 3 }}>🌮 {d.tacoHunt}</div>
+              {d.rsvp > 0 && <div style={{ fontSize: 9, color: "#555", marginTop: 2 }}>{d.rsvp} fans going</div>}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+              {d.soldOut ? (
+                <span style={{ fontSize: 9, color: "#EF4444", fontWeight: 700, border: "1px solid rgba(239,68,68,0.25)", padding: "4px 8px", borderRadius: 6 }}>SOLD OUT</span>
+              ) : d.url ? (
+                <a href={d.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#000", fontWeight: 800, background: "#E8B100", border: "none", padding: "7px 14px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit", textDecoration: "none", display: "inline-block" }}>RSVP</a>
+              ) : null}
+              {!d.soldOut && (
+                <button onClick={() => { setSuggestFor(suggestFor === i ? null : i); setSpotName(""); setSpotWhy(""); }}
+                  style={{ fontSize: 8, color: suggestFor === i ? "#E8B100" : "#666", fontWeight: 700, background: "none", border: "1px solid " + (suggestFor === i ? "rgba(232,177,0,0.3)" : "rgba(255,255,255,0.08)"), padding: "4px 8px", borderRadius: 5, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                  🌮 Suggest Spot
+                </button>
+              )}
+            </div>
           </div>
-          <div style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,0.06)", paddingLeft: 12 }}>
-            <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Bitter', serif" }}>{d.venue}</div>
-            <div style={{ fontSize: 12, color: "#ccc", fontWeight: 500, marginTop: 2 }}>{d.city}</div>
-            <div style={{ fontSize: 10, color: "#E8B100", marginTop: 3 }}>🌮 {d.tacoHunt}</div>
-            {d.rsvp > 0 && <div style={{ fontSize: 9, color: "#555", marginTop: 2 }}>{d.rsvp} fans going</div>}
-          </div>
-          <div>
-            {d.soldOut ? (
-              <span style={{ fontSize: 9, color: "#EF4444", fontWeight: 700, border: "1px solid rgba(239,68,68,0.25)", padding: "4px 8px", borderRadius: 6 }}>SOLD OUT</span>
-            ) : (
-              <button style={{ fontSize: 10, color: "#000", fontWeight: 800, background: "#E8B100", border: "none", padding: "7px 14px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>RSVP</button>
-            )}
-          </div>
+          {/* Suggestion count */}
+          {suggestions[i] && suggestions[i].length > 0 && suggestFor !== i && (
+            <div onClick={() => setSuggestFor(i)} style={{ padding: "6px 14px 10px", cursor: "pointer" }}>
+              <span style={{ fontSize: 9, color: "#E8B100" }}>🌮 {suggestions[i].length} fan suggestion{suggestions[i].length > 1 ? "s" : ""}</span>
+            </div>
+          )}
+          {/* Suggest a spot form */}
+          {suggestFor === i && (
+            <div style={{ padding: "0 14px 14px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+              {submitted[i] ? (
+                <div style={{ textAlign: "center", padding: "12px 0", color: "#22C55E", fontSize: 12, fontWeight: 700 }}>
+                  ✓ Suggestion sent to Rich!
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, marginTop: 10, marginBottom: 8 }}>Suggest a taco spot near {d.city.split(",")[0]}</div>
+                  <input
+                    value={spotName}
+                    onChange={e => setSpotName(e.target.value)}
+                    placeholder="Spot name (e.g. Taco Loco)"
+                    style={{ width: "100%", padding: "8px 10px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, color: "#fff", fontSize: 12, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 6 }}
+                  />
+                  <input
+                    value={spotWhy}
+                    onChange={e => setSpotWhy(e.target.value)}
+                    placeholder="Why should Rich go? (optional)"
+                    style={{ width: "100%", padding: "8px 10px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, color: "#fff", fontSize: 12, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 8 }}
+                  />
+                  <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                    <button onClick={() => setSuggestFor(null)} style={{ fontSize: 10, color: "#666", background: "none", border: "1px solid rgba(255,255,255,0.08)", padding: "6px 12px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                    <button onClick={() => handleSubmit(i)} disabled={!spotName.trim()}
+                      style={{ fontSize: 10, color: "#000", fontWeight: 800, background: spotName.trim() ? "#E8B100" : "#555", border: "none", padding: "6px 14px", borderRadius: 6, cursor: spotName.trim() ? "pointer" : "default", fontFamily: "inherit", opacity: spotName.trim() ? 1 : 0.5 }}>
+                      Send to Rich 🌮
+                    </button>
+                  </div>
+                </>
+              )}
+              {/* Show existing suggestions */}
+              {suggestions[i] && suggestions[i].length > 0 && !submitted[i] && (
+                <div style={{ marginTop: 10, borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: 8 }}>
+                  <div style={{ fontSize: 9, color: "#666", marginBottom: 6 }}>Fan suggestions ({suggestions[i].length})</div>
+                  {suggestions[i].slice(-5).map((s, j) => (
+                    <div key={j} style={{ fontSize: 11, color: "#aaa", padding: "4px 0", borderBottom: "1px solid rgba(255,255,255,0.02)" }}>
+                      <span style={{ color: "#fff", fontWeight: 600 }}>{s.name}</span>
+                      {s.why && <span style={{ color: "#666" }}> — {s.why}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ))}
       {/* Merch callout */}
