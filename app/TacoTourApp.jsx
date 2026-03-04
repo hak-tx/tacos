@@ -1,0 +1,963 @@
+"use client";
+import { useState, useEffect, useRef, useCallback } from "react";
+
+// ============================================================
+// RICH O'TOOLE — TACO TOUR
+// Phase 1 Complete Prototype with User Accounts
+// Real artist data: richotoole.com | Spotify: 2t6FHAUXxi9eiatP2Mavh0
+// Merch: godtexasandtacos.com | Bandsintown: a/39860
+// ============================================================
+
+// --- REAL DATA -----------------------------------------------------------
+
+const RICH = {
+  name: "Rich O'Toole",
+  tagline: "God, Texas & Tacos",
+  bio: "Texas Country legend. 75M+ streams. 9 albums. Houston native. Texas A&M Aggie. Mensa member. TexMoji creator. Now reviewing every taco on tour.",
+  spotify: "https://open.spotify.com/artist/2t6FHAUXxi9eiatP2Mavh0",
+  spotifyId: "2t6FHAUXxi9eiatP2Mavh0",
+  instagram: "https://www.instagram.com/richotoole",
+  twitter: "https://x.com/RichOToole",
+  tiktok: "https://www.tiktok.com/@therichotoole",
+  website: "https://richotoole.com",
+  merch: "https://godtexasandtacos.com",
+  latestAlbum: "God Is a Gentleman",
+  label: "PTO Records",
+  booking: { agent: "Jimmy Dasher", company: "Countdown Talent" },
+};
+
+const ALBUMS = [
+  { title: "God Is a Gentleman", year: 2026, current: true },
+  { title: "Ghost", year: 2024 },
+  { title: "New York", year: 2020 },
+  { title: "American Kid", year: 2017 },
+  { title: "Jaded", year: 2014 },
+  { title: "Brightwork", year: 2013 },
+  { title: "Kiss of a Liar", year: 2011 },
+  { title: "In a Minute or 2", year: 2008 },
+  { title: "Seventeen", year: 2007 },
+];
+
+const TACO_SPOTS = [
+  { id: 1, name: "Torchy's Tacos", city: "Austin, TX", richRating: 9.2, fanRating: 8.7, fanVotes: 1243, lat: 30.267, lng: -97.743, tags: ["Breakfast", "Street Style"], reviewDate: "Mar 1, 2026", tourDate: "Mar 7 — Round Mountain Cider Mill", hasVideo: true, richQuote: "The brisket taco changed my life. I'm writing a song about it.", trending: true, image: "🌮" },
+  { id: 2, name: "Velvet Taco", city: "Dallas, TX", richRating: 8.4, fanRating: 9.1, fanVotes: 987, lat: 32.776, lng: -96.797, tags: ["Fusion", "Late Night"], reviewDate: "Feb 27, 2026", tourDate: null, hasVideo: false, richQuote: "Creative as hell. The spicy tikka taco is no joke.", trending: true, image: "🌮" },
+  { id: 3, name: "Güero's Taco Bar", city: "Austin, TX", richRating: 7.8, fanRating: 8.9, fanVotes: 756, lat: 30.252, lng: -97.749, tags: ["Tex-Mex", "Patio Vibes"], reviewDate: "Feb 25, 2026", tourDate: "Mar 7 — Round Mountain Cider Mill", hasVideo: false, richQuote: "Solid. Good vibes. The salsa verde carries it.", trending: false, image: "🌮" },
+  { id: 4, name: "Valentina's Tex Mex BBQ", city: "Austin, TX", richRating: 9.7, fanRating: 9.4, fanVotes: 2341, lat: 30.186, lng: -97.789, tags: ["BBQ Fusion", "Legendary"], reviewDate: "Feb 20, 2026", tourDate: "Mar 7 — Round Mountain Cider Mill", hasVideo: true, richQuote: "Best brisket taco in Texas. Maybe the world. Come at me.", trending: true, image: "🌮" },
+  { id: 5, name: "Taqueria El Ultimo Rey", city: "Houston, TX", richRating: 9.0, fanRating: 8.3, fanVotes: 612, lat: 29.760, lng: -95.369, tags: ["Authentic", "No Frills"], reviewDate: "Feb 15, 2026", tourDate: null, hasVideo: false, richQuote: "My hometown spot. Been coming here since high school. Real ones know.", trending: false, image: "🌮" },
+  { id: 6, name: "El Primo Taco Truck", city: "San Angelo, TX", richRating: 8.8, fanRating: 7.9, fanVotes: 324, lat: 31.464, lng: -100.437, tags: ["Street", "Cash Only"], reviewDate: "Feb 10, 2026", tourDate: null, hasVideo: true, richQuote: "Found this gem after a show at the Arc Light. Absolute sleeper.", trending: false, image: "🌮" },
+  { id: 7, name: "Rosario's", city: "San Antonio, TX", richRating: 8.1, fanRating: 8.7, fanVotes: 891, lat: 29.424, lng: -98.493, tags: ["Upscale Tex-Mex", "Date Night"], reviewDate: "Feb 5, 2026", tourDate: null, hasVideo: false, richQuote: "San Antonio always delivers. The puffy taco is legit.", trending: false, image: "🌮" },
+];
+
+// Real upcoming tour dates from Bandsintown/Shazam data
+const TOUR_DATES = [
+  { date: "Mar 7", day: "Sat", venue: "Round Mountain Cider Mill", city: "Round Mountain, TX", tacoHunt: "Scouting spots...", soldOut: false, rsvp: 243 },
+  { date: "Mar 14", day: "Sat", venue: "Old Tomball Honky Tonk", city: "Tomball, TX", tacoHunt: "Scouting spots...", soldOut: false, rsvp: 187 },
+  { date: "Mar 27", day: "Fri", venue: "TBA", city: "TBA", tacoHunt: "Where should Rich eat? Vote below!", soldOut: false, rsvp: 0 },
+  { date: "Apr 2", day: "Thu", venue: "Private Event", city: "Austin, TX", tacoHunt: "Invite only", soldOut: true, rsvp: null },
+];
+
+const PLAYLIST_TRACKS = [
+  { title: "God Is a Gentleman", album: "God Is a Gentleman", duration: "3:41", year: 2026 },
+  { title: "The Bitter End", album: "Jaded", duration: "4:12", year: 2014 },
+  { title: "Krenek Tap Road", album: "Ghost", duration: "3:55", year: 2024 },
+  { title: "Marijuana & Jalapenos", album: "Brightwork", duration: "3:28", year: 2013 },
+  { title: "Hill Country Rain", album: "Ghost", duration: "4:01", year: 2024 },
+  { title: "Roll to G-Town (ft. Bun B & Paul Wall)", album: "Ghost", duration: "3:33", year: 2024 },
+  { title: "I'm Never Gonna Quit", album: "American Kid", duration: "3:47", year: 2017 },
+  { title: "Casino Queen (ft. Pat Green)", album: "Kiss of a Liar", duration: "4:22", year: 2011 },
+];
+
+const DEBATES = [
+  { id: 1, question: "Rich gave Valentina's a 9.7 — highest score yet. Deserved?", options: [{ label: "Absolutely 🔥", pct: 62 }, { label: "Too high", pct: 14 }, { label: "Should be a 10!", pct: 24 }], totalVotes: 6421 },
+  { id: 2, question: "Best taco city in Texas?", options: [{ label: "Austin", pct: 38 }, { label: "Houston", pct: 22 }, { label: "San Antonio", pct: 29 }, { label: "Dallas", pct: 11 }], totalVotes: 12847 },
+  { id: 3, question: "Rich says BBQ tacos are a top tier. Agree?", options: [{ label: "Hell yes 🤠", pct: 71 }, { label: "Keep BBQ separate", pct: 19 }, { label: "Depends on the spot", pct: 10 }], totalVotes: 3892 },
+];
+
+const LEADERBOARD = [
+  { name: "TacoKing_TX", reviews: 47, city: "Austin", badge: "🏆", streak: 12 },
+  { name: "BrisketAndBeans", reviews: 38, city: "Houston", badge: "🥈", streak: 8 },
+  { name: "SpicyTakes901", reviews: 31, city: "San Antonio", badge: "🥉", streak: 15 },
+  { name: "RichFanATX", reviews: 28, city: "Austin", badge: "🌮", streak: 5 },
+  { name: "TacoTuesday4L", reviews: 24, city: "Dallas", badge: "🌮", streak: 3 },
+  { name: "TexMexQueen", reviews: 21, city: "Fredericksburg", badge: "🌮", streak: 7 },
+];
+
+// --- HELPERS -----------------------------------------------------------
+
+const ratingColor = (r) => r >= 9 ? "#E8B100" : r >= 8 ? "#4ADE80" : r >= 7 ? "#60A5FA" : "#FB923C";
+const ratingLabel = (r) => r >= 9.5 ? "LEGENDARY" : r >= 9 ? "FIRE" : r >= 8 ? "SOLID" : r >= 7 ? "DECENT" : "MEH";
+
+// --- SCREENS -----------------------------------------------------------
+
+// 1. SPLASH / ONBOARDING
+function SplashScreen({ onGetStarted }) {
+  const [step, setStep] = useState(0);
+  const [fadeIn, setFadeIn] = useState(false);
+  useEffect(() => { setTimeout(() => setFadeIn(true), 100); }, []);
+
+  const slides = [
+    {
+      emoji: "🌮🎸",
+      title: "Welcome to Rich's Taco Tour",
+      subtitle: "Where Texas Country meets the best tacos on the road",
+      detail: "Follow Rich O'Toole as he eats his way across every tour stop",
+    },
+    {
+      emoji: "📍",
+      title: "Discover. Rate. Debate.",
+      subtitle: "See Rich's reviews on an interactive map",
+      detail: "Agree or disagree with his takes. Submit your own reviews. Climb the leaderboard.",
+    },
+    {
+      emoji: "🎶",
+      title: "Tacos + Tunes",
+      subtitle: "Tour dates, Spotify playlists, and merch — all in one place",
+      detail: "God, Texas & Tacos isn't just a slogan. It's a lifestyle.",
+    },
+  ];
+
+  const s = slides[step];
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: 32, textAlign: "center", opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease" }}>
+      <div style={{ fontSize: 56, marginBottom: 20, filter: "drop-shadow(0 0 20px rgba(232,177,0,0.3))" }}>{s.emoji}</div>
+      <h1 style={{ fontSize: 26, fontWeight: 900, color: "#fff", fontFamily: "'Playfair Display', serif", margin: "0 0 8px", lineHeight: 1.2 }}>{s.title}</h1>
+      <p style={{ fontSize: 14, color: "#E8B100", fontWeight: 600, margin: "0 0 8px" }}>{s.subtitle}</p>
+      <p style={{ fontSize: 12, color: "#888", margin: "0 0 32px", maxWidth: 280, lineHeight: 1.5 }}>{s.detail}</p>
+      {/* Dots */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+        {slides.map((_, i) => (
+          <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i === step ? "#E8B100" : "rgba(255,255,255,0.15)", transition: "all 0.3s" }} />
+        ))}
+      </div>
+      {step < slides.length - 1 ? (
+        <button onClick={() => setStep(step + 1)} style={{ ...btnPrimary, width: 200 }}>Next</button>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+          <button onClick={() => onGetStarted("signup")} style={{ ...btnPrimary }}>Create Account</button>
+          <button onClick={() => onGetStarted("login")} style={{ ...btnSecondary }}>I already have one</button>
+          <button onClick={() => onGetStarted("guest")} style={{ border: "none", background: "none", color: "#666", fontSize: 12, cursor: "pointer", padding: 8, fontFamily: "inherit" }}>Continue as guest</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 2. AUTH SCREEN (Login / Signup)
+function AuthScreen({ mode, onComplete, onBack }) {
+  const [authMode, setAuthMode] = useState(mode);
+  const [form, setForm] = useState({ name: "", email: "", password: "", city: "" });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = () => {
+    setLoading(true);
+    setTimeout(() => {
+      onComplete({ name: form.name || "Taco Fan", email: form.email, city: form.city || "Texas" });
+    }, 800);
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", padding: "60px 24px 24px" }}>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "#666", fontSize: 12, cursor: "pointer", marginBottom: 24, fontFamily: "inherit" }}>← Back</button>
+      <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", fontFamily: "'Playfair Display', serif", margin: "0 0 4px" }}>
+        {authMode === "signup" ? "Join the Tour" : "Welcome Back"}
+      </h1>
+      <p style={{ fontSize: 12, color: "#888", margin: "0 0 28px" }}>
+        {authMode === "signup" ? "Create your account to rate tacos and debate Rich" : "Sign in to your Taco Tour account"}
+      </p>
+
+      {/* Social auth buttons */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
+        {[
+          { label: "Continue with Apple", icon: "🍎", bg: "#fff", color: "#000" },
+          { label: "Continue with Google", icon: "G", bg: "transparent", color: "#fff", border: true },
+          { label: "Continue with Spotify", icon: "♫", bg: "#1DB954", color: "#000" },
+        ].map((btn) => (
+          <button key={btn.label} onClick={handleSubmit} style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%", padding: "12px 0", borderRadius: 10,
+            background: btn.bg, color: btn.color, border: btn.border ? "1px solid rgba(255,255,255,0.2)" : "none",
+            fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+          }}>
+            <span>{btn.icon}</span> {btn.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+        <span style={{ fontSize: 11, color: "#555" }}>or</span>
+        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+      </div>
+
+      {/* Form fields */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {authMode === "signup" && (
+          <input placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+            style={inputStyle} />
+        )}
+        <input placeholder="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+          style={inputStyle} />
+        <input placeholder="Password" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+          style={inputStyle} />
+        {authMode === "signup" && (
+          <input placeholder="Home city (for local taco recs)" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
+            style={inputStyle} />
+        )}
+        <button onClick={handleSubmit} disabled={loading} style={{ ...btnPrimary, opacity: loading ? 0.6 : 1 }}>
+          {loading ? "Loading..." : authMode === "signup" ? "Create Account" : "Sign In"}
+        </button>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 20 }}>
+        <button onClick={() => setAuthMode(authMode === "signup" ? "login" : "signup")}
+          style={{ background: "none", border: "none", color: "#E8B100", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+          {authMode === "signup" ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// 3. MAP VIEW
+function MapView({ spots, onSelectSpot, selectedSpot }) {
+  const pinPositions = [
+    { x: "28%", y: "42%" }, { x: "60%", y: "22%" }, { x: "25%", y: "50%" },
+    { x: "32%", y: "56%" }, { x: "52%", y: "65%" }, { x: "44%", y: "38%" },
+    { x: "46%", y: "72%" },
+  ];
+
+  return (
+    <div style={{ position: "relative", width: "100%", height: 360, background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(232,177,0,0.12)" }}>
+      {/* Grid overlay */}
+      <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, opacity: 0.06 }}>
+        {[...Array(30)].map((_, i) => <line key={`h${i}`} x1="0" y1={i * 14} x2="500" y2={i * 14} stroke="#E8B100" strokeWidth="0.5" />)}
+        {[...Array(30)].map((_, i) => <line key={`v${i}`} x1={i * 14} y1="0" x2={i * 14} y2="500" stroke="#E8B100" strokeWidth="0.5" />)}
+      </svg>
+      {/* Texas outline hint */}
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", fontSize: 180, opacity: 0.03, pointerEvents: "none" }}>⭐</div>
+      {/* Label */}
+      <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", padding: "5px 10px", borderRadius: 6, fontSize: 10, color: "#777", letterSpacing: 1, textTransform: "uppercase", fontFamily: "'Courier Prime', monospace" }}>
+        🗺️ Apple Maps · Texas
+      </div>
+      {/* Stats */}
+      <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", padding: "5px 10px", borderRadius: 6, fontSize: 10, color: "#E8B100" }}>
+        {spots.length} spots reviewed
+      </div>
+      {/* Route lines */}
+      <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <path d="M 110 155 Q 180 130 240 85 M 110 155 L 100 185 M 100 185 L 128 210 M 128 210 L 210 245 M 210 245 L 180 140 M 180 140 L 186 270" fill="none" stroke="#E8B100" strokeWidth="1" strokeDasharray="4 6" opacity="0.2" />
+      </svg>
+      {/* Pins */}
+      {spots.map((spot, i) => {
+        const pos = pinPositions[i] || { x: "50%", y: "50%" };
+        const sel = selectedSpot?.id === spot.id;
+        return (
+          <div key={spot.id} onClick={() => onSelectSpot(sel ? null : spot)} style={{
+            position: "absolute", left: pos.x, top: pos.y, transform: "translate(-50%, -100%)",
+            cursor: "pointer", zIndex: sel ? 20 : 2, transition: "all 0.25s ease",
+          }}>
+            {sel && (
+              <div style={{
+                background: "rgba(0,0,0,0.9)", backdropFilter: "blur(12px)", border: `1px solid ${ratingColor(spot.richRating)}`,
+                borderRadius: 12, padding: "10px 14px", marginBottom: 6, minWidth: 160, textAlign: "center",
+                boxShadow: `0 4px 20px rgba(0,0,0,0.5)`,
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{spot.name}</div>
+                <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{spot.city}</div>
+                <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 6 }}>
+                  <div>
+                    <div style={{ fontSize: 20, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Playfair Display', serif" }}>{spot.richRating}</div>
+                    <div style={{ fontSize: 8, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Rich</div>
+                  </div>
+                  <div style={{ width: 1, background: "rgba(255,255,255,0.1)" }} />
+                  <div>
+                    <div style={{ fontSize: 20, fontWeight: 900, color: "#60A5FA", fontFamily: "'Playfair Display', serif" }}>{spot.fanRating}</div>
+                    <div style={{ fontSize: 8, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Fans</div>
+                  </div>
+                </div>
+                {spot.trending && <div style={{ fontSize: 9, color: "#E8B100", marginTop: 6 }}>🔥 TRENDING</div>}
+              </div>
+            )}
+            <div style={{
+              width: sel ? 42 : 30, height: sel ? 42 : 30, borderRadius: "50%",
+              background: `radial-gradient(circle, ${ratingColor(spot.richRating)}33, ${ratingColor(spot.richRating)}aa)`,
+              border: `2px solid ${ratingColor(spot.richRating)}`, display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: sel ? 20 : 14, boxShadow: `0 0 ${sel ? 24 : 10}px ${ratingColor(spot.richRating)}55`, transition: "all 0.25s ease",
+            }}>🌮</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// 4. REVIEW CARD (compact + expanded)
+function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
+  const diff = Math.abs(spot.richRating - spot.fanRating);
+  const hotTake = diff > 0.5;
+
+  return (
+    <div onClick={onToggle} style={{
+      background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)",
+      borderRadius: 14, padding: 16, cursor: "pointer", transition: "all 0.2s",
+      borderLeft: `3px solid ${ratingColor(spot.richRating)}`,
+    }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{spot.name}</span>
+            {spot.trending && <span style={badgeStyle("#E8B100")}>TRENDING</span>}
+            {hotTake && <span style={badgeStyle("#EF4444")}>HOT TAKE</span>}
+          </div>
+          <div style={{ fontSize: 11, color: "#666", marginTop: 3 }}>{spot.city} · {spot.reviewDate}</div>
+          <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
+            {spot.tags.map(t => <span key={t} style={{ fontSize: 10, color: "#888", background: "rgba(255,255,255,0.04)", padding: "2px 8px", borderRadius: 20 }}>{t}</span>)}
+          </div>
+        </div>
+        <div style={{ textAlign: "center", minWidth: 54 }}>
+          <div style={{ fontSize: 30, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{spot.richRating}</div>
+          <div style={{ fontSize: 8, color: ratingColor(spot.richRating), textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginTop: 2 }}>{ratingLabel(spot.richRating)}</div>
+        </div>
+      </div>
+
+      {/* Expanded */}
+      {expanded && (
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.05)" }} onClick={e => e.stopPropagation()}>
+          {/* Rich's take */}
+          <div style={{ background: "rgba(232,177,0,0.05)", borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: "2px solid #E8B100" }}>
+            <div style={{ fontSize: 12, color: "#ddd", fontStyle: "italic", lineHeight: 1.6 }}>"{spot.richQuote}"</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, color: "#000" }}>R</div>
+              <span style={{ fontSize: 11, color: "#E8B100", fontWeight: 600 }}>Rich O'Toole</span>
+            </div>
+          </div>
+
+          {/* Video */}
+          {spot.hasVideo && (
+            <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 12, height: 180, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14, border: "1px solid rgba(255,255,255,0.04)", position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(45deg, rgba(232,177,0,0.04), transparent)" }} />
+              <div style={{ position: "absolute", top: 10, left: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 900, color: "#000" }}>R</div>
+                <div>
+                  <div style={{ fontSize: 10, color: "#fff", fontWeight: 600 }}>Rich O'Toole</div>
+                  <div style={{ fontSize: 9, color: "#888" }}>Taco Take #{spot.id}</div>
+                </div>
+              </div>
+              <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(232,177,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 0 24px rgba(232,177,0,0.35)" }}>
+                <span style={{ fontSize: 20, marginLeft: 3, color: "#000" }}>▶</span>
+              </div>
+              <div style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, color: "#aaa" }}>🎬 0:47</div>
+              <div style={{ position: "absolute", bottom: 10, right: 12, fontSize: 10, color: "#555" }}>{spot.name}</div>
+            </div>
+          )}
+
+          {/* Rating comparison */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontSize: 11, color: "#E8B100", fontWeight: 700 }}>🌮 Rich: {spot.richRating}</span>
+              <span style={{ fontSize: 11, color: "#60A5FA", fontWeight: 700 }}>👥 Fans: {spot.fanRating}</span>
+            </div>
+            <div style={{ display: "flex", gap: 4, height: 8, background: "rgba(255,255,255,0.03)", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ width: `${(spot.richRating / 10) * 100}%`, background: `linear-gradient(90deg, ${ratingColor(spot.richRating)}, ${ratingColor(spot.richRating)}66)`, borderRadius: 4, transition: "width 0.5s" }} />
+            </div>
+            <div style={{ display: "flex", gap: 4, height: 8, background: "rgba(255,255,255,0.03)", borderRadius: 4, overflow: "hidden", marginTop: 4 }}>
+              <div style={{ width: `${(spot.fanRating / 10) * 100}%`, background: "linear-gradient(90deg, #60A5FA, #60A5FA66)", borderRadius: 4, transition: "width 0.5s" }} />
+            </div>
+            <div style={{ fontSize: 10, color: "#555", marginTop: 4, textAlign: "right" }}>{spot.fanVotes.toLocaleString()} fan votes</div>
+          </div>
+
+          {/* Vote buttons */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+            <button onClick={() => onVote(spot.id, "agree")} style={{
+              ...voteBtn, background: userVote === "agree" ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.04)",
+              color: userVote === "agree" ? "#4ADE80" : "#888", border: userVote === "agree" ? "1px solid rgba(74,222,128,0.3)" : "1px solid rgba(255,255,255,0.06)",
+            }}>🤝 Agree with Rich</button>
+            <button onClick={() => onVote(spot.id, "disagree")} style={{
+              ...voteBtn, background: userVote === "disagree" ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.04)",
+              color: userVote === "disagree" ? "#EF4444" : "#888", border: userVote === "disagree" ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.06)",
+            }}>🌶️ Wrong, Rich!</button>
+          </div>
+
+          {/* Share */}
+          <button style={{ width: "100%", padding: "11px 0", borderRadius: 8, border: "1px solid rgba(232,177,0,0.25)", background: "rgba(232,177,0,0.04)", color: "#E8B100", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.5 }}>
+            📤 SHARE THIS TAKE
+          </button>
+
+          {/* Tour date callout */}
+          {spot.tourDate && (
+            <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "rgba(232,177,0,0.04)", borderRadius: 10, border: "1px solid rgba(232,177,0,0.1)" }}>
+              <span style={{ fontSize: 16 }}>🎸</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>Nearby Show</div>
+                <div style={{ fontSize: 11, color: "#ccc" }}>{spot.tourDate}</div>
+              </div>
+              <button style={{ fontSize: 10, color: "#000", background: "#E8B100", border: "none", padding: "5px 10px", borderRadius: 5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>TICKETS</button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 5. SOCIAL SHARE CARD PREVIEW
+function ShareCardPreview({ spot }) {
+  if (!spot) return null;
+  return (
+    <div style={{ padding: 16 }}>
+      <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>📱 Social Share Preview</div>
+      <div style={{ background: "linear-gradient(135deg, #0d0d14, #1a1a2e)", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(232,177,0,0.2)", maxWidth: 340 }}>
+        {/* Card header */}
+        <div style={{ background: "rgba(232,177,0,0.08)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900, color: "#000" }}>R</div>
+          <div>
+            <div style={{ fontSize: 12, color: "#fff", fontWeight: 700 }}>Rich O'Toole</div>
+            <div style={{ fontSize: 10, color: "#E8B100" }}>Taco Tour 🌮</div>
+          </div>
+        </div>
+        {/* Card body */}
+        <div style={{ padding: 16 }}>
+          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", fontFamily: "'Playfair Display', serif", marginBottom: 4 }}>{spot.name}</div>
+          <div style={{ fontSize: 11, color: "#888", marginBottom: 12 }}>{spot.city}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 36, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{spot.richRating}</div>
+              <div style={{ fontSize: 9, color: "#E8B100", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Rich says</div>
+            </div>
+            <div style={{ fontSize: 20, color: "#333" }}>vs</div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 36, fontWeight: 900, color: "#60A5FA", fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{spot.fanRating}</div>
+              <div style={{ fontSize: 9, color: "#60A5FA", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Fans say</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 11, color: "#ccc", fontStyle: "italic", lineHeight: 1.5 }}>"{spot.richQuote}"</div>
+        </div>
+        {/* CTA */}
+        <div style={{ padding: "10px 16px", background: "rgba(232,177,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 10, color: "#888" }}>richstacotour.com</span>
+          <span style={{ fontSize: 10, color: "#E8B100", fontWeight: 700 }}>Who's right? Vote now →</span>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        {["X / Twitter", "Instagram Story", "iMessage", "Copy Link"].map(p => (
+          <button key={p} style={{ flex: 1, padding: "8px 4px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", color: "#999", fontSize: 9, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>{p}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 6. FAN REVIEW SUBMISSION
+function FanReviewForm({ user, onClose }) {
+  const [rating, setRating] = useState(0);
+  const [name, setName] = useState("");
+  const [city, setCity] = useState("");
+  const [comment, setComment] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  if (submitted) {
+    return (
+      <div style={{ padding: 24, textAlign: "center" }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>🌮</div>
+        <h2 style={{ fontSize: 20, fontWeight: 900, color: "#fff", fontFamily: "'Playfair Display', serif", margin: "0 0 8px" }}>Take Submitted!</h2>
+        <p style={{ fontSize: 12, color: "#888", margin: "0 0 20px" }}>Your review is live. Let's see if Rich agrees.</p>
+        <div style={{ background: "rgba(232,177,0,0.06)", borderRadius: 10, padding: 12, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: "#999" }}>+15 XP earned · Review #{Math.floor(Math.random() * 50) + 1} for you</div>
+        </div>
+        <button onClick={onClose} style={btnPrimary}>Back to Reviews</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: "16px 0" }}>
+      <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>🌮 Submit Your Taco Take</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <input placeholder="Taco spot name" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+        <input placeholder="City, State" value={city} onChange={e => setCity(e.target.value)} style={inputStyle} />
+        {/* Rating selector */}
+        <div>
+          <div style={{ fontSize: 11, color: "#888", marginBottom: 8 }}>Your rating</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[...Array(10)].map((_, i) => {
+              const val = i + 1;
+              return (
+                <button key={val} onClick={() => setRating(val)} style={{
+                  width: 36, height: 36, borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
+                  background: rating === val ? ratingColor(val) : "rgba(255,255,255,0.05)",
+                  color: rating === val ? "#000" : "#777", transition: "all 0.15s", fontFamily: "inherit",
+                }}>{val}</button>
+              );
+            })}
+          </div>
+          {rating > 0 && (
+            <div style={{ fontSize: 11, color: ratingColor(rating), fontWeight: 700, marginTop: 6 }}>
+              {ratingLabel(rating)} {rating >= 9 ? "🔥" : rating >= 8 ? "👌" : ""}
+            </div>
+          )}
+        </div>
+        <textarea placeholder="What's your take? (optional)" value={comment} onChange={e => setComment(e.target.value)}
+          rows={3} style={{ ...inputStyle, resize: "none", minHeight: 70 }} />
+        <button onClick={() => name && rating && setSubmitted(true)} disabled={!name || !rating}
+          style={{ ...btnPrimary, opacity: (!name || !rating) ? 0.4 : 1 }}>
+          Submit Your Take
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// 7. POLL WIDGET
+function PollWidget({ debate, onVote, userVote }) {
+  return (
+    <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+      <div style={{ fontSize: 10, color: "#EF4444", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>🔥 Fan Debate</div>
+      <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Playfair Display', serif", marginBottom: 12, lineHeight: 1.4 }}>{debate.question}</div>
+      {debate.options.map((opt, i) => (
+        <button key={i} onClick={() => onVote(debate.id, i)} style={{
+          width: "100%", marginBottom: 6, padding: "10px 14px", borderRadius: 8, border: "none",
+          cursor: "pointer", position: "relative", overflow: "hidden", textAlign: "left",
+          background: userVote !== null ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.04)", fontFamily: "inherit",
+        }}>
+          {userVote !== null && (
+            <div style={{ position: "absolute", inset: "0 auto 0 0", width: `${opt.pct}%`, background: userVote === i ? "rgba(232,177,0,0.12)" : "rgba(255,255,255,0.02)", transition: "width 0.6s" }} />
+          )}
+          <div style={{ position: "relative", display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 12, color: userVote === i ? "#E8B100" : "#ccc", fontWeight: userVote === i ? 700 : 400 }}>{opt.label}</span>
+            {userVote !== null && <span style={{ fontSize: 12, color: "#666", fontWeight: 700 }}>{opt.pct}%</span>}
+          </div>
+        </button>
+      ))}
+      <div style={{ fontSize: 10, color: "#444", marginTop: 2 }}>{debate.totalVotes.toLocaleString()} votes</div>
+    </div>
+  );
+}
+
+// 8. TOUR DATES
+function TourSection() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+        <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>🎸 Tour Dates via Bandsintown</div>
+        <a href="https://www.bandsintown.com/a/39860-rich-otoole" target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#555", textDecoration: "none" }}>See all →</a>
+      </div>
+      {TOUR_DATES.map((d, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: 14, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12 }}>
+          <div style={{ minWidth: 50, textAlign: "center" }}>
+            <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase" }}>{d.day}</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: "#E8B100", fontFamily: "'Playfair Display', serif" }}>{d.date.split(" ")[1]}</div>
+            <div style={{ fontSize: 9, color: "#666" }}>{d.date.split(" ")[0]}</div>
+          </div>
+          <div style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,0.06)", paddingLeft: 12 }}>
+            <div style={{ fontSize: 13, color: "#fff", fontWeight: 600 }}>{d.venue}</div>
+            <div style={{ fontSize: 11, color: "#666" }}>{d.city}</div>
+            <div style={{ fontSize: 10, color: "#E8B100", marginTop: 3 }}>🌮 {d.tacoHunt}</div>
+            {d.rsvp > 0 && <div style={{ fontSize: 9, color: "#555", marginTop: 2 }}>{d.rsvp} fans going</div>}
+          </div>
+          <div>
+            {d.soldOut ? (
+              <span style={{ fontSize: 9, color: "#EF4444", fontWeight: 700, border: "1px solid rgba(239,68,68,0.25)", padding: "4px 8px", borderRadius: 6 }}>SOLD OUT</span>
+            ) : (
+              <button style={{ fontSize: 10, color: "#000", fontWeight: 800, background: "#E8B100", border: "none", padding: "7px 14px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>RSVP</button>
+            )}
+          </div>
+        </div>
+      ))}
+      {/* Merch callout */}
+      <a href="https://godtexasandtacos.com" target="_blank" rel="noopener noreferrer" style={{
+        display: "flex", alignItems: "center", gap: 12, padding: 14, background: "rgba(232,177,0,0.04)", border: "1px solid rgba(232,177,0,0.12)", borderRadius: 12, textDecoration: "none",
+      }}>
+        <span style={{ fontSize: 24 }}>🤠</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 12, color: "#fff", fontWeight: 700 }}>God, Texas & Tacos Merch</div>
+          <div style={{ fontSize: 10, color: "#888" }}>Official Rich O'Toole store</div>
+        </div>
+        <span style={{ fontSize: 11, color: "#E8B100" }}>Shop →</span>
+      </a>
+    </div>
+  );
+}
+
+// 9. SPOTIFY / MUSIC
+function MusicSection() {
+  const [playing, setPlaying] = useState(null);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* Spotify embed placeholder */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div>
+            <div style={{ fontSize: 10, color: "#1DB954", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>♫ Spotify</div>
+            <div style={{ fontSize: 16, color: "#fff", fontWeight: 700, fontFamily: "'Playfair Display', serif" }}>Taco Tour Playlist</div>
+            <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>Curated by Rich · {PLAYLIST_TRACKS.length} tracks</div>
+          </div>
+          <a href={RICH.spotify} target="_blank" rel="noopener noreferrer" style={{ background: "#1DB954", border: "none", color: "#000", fontSize: 10, fontWeight: 800, padding: "7px 14px", borderRadius: 20, cursor: "pointer", textDecoration: "none" }}>OPEN</a>
+        </div>
+        {PLAYLIST_TRACKS.map((t, i) => (
+          <div key={i} onClick={() => setPlaying(playing === i ? null : i)} style={{
+            display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8, cursor: "pointer",
+            background: playing === i ? "rgba(29,185,84,0.08)" : "transparent", transition: "background 0.2s",
+          }}>
+            <div style={{ width: 22, textAlign: "center" }}>
+              {playing === i ? (
+                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 1, height: 14 }}>
+                  {[8, 13, 6, 11].map((h, j) => (
+                    <div key={j} style={{ width: 2, background: "#1DB954", borderRadius: 1, animation: `eqB 0.45s ease-in-out ${j * 0.12}s infinite alternate`, height: h }} />
+                  ))}
+                </div>
+              ) : (
+                <span style={{ fontSize: 11, color: "#555" }}>{i + 1}</span>
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, color: playing === i ? "#1DB954" : "#ddd", fontWeight: playing === i ? 600 : 400 }}>{t.title}</div>
+              <div style={{ fontSize: 10, color: "#555" }}>Rich O'Toole · {t.album}</div>
+            </div>
+            <span style={{ fontSize: 10, color: "#444" }}>{t.duration}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Latest album */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+        <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>🎵 Latest Album</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ width: 72, height: 72, borderRadius: 8, background: "linear-gradient(135deg, #1a1a2e, #E8B100)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, border: "1px solid rgba(232,177,0,0.2)" }}>🤠</div>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{RICH.latestAlbum}</div>
+            <div style={{ fontSize: 11, color: "#888" }}>{RICH.label} · 2026</div>
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <a href={RICH.spotify} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#1DB954", fontWeight: 700, textDecoration: "none" }}>Spotify</a>
+              <span style={{ color: "#333" }}>|</span>
+              <a href="https://music.apple.com/us/artist/rich-otoole/191054733" target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#fc3c44", fontWeight: 700, textDecoration: "none" }}>Apple Music</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Discography */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Discography</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {ALBUMS.map(a => (
+            <div key={a.title} style={{ padding: "6px 10px", borderRadius: 6, background: a.current ? "rgba(232,177,0,0.12)" : "rgba(255,255,255,0.03)", border: a.current ? "1px solid rgba(232,177,0,0.3)" : "1px solid rgba(255,255,255,0.04)", }}>
+              <div style={{ fontSize: 11, color: a.current ? "#E8B100" : "#ccc", fontWeight: a.current ? 700 : 400 }}>{a.title}</div>
+              <div style={{ fontSize: 9, color: "#555" }}>{a.year}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 10. PROFILE / ACCOUNT
+function ProfileSection({ user, onLogout }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20, textAlign: "center" }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 900, color: "#000", margin: "0 auto 10px" }}>
+          {(user?.name || "T")[0].toUpperCase()}
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{user?.name || "Taco Fan"}</div>
+        <div style={{ fontSize: 11, color: "#888" }}>{user?.city || "Texas"} · Joined Mar 2026</div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 14 }}>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#E8B100" }}>0</div><div style={{ fontSize: 9, color: "#666" }}>Reviews</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#4ADE80" }}>0</div><div style={{ fontSize: 9, color: "#666" }}>Agrees</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#60A5FA" }}>0</div><div style={{ fontSize: 9, color: "#666" }}>XP</div></div>
+        </div>
+      </div>
+
+      {/* Badges */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+        <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>🏆 Badges to Earn</div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {[
+            { icon: "🌮", name: "First Take", desc: "Submit your first review", locked: true },
+            { icon: "🔥", name: "Hot Streak", desc: "5 reviews in a row", locked: true },
+            { icon: "🤠", name: "Rich Approved", desc: "Rich agrees with your take", locked: true },
+            { icon: "⭐", name: "Top 10", desc: "Hit the leaderboard", locked: true },
+            { icon: "🗺️", name: "Explorer", desc: "Review in 3 cities", locked: true },
+            { icon: "🎸", name: "Show & Chow", desc: "Review at a tour stop", locked: true },
+          ].map(b => (
+            <div key={b.name} style={{ width: "calc(50% - 5px)", padding: 10, background: "rgba(255,255,255,0.02)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.04)", opacity: b.locked ? 0.4 : 1 }}>
+              <div style={{ fontSize: 20, marginBottom: 4 }}>{b.icon}</div>
+              <div style={{ fontSize: 11, color: "#ccc", fontWeight: 600 }}>{b.name}</div>
+              <div style={{ fontSize: 9, color: "#666" }}>{b.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Socials */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Follow Rich</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {[
+            { platform: "Instagram", handle: "@richotoole", url: RICH.instagram, color: "#E4405F" },
+            { platform: "TikTok", handle: "@therichotoole", url: RICH.tiktok, color: "#fff", note: "175K followers" },
+            { platform: "X / Twitter", handle: "@RichOToole", url: RICH.twitter, color: "#ccc" },
+            { platform: "YouTube", handle: "RichOTooleMusic", url: "https://www.youtube.com/@RichOTooleMusic", color: "#FF0000" },
+          ].map(s => (
+            <a key={s.platform} href={s.url} target="_blank" rel="noopener noreferrer" style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px",
+              borderRadius: 8, background: "rgba(255,255,255,0.02)", textDecoration: "none",
+            }}>
+              <div>
+                <div style={{ fontSize: 12, color: s.color, fontWeight: 600 }}>{s.platform}</div>
+                <div style={{ fontSize: 10, color: "#666" }}>{s.handle}</div>
+              </div>
+              {s.note && <span style={{ fontSize: 9, color: "#555" }}>{s.note}</span>}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <button onClick={onLogout} style={{ ...btnSecondary, color: "#EF4444", borderColor: "rgba(239,68,68,0.2)" }}>Sign Out</button>
+    </div>
+  );
+}
+
+// --- SHARED STYLES -------------------------------------------------------
+
+const btnPrimary = {
+  width: "100%", padding: "13px 0", borderRadius: 10, border: "none",
+  background: "#E8B100", color: "#000", fontSize: 13, fontWeight: 800,
+  cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.5,
+};
+
+const btnSecondary = {
+  width: "100%", padding: "13px 0", borderRadius: 10, background: "transparent",
+  border: "1px solid rgba(232,177,0,0.25)", color: "#E8B100", fontSize: 13,
+  fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+};
+
+const inputStyle = {
+  width: "100%", padding: "12px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)",
+  background: "rgba(255,255,255,0.04)", color: "#fff", fontSize: 13, fontFamily: "inherit",
+  outline: "none", boxSizing: "border-box",
+};
+
+const voteBtn = {
+  flex: 1, padding: "10px 0", borderRadius: 8, cursor: "pointer", fontSize: 11,
+  fontWeight: 700, fontFamily: "inherit", transition: "all 0.2s",
+};
+
+const badgeStyle = (color) => ({
+  fontSize: 8, background: `${color}18`, color, padding: "2px 6px",
+  borderRadius: 4, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+});
+
+// --- MAIN APP ------------------------------------------------------------
+
+export default function TacoTourApp() {
+  const [screen, setScreen] = useState("splash"); // splash | auth | main
+  const [authMode, setAuthMode] = useState("signup");
+  const [user, setUser] = useState(null);
+  const [tab, setTab] = useState("map");
+  const [selectedSpot, setSelectedSpot] = useState(null);
+  const [expandedReview, setExpandedReview] = useState(null);
+  const [votes, setVotes] = useState({});
+  const [pollVotes, setPollVotes] = useState({});
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(null);
+  const [reviewFilter, setReviewFilter] = useState("All");
+
+  const handleAuthStart = (mode) => {
+    if (mode === "guest") {
+      setUser({ name: "Guest", city: "Texas", guest: true });
+      setScreen("main");
+    } else {
+      setAuthMode(mode);
+      setScreen("auth");
+    }
+  };
+
+  const handleAuthComplete = (userData) => {
+    setUser(userData);
+    setScreen("main");
+  };
+
+  const handleVote = (spotId, type) => {
+    setVotes(v => ({ ...v, [spotId]: v[spotId] === type ? null : type }));
+  };
+
+  const handlePollVote = (debateId, optionIdx) => {
+    setPollVotes(v => ({ ...v, [debateId]: v[debateId] === optionIdx ? null : optionIdx }));
+  };
+
+  const filteredSpots = reviewFilter === "All" ? TACO_SPOTS
+    : reviewFilter === "Trending" ? TACO_SPOTS.filter(s => s.trending)
+    : reviewFilter === "Hot Takes" ? TACO_SPOTS.filter(s => Math.abs(s.richRating - s.fanRating) > 0.5)
+    : [...TACO_SPOTS].sort((a, b) => b.richRating - a.richRating);
+
+  const tabs = [
+    { id: "map", label: "Map", icon: "📍" },
+    { id: "reviews", label: "Reviews", icon: "🌮" },
+    { id: "tour", label: "Tour", icon: "🎸" },
+    { id: "music", label: "Music", icon: "🎶" },
+    { id: "profile", label: user?.guest ? "Join" : "Profile", icon: "👤" },
+  ];
+
+  // --- RENDER ---
+  if (screen === "splash") return (
+    <Shell><SplashScreen onGetStarted={handleAuthStart} /></Shell>
+  );
+
+  if (screen === "auth") return (
+    <Shell><AuthScreen mode={authMode} onComplete={handleAuthComplete} onBack={() => setScreen("splash")} /></Shell>
+  );
+
+  return (
+    <Shell>
+      <style>{`@keyframes eqB { from { height: 3px; } to { height: 14px; } }`}</style>
+      <div style={{ position: "relative", zIndex: 1, paddingBottom: 76 }}>
+        {/* Header */}
+        <div style={{ padding: "16px 16px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>Rich O'Toole's</div>
+            <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: 0, fontFamily: "'Playfair Display', serif" }}>Taco Tour</h1>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 10, color: "#888" }}>{user?.name || "Guest"}</div>
+              <div style={{ fontSize: 9, color: "#555" }}>{TACO_SPOTS.length} spots</div>
+            </div>
+            <div onClick={() => setTab("profile")} style={{
+              width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900, color: "#000", cursor: "pointer",
+            }}>
+              {(user?.name || "T")[0].toUpperCase()}
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+          {tab === "map" && (
+            <>
+              <MapView spots={TACO_SPOTS} onSelectSpot={setSelectedSpot} selectedSpot={selectedSpot} />
+              {selectedSpot && (
+                <>
+                  <ReviewCard spot={selectedSpot} userVote={votes[selectedSpot.id]} onVote={handleVote} expanded={true} onToggle={() => setSelectedSpot(null)} user={user} />
+                  <button onClick={() => setShowShareCard(selectedSpot)} style={{ ...btnSecondary, fontSize: 11, padding: "10px 0" }}>
+                    👀 Preview Share Card
+                  </button>
+                </>
+              )}
+              {!selectedSpot && <div style={{ textAlign: "center", color: "#444", fontSize: 12, padding: 4 }}>Tap a pin to see Rich's take</div>}
+              {showShareCard && <ShareCardPreview spot={showShareCard} />}
+            </>
+          )}
+
+          {tab === "reviews" && (
+            <>
+              {/* Filters */}
+              <div style={{ display: "flex", gap: 6 }}>
+                {["All", "Trending", "Hot Takes", "Top Rated"].map(f => (
+                  <button key={f} onClick={() => setReviewFilter(f)} style={{
+                    padding: "6px 12px", borderRadius: 20, border: "none",
+                    background: reviewFilter === f ? "rgba(232,177,0,0.15)" : "rgba(255,255,255,0.04)",
+                    color: reviewFilter === f ? "#E8B100" : "#666", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  }}>{f}</button>
+                ))}
+              </div>
+              {filteredSpots.map(spot => (
+                <ReviewCard key={spot.id} spot={spot} userVote={votes[spot.id]} onVote={handleVote}
+                  expanded={expandedReview === spot.id} onToggle={() => setExpandedReview(expandedReview === spot.id ? null : spot.id)} user={user} />
+              ))}
+              {/* Submit CTA */}
+              {showReviewForm ? (
+                <FanReviewForm user={user} onClose={() => setShowReviewForm(false)} />
+              ) : (
+                <div style={{ background: "rgba(232,177,0,0.04)", border: "1px solid rgba(232,177,0,0.12)", borderRadius: 14, padding: 16, textAlign: "center" }}>
+                  <div style={{ fontSize: 28, marginBottom: 6 }}>🌮</div>
+                  <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Playfair Display', serif", marginBottom: 4 }}>Got a Taco Take?</div>
+                  <div style={{ fontSize: 11, color: "#888", marginBottom: 12 }}>Rate a spot. Climb the leaderboard. Prove Rich wrong.</div>
+                  <button onClick={() => setShowReviewForm(true)} style={{ ...btnPrimary, width: "auto", padding: "10px 28px", display: "inline-block" }}>SUBMIT A REVIEW</button>
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === "tour" && <TourSection />}
+
+          {tab === "music" && <MusicSection />}
+
+          {tab === "profile" && (
+            user?.guest ? (
+              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🌮</div>
+                <h2 style={{ fontSize: 20, fontWeight: 900, color: "#fff", fontFamily: "'Playfair Display', serif", margin: "0 0 8px" }}>Join the Tour</h2>
+                <p style={{ fontSize: 12, color: "#888", margin: "0 0 24px" }}>Create an account to submit reviews, vote on debates, and earn badges.</p>
+                <button onClick={() => { setScreen("auth"); setAuthMode("signup"); }} style={btnPrimary}>Create Account</button>
+              </div>
+            ) : (
+              <ProfileSection user={user} onLogout={() => { setUser(null); setScreen("splash"); }} />
+            )
+          )}
+
+          {/* Debate section visible on map & reviews */}
+          {(tab === "map" || tab === "reviews") && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
+              <PollWidget debate={DEBATES[0]} onVote={handlePollVote} userVote={pollVotes[DEBATES[0].id] ?? null} />
+              {/* Leaderboard teaser */}
+              <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+                <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>📊 Top Taco Reviewers</div>
+                {LEADERBOARD.slice(0, 3).map((u, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.03)" : "none" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 14 }}>{u.badge}</span>
+                      <div>
+                        <div style={{ fontSize: 12, color: "#ddd", fontWeight: 600 }}>{u.name}</div>
+                        <div style={{ fontSize: 9, color: "#555" }}>{u.city} · 🔥 {u.streak} streak</div>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 11, color: "#888", fontWeight: 600 }}>{u.reviews} reviews</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom nav */}
+      <div style={{
+        position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", maxWidth: 430, width: "100%",
+        background: "rgba(13,13,20,0.96)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(255,255,255,0.05)",
+        display: "flex", justifyContent: "space-around", padding: "6px 0 env(safe-area-inset-bottom, 10px)", zIndex: 100,
+      }}>
+        {tabs.map(t => {
+          const active = tab === t.id;
+          return (
+            <button key={t.id} onClick={() => { setTab(t.id); setShowReviewForm(false); setShowShareCard(null); }}
+              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "4px 10px", position: "relative" }}>
+              {active && <div style={{ position: "absolute", top: -6, width: 18, height: 2, background: "#E8B100", borderRadius: 2 }} />}
+              <span style={{ fontSize: 18, opacity: active ? 1 : 0.4, transition: "opacity 0.2s" }}>{t.icon}</span>
+              <span style={{ fontSize: 9, color: active ? "#E8B100" : "#555", fontWeight: active ? 700 : 400 }}>{t.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </Shell>
+  );
+}
+
+// --- SHELL ---------------------------------------------------------------
+
+function Shell({ children }) {
+  return (
+    <div style={{
+      maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#0d0d14",
+      fontFamily: "'DM Sans', -apple-system, sans-serif", position: "relative", overflow: "hidden",
+    }}>
+      {/* Ambient */}
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 0 }}>
+        <div style={{ position: "absolute", top: -80, right: -80, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(232,177,0,0.05) 0%, transparent 70%)" }} />
+        <div style={{ position: "absolute", bottom: -40, left: -40, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(239,68,68,0.03) 0%, transparent 70%)" }} />
+      </div>
+      {children}
+    </div>
+  );
+}
