@@ -313,7 +313,7 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
           const coord = new mapkit.Coordinate(td.lat, td.lng);
           const ann = new mapkit.MarkerAnnotation(coord, {
             title: td.venue,
-            subtitle: td.date + " \u00B7 " + td.city,
+            subtitle: td.day + " " + td.date,
             color: "#E8B100",
             glyphColor: "#000",
             glyphText: "\u266A",
