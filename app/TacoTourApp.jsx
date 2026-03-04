@@ -676,12 +676,24 @@ function ReviewCard({ spot, userVote, onVote, onFanRate, fanRatingSubmitted, exp
             <button onClick={handleAgree} style={{
               ...voteBtn, background: userVote === "agree" ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.04)",
               color: userVote === "agree" ? "#4ADE80" : "#888", border: userVote === "agree" ? "1px solid rgba(74,222,128,0.3)" : "1px solid rgba(255,255,255,0.06)",
-            }}>🤝 Agree with Rich</button>
+            }}>🤝 Agree{userVote === "agree" ? "d" : ""} with Rich</button>
             <button onClick={handleDisagree} style={{
               ...voteBtn, background: userVote === "disagree" ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.04)",
               color: userVote === "disagree" ? "#EF4444" : "#888", border: userVote === "disagree" ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.06)",
             }}>🌶️ Wrong, Rich!</button>
           </div>
+
+          {/* Agree confirmation with tally */}
+          {userVote === "agree" && (
+            <div style={{
+              background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.15)",
+              borderRadius: 10, padding: 10, marginBottom: 8,
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+              <span style={{ fontSize: 11, color: "#4ADE80", fontWeight: 700 }}>✓ You agreed with Rich's {spot.richRating}</span>
+              <span style={{ fontSize: 10, color: "#4ADE80" }}>👥 {(spot.fanVotes + 1).toLocaleString()} fans agree</span>
+            </div>
+          )}
 
           {/* Fan rating slider — appears on disagree */}
           {(showSlider || userVote === "disagree") && !fanRatingSubmitted && (
