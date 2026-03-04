@@ -708,61 +708,28 @@ function TourSection() {
 
 // 9. SPOTIFY / MUSIC
 function MusicSection() {
-  const [playing, setPlaying] = useState(null);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {/* Spotify embed placeholder */}
-      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div>
-            <div style={{ fontSize: 10, color: "#1DB954", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>♫ Spotify</div>
-            <div style={{ fontSize: 16, color: "#fff", fontWeight: 700, fontFamily: "'Bitter', serif" }}>Taco Tour Playlist</div>
-            <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>Curated by Rich · {PLAYLIST_TRACKS.length} tracks</div>
-          </div>
-          <a href={RICH.spotify} target="_blank" rel="noopener noreferrer" style={{ background: "#1DB954", border: "none", color: "#000", fontSize: 10, fontWeight: 800, padding: "7px 14px", borderRadius: 20, cursor: "pointer", textDecoration: "none" }}>OPEN</a>
-        </div>
-        {PLAYLIST_TRACKS.map((t, i) => (
-          <div key={i} onClick={() => setPlaying(playing === i ? null : i)} style={{
-            display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8, cursor: "pointer",
-            background: playing === i ? "rgba(29,185,84,0.08)" : "transparent", transition: "background 0.2s",
-          }}>
-            <div style={{ width: 22, textAlign: "center" }}>
-              {playing === i ? (
-                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 1, height: 14 }}>
-                  {[8, 13, 6, 11].map((h, j) => (
-                    <div key={j} style={{ width: 2, background: "#1DB954", borderRadius: 1, animation: `eqB 0.45s ease-in-out ${j * 0.12}s infinite alternate`, height: h }} />
-                  ))}
-                </div>
-              ) : (
-                <span style={{ fontSize: 11, color: "#555" }}>{i + 1}</span>
-              )}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 12, color: playing === i ? "#1DB954" : "#ddd", fontWeight: playing === i ? 600 : 400 }}>{t.title}</div>
-              <div style={{ fontSize: 10, color: "#555" }}>Rich O'Toole · {t.album}</div>
-            </div>
-            <span style={{ fontSize: 10, color: "#444" }}>{t.duration}</span>
-          </div>
-        ))}
+      {/* Real Spotify Artist embed - plays 30s previews in browser */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 12, paddingBottom: 4 }}>
+        <div style={{ fontSize: 10, color: "#1DB954", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>♫ Now Playing</div>
+        <iframe
+          style={{ borderRadius: 12, border: "none", width: "100%", height: 352 }}
+          src="https://open.spotify.com/embed/artist/2t6FHAUXxi9eiatP2Mavh0?utm_source=generator&theme=0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+        />
       </div>
 
-      {/* Latest album */}
-      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+      {/* Latest album Spotify embed */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 12, paddingBottom: 4 }}>
         <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>🎵 Latest Album</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 72, height: 72, borderRadius: 8, overflow: "hidden", border: "1px solid rgba(232,177,0,0.2)", flexShrink: 0 }}>
-            <img src={ALBUMS[0].art} alt={ALBUMS[0].title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>{RICH.latestAlbum}</div>
-            <div style={{ fontSize: 11, color: "#888" }}>{RICH.label} · 2026</div>
-            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-              <a href={RICH.spotify} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#1DB954", fontWeight: 700, textDecoration: "none" }}>Spotify</a>
-              <span style={{ color: "#333" }}>|</span>
-              <a href="https://music.apple.com/us/artist/rich-otoole/191054733" target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#fc3c44", fontWeight: 700, textDecoration: "none" }}>Apple Music</a>
-            </div>
-          </div>
-        </div>
+        <iframe
+          style={{ borderRadius: 12, border: "none", width: "100%", height: 352 }}
+          src="https://open.spotify.com/embed/album/54Q7cSAqRRUzbtxP2WoFm6?utm_source=generator&theme=0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+        />
       </div>
 
       {/* Discography */}
