@@ -59,19 +59,20 @@ const TACO_SPOTS = [
 ];
 
 // Real upcoming tour dates from Bandsintown
+const BANDSINTOWN_ARTIST = "https://www.bandsintown.com/a/39860-rich-o'toole";
 const TOUR_DATES = [
-  { date: "Mar 7", day: "Fri", venue: "Round Mountain Cider Mill", city: "Round Mountain, TX", lat: 30.434, lng: -98.383, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 243, url: "https://www.bandsintown.com/e/106145039-rich-o'toole-at-round-mountain-cider-mill" },
-  { date: "Mar 14", day: "Fri", venue: "Old Tomball Honky Tonk", city: "Tomball, TX", lat: 30.097, lng: -95.616, tacoHunt: "Scouting spots...", soldOut: false, free: false, rsvp: 187, url: "https://www.bandsintown.com/e/106145040-rich-o'toole-at-old-tomball-honky-tonk" },
-  { date: "Mar 20", day: "Thu", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 112, url: "https://www.bandsintown.com/e/106145041-rich-o'toole-at-junk-gypsy-company" },
-  { date: "Mar 21", day: "Fri", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 98, url: "https://www.bandsintown.com/e/106145042-rich-o'toole-at-junk-gypsy-company" },
-  { date: "Mar 27", day: "Thu", venue: "Lone Star Live", city: "Flower Mound, TX", lat: 33.014, lng: -97.097, tacoHunt: "Where should Rich eat? Vote!", soldOut: false, free: false, rsvp: 76, url: "https://www.bandsintown.com/e/106145043-rich-o'toole-at-lone-star-live" },
-  { date: "Apr 2", day: "Wed", venue: "Private Event", city: "Austin, TX", lat: 30.267, lng: -97.743, tacoHunt: "Invite only", soldOut: true, free: true, rsvp: null, url: null },
-  { date: "Apr 17", day: "Thu", venue: "LBK Fest 2026", city: "Lubbock, TX", lat: 33.577, lng: -101.855, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 340, url: "https://www.bandsintown.com/e/106145044-rich-o'toole-at-lbk-fest-2026" },
-  { date: "Apr 18", day: "Fri", venue: "The Lumberyard", city: "Canyon, TX", lat: 34.980, lng: -101.919, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 55, url: "https://www.bandsintown.com/e/106145045-rich-o'toole-at-the-lumberyard" },
-  { date: "Apr 23", day: "Wed", venue: "The Hall - Gainesville", city: "Gainesville, GA", lat: 34.297, lng: -83.824, tacoHunt: "Georgia taco hunt!", soldOut: false, free: false, rsvp: 63, url: "https://www.bandsintown.com/e/106145046-rich-o'toole-at-the-hall" },
-  { date: "Apr 30", day: "Wed", venue: "Chief's on Broadway", city: "Nashville, TN", lat: 36.156, lng: -86.776, tacoHunt: "Nashville taco hunt!", soldOut: false, free: true, rsvp: 201, url: "https://www.bandsintown.com/e/106145047-rich-o'toole-at-chiefs-on-broadway" },
-  { date: "May 21", day: "Wed", venue: "Kerrville Folk Festival 2026", city: "Kerrville, TX", lat: 30.047, lng: -99.140, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 158, url: "https://www.bandsintown.com/e/106145048-rich-o'toole-at-kerrville-folk-festival" },
-  { date: "May 30", day: "Fri", venue: "Boyz R Back Music Festival 2026", city: "Midland, TX", lat: 31.997, lng: -102.077, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 220, url: "https://www.bandsintown.com/e/106145049-rich-o'toole-at-boyz-r-back" },
+  { date: "Mar 7", day: "Fri", venue: "Round Mountain Cider Mill", city: "Round Mountain, TX", lat: 30.434, lng: -98.383, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 243 },
+  { date: "Mar 14", day: "Fri", venue: "Old Tomball Honky Tonk", city: "Tomball, TX", lat: 30.097, lng: -95.616, tacoHunt: "Scouting spots...", soldOut: false, free: false, rsvp: 187 },
+  { date: "Mar 20", day: "Thu", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 112 },
+  { date: "Mar 21", day: "Fri", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 98 },
+  { date: "Mar 27", day: "Thu", venue: "Lone Star Live", city: "Flower Mound, TX", lat: 33.014, lng: -97.097, tacoHunt: "Where should Rich eat? Vote!", soldOut: false, free: false, rsvp: 76 },
+  { date: "Apr 2", day: "Wed", venue: "Private Event", city: "Austin, TX", lat: 30.267, lng: -97.743, tacoHunt: "Invite only", soldOut: true, free: true, rsvp: null },
+  { date: "Apr 17", day: "Thu", venue: "LBK Fest 2026", city: "Lubbock, TX", lat: 33.577, lng: -101.855, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 340 },
+  { date: "Apr 18", day: "Fri", venue: "The Lumberyard", city: "Canyon, TX", lat: 34.980, lng: -101.919, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 55 },
+  { date: "Apr 23", day: "Wed", venue: "The Hall - Gainesville", city: "Gainesville, GA", lat: 34.297, lng: -83.824, tacoHunt: "Georgia taco hunt!", soldOut: false, free: false, rsvp: 63 },
+  { date: "Apr 30", day: "Wed", venue: "Chief's on Broadway", city: "Nashville, TN", lat: 36.156, lng: -86.776, tacoHunt: "Nashville taco hunt!", soldOut: false, free: true, rsvp: 201 },
+  { date: "May 21", day: "Wed", venue: "Kerrville Folk Festival 2026", city: "Kerrville, TX", lat: 30.047, lng: -99.140, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 158 },
+  { date: "May 30", day: "Fri", venue: "Boyz R Back Music Festival 2026", city: "Midland, TX", lat: 31.997, lng: -102.077, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 220 },
 ];
 
 const PLAYLIST_TRACKS = [
@@ -969,9 +970,9 @@ function TourSection() {
             <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
               {d.soldOut ? (
                 <span style={{ fontSize: 9, color: "#EF4444", fontWeight: 700, border: "1px solid rgba(239,68,68,0.25)", padding: "4px 8px", borderRadius: 6 }}>SOLD OUT</span>
-              ) : d.url ? (
-                <a href={d.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#000", fontWeight: 800, background: "#E8B100", border: "none", padding: "7px 14px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit", textDecoration: "none", display: "inline-block" }}>RSVP</a>
-              ) : null}
+              ) : (
+                <a href={BANDSINTOWN_ARTIST} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#000", fontWeight: 800, background: "#E8B100", border: "none", padding: "7px 14px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit", textDecoration: "none", display: "inline-block" }}>RSVP</a>
+              )}
               {!d.soldOut && (
                 <button onClick={() => { setSuggestFor(suggestFor === i ? null : i); setSpotName(""); setSpotWhy(""); }}
                   style={{ fontSize: 8, color: suggestFor === i ? "#E8B100" : "#666", fontWeight: 700, background: "none", border: "1px solid " + (suggestFor === i ? "rgba(232,177,0,0.3)" : "rgba(255,255,255,0.08)"), padding: "4px 8px", borderRadius: 5, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
