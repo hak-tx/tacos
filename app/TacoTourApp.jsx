@@ -990,17 +990,24 @@ export default function TacoTourApp() {
       {/* Bottom nav */}
       <div style={{
         position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", maxWidth: 430, width: "100%",
-        background: "rgba(13,13,20,0.96)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(255,255,255,0.05)",
-        display: "flex", justifyContent: "space-around", padding: "6px 0 env(safe-area-inset-bottom, 10px)", zIndex: 100,
+        background: "linear-gradient(180deg, rgba(13,13,20,0.85) 0%, rgba(13,13,20,0.98) 40%)", backdropFilter: "blur(24px)", borderTop: "1px solid rgba(232,177,0,0.08)",
+        display: "flex", justifyContent: "space-around", padding: "8px 0 env(safe-area-inset-bottom, 12px)", zIndex: 100,
       }}>
         {tabs.map(t => {
           const active = tab === t.id;
           return (
             <button key={t.id} onClick={() => { setTab(t.id); setShowReviewForm(false); setShowShareCard(null); }}
-              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "4px 10px", position: "relative" }}>
-              {active && <div style={{ position: "absolute", top: -6, width: 18, height: 2, background: "#E8B100", borderRadius: 2 }} />}
-              <span style={{ fontSize: 18, opacity: active ? 1 : 0.4, transition: "opacity 0.2s" }}>{t.icon}</span>
-              <span style={{ fontSize: 9, color: active ? "#E8B100" : "#555", fontWeight: active ? 700 : 400 }}>{t.label}</span>
+              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "4px 14px", position: "relative" }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                background: active ? "rgba(232,177,0,0.12)" : "rgba(255,255,255,0.03)",
+                border: active ? "1.5px solid rgba(232,177,0,0.5)" : "1.5px solid rgba(255,255,255,0.06)",
+                boxShadow: active ? "0 0 16px rgba(232,177,0,0.2), inset 0 0 8px rgba(232,177,0,0.08)" : "none",
+                transition: "all 0.3s ease",
+              }}>
+                <span style={{ fontSize: 17, filter: active ? "brightness(1.2)" : "brightness(0.7)", transition: "filter 0.3s" }}>{t.icon}</span>
+              </div>
+              <span style={{ fontSize: 9, color: active ? "#E8B100" : "#666", fontWeight: active ? 700 : 500, letterSpacing: active ? 0.5 : 0, transition: "all 0.3s" }}>{t.label}</span>
             </button>
           );
         })}
