@@ -996,15 +996,13 @@ export default function TacoTourApp() {
 
   const tabIcons = {
     map: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>,
-    reviews: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill={c} stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
     tour: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
     music: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
     profile: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
   };
 
   const tabs = [
-    { id: "map", label: "Map" },
-    { id: "reviews", label: "Reviews" },
+    { id: "map", label: "Tacos" },
     { id: "tour", label: "Tour" },
     { id: "music", label: "Music" },
     { id: "profile", label: user?.guest ? "Join" : "Profile" },
@@ -1058,11 +1056,34 @@ export default function TacoTourApp() {
               )}
               {!selectedSpot && <div style={{ textAlign: "center", color: "#444", fontSize: 12, padding: 4 }}>Tap a pin to see Rich's take</div>}
               {showShareCard && <ShareCardPreview spot={showShareCard} />}
-            </>
-          )}
 
-          {tab === "reviews" && (
-            <>
+              {/* Poll */}
+              <PollWidget debate={DEBATES[0]} onVote={handlePollVote} userVote={pollVotes[DEBATES[0].id] ?? null} />
+
+              {/* Leaderboard teaser */}
+              <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+                <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>📊 Top Taco Reviewers</div>
+                {LEADERBOARD.slice(0, 3).map((u, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.03)" : "none" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 14 }}>{u.badge}</span>
+                      <div>
+                        <div style={{ fontSize: 12, color: "#eee", fontWeight: 600 }}>{u.name}</div>
+                        <div style={{ fontSize: 9, color: "#555" }}>{u.city} · 🔥 {u.streak} streak</div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11, color: "#E8B100", fontWeight: 700 }}>{u.reviews} reviews</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0" }}>
+                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+                <span style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>All Reviews</span>
+                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+              </div>
+
               {/* Type Filters */}
               <div style={{ display: "flex", gap: 6 }}>
                 {["All", "Trending", "Hot Takes", "Top Rated"].map(f => (
@@ -1156,28 +1177,6 @@ export default function TacoTourApp() {
             )
           )}
 
-          {/* Debate section visible on map & reviews */}
-          {(tab === "map" || tab === "reviews") && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
-              <PollWidget debate={DEBATES[0]} onVote={handlePollVote} userVote={pollVotes[DEBATES[0].id] ?? null} />
-              {/* Leaderboard teaser */}
-              <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
-                <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>📊 Top Taco Reviewers</div>
-                {LEADERBOARD.slice(0, 3).map((u, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.03)" : "none" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 14 }}>{u.badge}</span>
-                      <div>
-                        <div style={{ fontSize: 12, color: "#ddd", fontWeight: 600 }}>{u.name}</div>
-                        <div style={{ fontSize: 9, color: "#555" }}>{u.city} · 🔥 {u.streak} streak</div>
-                      </div>
-                    </div>
-                    <span style={{ fontSize: 11, color: "#888", fontWeight: 600 }}>{u.reviews} reviews</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
