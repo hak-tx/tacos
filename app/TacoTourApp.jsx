@@ -549,7 +549,7 @@ function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
           </div>
 
           {/* Vote buttons */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <button onClick={() => onVote(spot.id, "agree")} style={{
               ...voteBtn, background: userVote === "agree" ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.04)",
               color: userVote === "agree" ? "#4ADE80" : "#888", border: userVote === "agree" ? "1px solid rgba(74,222,128,0.3)" : "1px solid rgba(255,255,255,0.06)",
@@ -560,33 +560,9 @@ function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
             }}>🌶️ Wrong, Rich!</button>
           </div>
 
-          {/* Share card + social buttons inline */}
-          <div style={{ background: "rgba(232,177,0,0.03)", border: "1px solid rgba(232,177,0,0.15)", borderRadius: 12, padding: 12, marginBottom: 6 }}>
-            <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>📲 Share · Tag @RichOToole — he might repost!</div>
-            {/* Mini share card preview */}
-            <div style={{ background: "linear-gradient(135deg, #0d0d14, #1a1a2e)", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(232,177,0,0.15)", marginBottom: 10 }}>
-              <div style={{ padding: "10px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>{spot.name}</div>
-                  <div style={{ fontSize: 9, color: "#888", marginTop: 1 }}>{spot.city}</div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.richRating}</div>
-                    <div style={{ fontSize: 7, color: "#E8B100", textTransform: "uppercase", fontWeight: 700 }}>Rich</div>
-                  </div>
-                  <div style={{ fontSize: 10, color: "#333" }}>vs</div>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.fanRating}</div>
-                    <div style={{ fontSize: 7, color: "#60A5FA", textTransform: "uppercase", fontWeight: 700 }}>Fans</div>
-                  </div>
-                </div>
-              </div>
-              <div style={{ padding: "6px 12px 8px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                <div style={{ fontSize: 9, color: "#ccc", fontStyle: "italic" }}>"{spot.richQuote}"</div>
-              </div>
-            </div>
-            {/* Social buttons */}
+          {/* Share This Take — social buttons */}
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 8 }}>
+            <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>📲 Share This Take · tag @RichOToole</div>
             <div style={{ display: "flex", gap: 6 }}>
               {[
                 { label: "Post", icon: "𝕏", bg: "#000", color: "#fff", border: "1px solid #555", action: () => window.open("https://x.com/intent/tweet?text=" + encodeURIComponent(`🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}" richstacotour.com`), "_blank") },
@@ -606,7 +582,6 @@ function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
                 </button>
               ))}
             </div>
-            <div style={{ textAlign: "center", marginTop: 6, fontSize: 9, color: "#555", fontStyle: "italic" }}>Share & tag @RichOToole for a chance to be featured 🔥</div>
           </div>
 
           {/* Tour date callout */}
