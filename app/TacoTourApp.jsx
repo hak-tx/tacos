@@ -417,7 +417,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
   }, [showTourDates]);
 
   return (
-    <div style={{ position: "relative", width: "100%", height: 400, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(232,177,0,0.15)" }}>
+    <div className="map-container" style={{ position: "relative", width: "100%", height: 400, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(232,177,0,0.15)" }}>
       <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
       {/* Overlay labels */}
       <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", padding: "5px 10px", borderRadius: 6, fontSize: 10, color: "#999", letterSpacing: 1, textTransform: "uppercase", fontFamily: "'Courier Prime', monospace", zIndex: 10, pointerEvents: "none" }}>
@@ -1417,7 +1417,7 @@ export default function TacoTourApp() {
 
       {/* Bottom nav */}
       <div className="shell-nav" style={{
-        position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", maxWidth: 430, width: "100%",
+        position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%",
         background: "linear-gradient(180deg, rgba(13,13,20,0.85) 0%, rgba(13,13,20,0.98) 40%)", backdropFilter: "blur(24px)", borderTop: "1px solid rgba(232,177,0,0.08)",
         display: "flex", justifyContent: "space-around", padding: "8px 0 env(safe-area-inset-bottom, 12px)", zIndex: 100,
       }}>
@@ -1450,19 +1450,24 @@ export default function TacoTourApp() {
 function Shell({ children }) {
   return (
     <>
-      {/* Desktop background */}
       <style>{`
         html, body { background: #08080c; }
-        @media (min-width: 520px) {
+        .shell-frame { max-width: 430px; }
+        .shell-nav { max-width: 430px; }
+        @media (min-width: 768px) {
+          .shell-frame { max-width: 720px !important; }
+          .shell-nav { max-width: 720px !important; }
+          .map-container { height: 500px !important; }
+        }
+        @media (min-width: 1024px) {
           .shell-frame {
-            max-width: 430px !important;
+            max-width: 860px !important;
             border-left: 1px solid rgba(255,255,255,0.06) !important;
             border-right: 1px solid rgba(255,255,255,0.06) !important;
             box-shadow: 0 0 80px rgba(232,177,0,0.04), 0 0 40px rgba(0,0,0,0.5) !important;
           }
-          .shell-nav {
-            max-width: 430px !important;
-          }
+          .shell-nav { max-width: 860px !important; }
+          .map-container { height: 550px !important; }
         }
       `}</style>
       <div className="shell-frame" style={{
