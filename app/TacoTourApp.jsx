@@ -99,7 +99,30 @@ const LEADERBOARD = [
   { name: "TexMexQueen", reviews: 21, city: "Fredericksburg", badge: "🌮", streak: 7 },
 ];
 
-// --- HELPERS -----------------------------------------------------------
+// Region mapping for reviews
+function getRegion(city) {
+  if (!city) return "Other";
+  const c = city.toLowerCase();
+  if (c.includes("austin") || c.includes("round rock") || c.includes("cedar park") || c.includes("pflugerville")) return "Austin";
+  if (c.includes("houston") || c.includes("tomball") || c.includes("katy") || c.includes("sugar land")) return "Houston";
+  if (c.includes("dallas") || c.includes("plano") || c.includes("frisco") || c.includes("arlington") || c.includes("irving")) return "Dallas";
+  if (c.includes("fort worth") || c.includes("flower mound") || c.includes("denton") || c.includes("southlake")) return "Fort Worth";
+  if (c.includes("san antonio") || c.includes("new braunfels") || c.includes("boerne")) return "San Antonio";
+  if (c.includes("lubbock") || c.includes("amarillo") || c.includes("canyon")) return "Panhandle";
+  if (c.includes("midland") || c.includes("odessa") || c.includes("san angelo")) return "Permian Basin";
+  if (c.includes("corpus christi") || c.includes("rockport") || c.includes("port aransas")) return "Coastal TX";
+  if (c.includes("el paso")) return "El Paso";
+  if (c.includes("laredo") || c.includes("mcallen") || c.includes("brownsville")) return "Border TX";
+  if (c.includes("kerrville") || c.includes("fredericksburg") || c.includes("round mountain")) return "Hill Country";
+  // Out of state
+  if (c.includes(", tn") || c.includes("nashville") || c.includes("memphis")) return "Tennessee";
+  if (c.includes(", ga") || c.includes("georgia") || c.includes("gainesville, ga")) return "Georgia";
+  if (c.includes(", ok") || c.includes("oklahoma")) return "Oklahoma";
+  if (c.includes(", la") || c.includes("louisiana")) return "Louisiana";
+  return "Other";
+}
+
+const ALL_REGIONS = [...new Set(TACO_SPOTS.map(s => getRegion(s.city)))].sort();
 
 const ratingColor = (r) => r >= 9 ? "#E8B100" : r >= 8 ? "#4ADE80" : r >= 7 ? "#60A5FA" : "#FB923C";
 const ratingLabel = (r) => r >= 9.5 ? "LEGENDARY" : r >= 9 ? "FIRE" : r >= 8 ? "SOLID" : r >= 7 ? "DECENT" : "MEH";
@@ -886,6 +909,7 @@ export default function TacoTourApp() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showShareCard, setShowShareCard] = useState(null);
   const [reviewFilter, setReviewFilter] = useState("All");
+  const [regionFilter, setRegionFilter] = useState("All");
 
   const handleAuthStart = (mode) => {
     if (mode === "guest") {
@@ -910,10 +934,16 @@ export default function TacoTourApp() {
     setPollVotes(v => ({ ...v, [debateId]: v[debateId] === optionIdx ? null : optionIdx }));
   };
 
-  const filteredSpots = reviewFilter === "All" ? TACO_SPOTS
-    : reviewFilter === "Trending" ? TACO_SPOTS.filter(s => s.trending)
-    : reviewFilter === "Hot Takes" ? TACO_SPOTS.filter(s => Math.abs(s.richRating - s.fanRating) > 0.5)
-    : [...TACO_SPOTS].sort((a, b) => b.richRating - a.richRating);
+  const filteredSpots = (() => {
+    let spots = reviewFilter === "All" ? TACO_SPOTS
+      : reviewFilter === "Trending" ? TACO_SPOTS.filter(s => s.trending)
+      : reviewFilter === "Hot Takes" ? TACO_SPOTS.filter(s => Math.abs(s.richRating - s.fanRating) > 0.5)
+      : [...TACO_SPOTS].sort((a, b) => b.richRating - a.richRating);
+    if (regionFilter !== "All") {
+      spots = spots.filter(s => getRegion(s.city) === regionFilter);
+    }
+    return spots;
+  })();
 
   const tabIcons = {
     map: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>,
@@ -984,7 +1014,7 @@ export default function TacoTourApp() {
 
           {tab === "reviews" && (
             <>
-              {/* Filters */}
+              {/* Type Filters */}
               <div style={{ display: "flex", gap: 6 }}>
                 {["All", "Trending", "Hot Takes", "Top Rated"].map(f => (
                   <button key={f} onClick={() => setReviewFilter(f)} style={{
@@ -994,6 +1024,29 @@ export default function TacoTourApp() {
                   }}>{f}</button>
                 ))}
               </div>
+              {/* Region Filters */}
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                {["All", ...ALL_REGIONS].map(r => {
+                  const count = r === "All" ? TACO_SPOTS.length : TACO_SPOTS.filter(s => getRegion(s.city) === r).length;
+                  return (
+                    <button key={r} onClick={() => setRegionFilter(r)} style={{
+                      padding: "5px 10px", borderRadius: 8, border: "none",
+                      background: regionFilter === r ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.03)",
+                      color: regionFilter === r ? "#22C55E" : "#555", fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                      display: "flex", alignItems: "center", gap: 4,
+                    }}>
+                      {r === "All" ? "📍 All Regions" : r}
+                      <span style={{ fontSize: 8, color: regionFilter === r ? "#22C55E" : "#444", fontWeight: 700 }}>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Results count */}
+              {regionFilter !== "All" && (
+                <div style={{ fontSize: 11, color: "#22C55E", fontWeight: 600 }}>
+                  {filteredSpots.length} spot{filteredSpots.length !== 1 ? "s" : ""} in {regionFilter}
+                </div>
+              )}
               {filteredSpots.map(spot => (
                 <ReviewCard key={spot.id} spot={spot} userVote={votes[spot.id]} onVote={handleVote}
                   expanded={expandedReview === spot.id} onToggle={() => setExpandedReview(expandedReview === spot.id ? null : spot.id)} user={user} />
