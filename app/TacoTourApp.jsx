@@ -571,9 +571,23 @@ function ShareSection({ spot }) {
 }
 
 // 4. REVIEW CARD (compact + expanded)
-function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
+function ReviewCard({ spot, userVote, onVote, onFanRate, fanRatingSubmitted, expanded, onToggle, user }) {
   const diff = Math.abs(spot.richRating - spot.fanRating);
   const hotTake = diff > 0.5;
+  const [sliderVal, setSliderVal] = useState(spot.fanRating);
+  const [showSlider, setShowSlider] = useState(false);
+
+  // Show slider when user disagrees
+  const handleDisagree = () => {
+    onVote(spot.id, "disagree");
+    setShowSlider(true);
+    setSliderVal(spot.fanRating);
+  };
+
+  const handleAgree = () => {
+    onVote(spot.id, "agree");
+    setShowSlider(false);
+  };
 
   return (
     <div onClick={onToggle} style={{
@@ -659,15 +673,102 @@ function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
 
           {/* Vote buttons */}
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <button onClick={() => onVote(spot.id, "agree")} style={{
+            <button onClick={handleAgree} style={{
               ...voteBtn, background: userVote === "agree" ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.04)",
               color: userVote === "agree" ? "#4ADE80" : "#888", border: userVote === "agree" ? "1px solid rgba(74,222,128,0.3)" : "1px solid rgba(255,255,255,0.06)",
             }}>🤝 Agree with Rich</button>
-            <button onClick={() => onVote(spot.id, "disagree")} style={{
+            <button onClick={handleDisagree} style={{
               ...voteBtn, background: userVote === "disagree" ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.04)",
               color: userVote === "disagree" ? "#EF4444" : "#888", border: userVote === "disagree" ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.06)",
             }}>🌶️ Wrong, Rich!</button>
           </div>
+
+          {/* Fan rating slider — appears on disagree */}
+          {(showSlider || userVote === "disagree") && !fanRatingSubmitted && (
+            <div style={{
+              background: "rgba(96,165,250,0.06)", border: "1px solid rgba(96,165,250,0.15)",
+              borderRadius: 12, padding: 14, marginBottom: 8,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <span style={{ fontSize: 10, color: "#60A5FA", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Your Rating</span>
+                <span style={{ fontSize: 28, fontWeight: 900, color: ratingColor(sliderVal), fontFamily: "'Bitter', serif", lineHeight: 1 }}>{sliderVal.toFixed(1)}</span>
+              </div>
+
+              {/* Slider track */}
+              <div style={{ position: "relative", marginBottom: 10 }}>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="0.1"
+                  value={sliderVal}
+                  onChange={e => setSliderVal(parseFloat(e.target.value))}
+                  style={{
+                    width: "100%", height: 6, appearance: "none", WebkitAppearance: "none",
+                    background: `linear-gradient(90deg, ${ratingColor(sliderVal)} ${((sliderVal - 1) / 9) * 100}%, rgba(255,255,255,0.08) ${((sliderVal - 1) / 9) * 100}%)`,
+                    borderRadius: 3, outline: "none", cursor: "pointer",
+                  }}
+                />
+                <style>{`
+                  input[type="range"]::-webkit-slider-thumb {
+                    -webkit-appearance: none; appearance: none;
+                    width: 22px; height: 22px; border-radius: 50%;
+                    background: #fff; border: 3px solid #60A5FA;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                    cursor: pointer;
+                  }
+                `}</style>
+              </div>
+
+              {/* Scale labels */}
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                <span style={{ fontSize: 8, color: "#EF4444" }}>1</span>
+                <span style={{ fontSize: 8, color: "#F97316" }}>3</span>
+                <span style={{ fontSize: 8, color: "#E8B100" }}>5</span>
+                <span style={{ fontSize: 8, color: "#E8B100" }}>7</span>
+                <span style={{ fontSize: 8, color: "#22C55E" }}>9</span>
+                <span style={{ fontSize: 8, color: "#22C55E" }}>10</span>
+              </div>
+
+              {/* Rich vs You comparison */}
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 600, marginBottom: 2 }}>Rich</div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif" }}>{spot.richRating}</div>
+                </div>
+                <span style={{ fontSize: 11, color: "#444" }}>vs</span>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 9, color: "#60A5FA", fontWeight: 600, marginBottom: 2 }}>You</div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: ratingColor(sliderVal), fontFamily: "'Bitter', serif" }}>{sliderVal.toFixed(1)}</div>
+                </div>
+                {Math.abs(spot.richRating - sliderVal) > 2 && (
+                  <span style={{ fontSize: 9, color: "#EF4444", fontWeight: 700, background: "rgba(239,68,68,0.1)", padding: "2px 6px", borderRadius: 4 }}>🌶️ HOT TAKE</span>
+                )}
+              </div>
+
+              <button
+                onClick={() => { if (onFanRate) onFanRate(spot.id, sliderVal); }}
+                style={{
+                  width: "100%", padding: "10px 0", borderRadius: 8,
+                  border: "none", background: "#60A5FA", color: "#000",
+                  fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+                  letterSpacing: 0.5,
+                }}
+              >
+                Submit My Rating
+              </button>
+            </div>
+          )}
+
+          {/* Submitted confirmation */}
+          {fanRatingSubmitted && userVote === "disagree" && (
+            <div style={{
+              background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.15)",
+              borderRadius: 10, padding: 10, marginBottom: 8, textAlign: "center",
+            }}>
+              <span style={{ fontSize: 11, color: "#4ADE80", fontWeight: 700 }}>✓ Your rating of {fanRatingSubmitted.toFixed(1)} has been submitted!</span>
+            </div>
+          )}
 
           {/* Share This Take — generates image + shares */}
           <ShareSection spot={spot} />
@@ -1017,6 +1118,7 @@ export default function TacoTourApp() {
   const [selectedSpot, setSelectedSpot] = useState(null);
   const [expandedReview, setExpandedReview] = useState(null);
   const [votes, setVotes] = useState({});
+  const [fanRatings, setFanRatings] = useState({});
   const [pollVotes, setPollVotes] = useState({});
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewFilter, setReviewFilter] = useState("All");
@@ -1039,6 +1141,10 @@ export default function TacoTourApp() {
 
   const handleVote = (spotId, type) => {
     setVotes(v => ({ ...v, [spotId]: v[spotId] === type ? null : type }));
+  };
+
+  const handleFanRate = (spotId, rating) => {
+    setFanRatings(prev => ({ ...prev, [spotId]: rating }));
   };
 
   const handlePollVote = (debateId, optionIdx) => {
@@ -1123,7 +1229,7 @@ export default function TacoTourApp() {
                     }, 150);
                   }
                 }}>
-                  <ReviewCard spot={selectedSpot} userVote={votes[selectedSpot.id]} onVote={handleVote} expanded={true} onToggle={() => setSelectedSpot(null)} user={user} />
+                  <ReviewCard spot={selectedSpot} userVote={votes[selectedSpot.id]} onVote={handleVote} onFanRate={handleFanRate} fanRatingSubmitted={fanRatings[selectedSpot.id]} expanded={true} onToggle={() => setSelectedSpot(null)} user={user} />
                 </div>
               )}
               {!selectedSpot && <div style={{ textAlign: "center", color: "#444", fontSize: 12, padding: 4 }}>Tap a pin to see Rich's take</div>}
@@ -1211,7 +1317,7 @@ export default function TacoTourApp() {
                       <span style={{ fontSize: 9, color: "#666" }}>Avg {(grouped[region].reduce((a, s) => a + s.richRating, 0) / grouped[region].length).toFixed(1)}</span>
                     </div>
                     {grouped[region].map(spot => (
-                      <ReviewCard key={spot.id} spot={spot} userVote={votes[spot.id]} onVote={handleVote}
+                      <ReviewCard key={spot.id} spot={spot} userVote={votes[spot.id]} onVote={handleVote} onFanRate={handleFanRate} fanRatingSubmitted={fanRatings[spot.id]}
                         expanded={expandedReview === spot.id} onToggle={() => setExpandedReview(expandedReview === spot.id ? null : spot.id)} user={user} />
                     ))}
                   </div>
