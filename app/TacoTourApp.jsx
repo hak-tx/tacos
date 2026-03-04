@@ -326,8 +326,8 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
             const el = document.createElement("div");
             el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;transition:transform 0.3s;";
             const pin = document.createElement("div");
-            pin.style.cssText = "width:22px;height:22px;border-radius:50%;background:#002868;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.5);transition:all 0.3s;color:#fff;line-height:1;";
-            pin.textContent = "♪";
+            pin.style.cssText = "width:22px;height:22px;border-radius:50%;background:#002868;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.5);transition:all 0.3s;";
+            pin.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
             el.appendChild(pin);
             const label = document.createElement("div");
             label.style.cssText = "background:rgba(0,0,0,0.8);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;display:none;transition:opacity 0.3s;";
