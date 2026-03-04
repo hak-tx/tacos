@@ -303,7 +303,7 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
           ann.addEventListener("select", () => onSelectSpotRef.current(spot));
           map.addAnnotation(ann);
         });
-        // Tour date pins - bright yellow with star for visibility
+        // Tour date pins - custom HTML annotations with visible date labels
         const seen = {};
         TOUR_DATES.forEach((td) => {
           if (!td.lat || !td.lng) return;
@@ -311,12 +311,39 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
           if (seen[key]) return;
           seen[key] = true;
           const coord = new mapkit.Coordinate(td.lat, td.lng);
-          const ann = new mapkit.MarkerAnnotation(coord, {
-            title: td.venue,
-            subtitle: td.day + " " + td.date,
-            color: "#E8B100",
-            glyphColor: "#000",
-            glyphText: "\u266A",
+          const ann = new mapkit.Annotation(coord, (coordinate, options) => {
+            const el = document.createElement("div");
+            el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;";
+            // Pin circle
+            const pin = document.createElement("div");
+            pin.style.cssText = "width:32px;height:32px;border-radius:50%;background:#E8B100;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid rgba(0,0,0,0.3);box-shadow:0 2px 8px rgba(0,0,0,0.4);transition:transform 0.2s;";
+            pin.textContent = "\u266A";
+            el.appendChild(pin);
+            // Date label - always visible
+            const label = document.createElement("div");
+            label.style.cssText = "background:rgba(0,0,0,0.8);color:#E8B100;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-top:2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;";
+            label.textContent = td.day + " " + td.date;
+            el.appendChild(label);
+            // Popup bubble on select
+            const bubble = document.createElement("div");
+            bubble.style.cssText = "display:none;position:absolute;bottom:72px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.95);border:1px solid rgba(232,177,0,0.4);border-radius:10px;padding:8px 12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.6);z-index:50;min-width:140px;text-align:center;";
+            bubble.innerHTML = "<div style='font-size:12px;font-weight:700;color:#fff;'>" + td.venue + "</div><div style='font-size:10px;color:#ccc;margin-top:2px;'>" + td.city + "</div><div style='font-size:9px;color:#E8B100;margin-top:3px;'>" + td.day + " " + td.date + "</div>";
+            // Arrow
+            const arrow = document.createElement("div");
+            arrow.style.cssText = "position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(13,13,20,0.95);";
+            bubble.appendChild(arrow);
+            el.appendChild(bubble);
+            el._bubble = bubble;
+            el._pin = pin;
+            return el;
+          }, { anchorOffset: new DOMPoint(0, -16) });
+          ann.addEventListener("select", (e) => {
+            const el = e.target.element;
+            if (el && el._bubble) { el._bubble.style.display = "block"; el._pin.style.transform = "scale(1.3)"; }
+          });
+          ann.addEventListener("deselect", (e) => {
+            const el = e.target.element;
+            if (el && el._bubble) { el._bubble.style.display = "none"; el._pin.style.transform = "scale(1)"; }
           });
           map.addAnnotation(ann);
         });
