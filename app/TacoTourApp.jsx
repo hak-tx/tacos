@@ -741,28 +741,59 @@ function TourSection() {
 }
 
 // 9. SPOTIFY / MUSIC
+function SpotifyEmbed({ src, title, fallbackUrl, fallbackLabel }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => { if (!loaded) setError(true); }, 6000);
+    return () => clearTimeout(timer);
+  }, [loaded]);
+  return (
+    <div style={{ position: "relative", minHeight: error && !loaded ? 80 : 352 }}>
+      {!error && (
+        <iframe
+          style={{ borderRadius: 12, border: "none", width: "100%", height: 352, opacity: loaded ? 1 : 0.3, transition: "opacity 0.5s" }}
+          src={src}
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+          onLoad={() => setLoaded(true)}
+        />
+      )}
+      {!loaded && !error && (
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", color: "#555", fontSize: 11 }}>Loading player...</div>
+      )}
+      {error && !loaded && (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 20 }}>
+          <div style={{ fontSize: 11, color: "#888" }}>Player unavailable</div>
+          <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" style={{
+            background: "#1DB954", color: "#000", fontWeight: 800, fontSize: 12, padding: "10px 24px", borderRadius: 20, textDecoration: "none",
+          }}>{fallbackLabel || "Listen on Spotify"}</a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MusicSection() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {/* Real Spotify Artist embed - plays 30s previews in browser */}
       <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 12, paddingBottom: 4 }}>
         <div style={{ fontSize: 10, color: "#1DB954", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>♫ Now Playing</div>
-        <iframe
-          style={{ borderRadius: 12, border: "none", width: "100%", height: 352 }}
+        <SpotifyEmbed
           src="https://open.spotify.com/embed/artist/2t6FHAUXxi9eiatP2Mavh0?utm_source=generator&theme=0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
+          fallbackUrl="https://open.spotify.com/artist/2t6FHAUXxi9eiatP2Mavh0"
+          fallbackLabel="Open Rich O'Toole on Spotify"
         />
       </div>
 
       {/* Latest album Spotify embed */}
       <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 12, paddingBottom: 4 }}>
         <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>🎵 Latest Album</div>
-        <iframe
-          style={{ borderRadius: 12, border: "none", width: "100%", height: 352 }}
+        <SpotifyEmbed
           src="https://open.spotify.com/embed/album/54Q7cSAqRRUzbtxP2WoFm6?utm_source=generator&theme=0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
+          fallbackUrl="https://open.spotify.com/album/54Q7cSAqRRUzbtxP2WoFm6"
+          fallbackLabel="Play God Is a Gentleman"
         />
       </div>
 
