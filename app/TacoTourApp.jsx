@@ -218,74 +218,128 @@ function AuthScreen({ mode, onComplete, onBack }) {
 }
 
 // 3. MAP VIEW
+const MAPKIT_TOKEN = "eyJhbGciOiJFUzI1NiIsImtpZCI6IlAzNUtLS0M5TFEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI5UzM3MldHUFI0IiwiaWF0IjoxNzcyNTg4MjIzLCJleHAiOjE4MDQxMjQyMjMsIm9yaWdpbiI6IioifQ.CNUY_VFZhmEUUz7q6GBTZYZWL8rahOY_Lp_Abit1ymMecab4AoL3Bdmt6KZPdjXkSgN33_V7DGhXP3ijD_6HiA";
+
 function MapView({ spots, onSelectSpot, selectedSpot }) {
-  const pinPositions = [
-    { x: "28%", y: "42%" }, { x: "60%", y: "22%" }, { x: "25%", y: "50%" },
-    { x: "32%", y: "56%" }, { x: "52%", y: "65%" }, { x: "44%", y: "38%" },
-    { x: "46%", y: "72%" },
-  ];
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState(null);
+  const onSelectSpotRef = useRef(onSelectSpot);
+  onSelectSpotRef.current = onSelectSpot;
+
+  useEffect(() => {
+    let cancelled = false;
+    function initMap() {
+      try {
+        if (!window.mapkit || cancelled) return;
+        if (!mapkit.maps || mapkit.maps.length === 0) {
+          mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) });
+        }
+        if (mapInstanceRef.current) { mapInstanceRef.current.destroy(); }
+        const map = new mapkit.Map(mapRef.current, {
+          center: new mapkit.Coordinate(30.5, -98.5),
+          region: new mapkit.CoordinateRegion(
+            new mapkit.Coordinate(30.5, -98.5),
+            new mapkit.CoordinateSpan(5, 7)
+          ),
+          showsCompass: mapkit.FeatureVisibility.Hidden,
+          showsZoomControl: false,
+          showsMapTypeControl: false,
+          colorScheme: mapkit.Map.ColorSchemes.Dark,
+          isScrollEnabled: true,
+          isZoomEnabled: true,
+        });
+        mapInstanceRef.current = map;
+        spots.forEach((spot) => {
+          const coord = new mapkit.Coordinate(spot.lat, spot.lng);
+          const ann = new mapkit.MarkerAnnotation(coord, {
+            title: spot.name,
+            subtitle: "Rich: " + spot.richRating + " · Fans: " + spot.fanRating,
+            color: ratingColor(spot.richRating),
+            glyphText: "\uD83C\uDF2E",
+          });
+          ann.addEventListener("select", () => onSelectSpotRef.current(spot));
+          map.addAnnotation(ann);
+        });
+        if (!cancelled) setMapReady(true);
+      } catch (e) {
+        if (!cancelled) setMapError(e.message);
+      }
+    }
+    if (window.mapkit) { initMap(); return () => { cancelled = true; }; }
+    if (document.getElementById("mapkit-script")) {
+      const iv = setInterval(() => { if (window.mapkit) { clearInterval(iv); initMap(); } }, 200);
+      return () => { cancelled = true; clearInterval(iv); };
+    }
+    const s = document.createElement("script");
+    s.id = "mapkit-script";
+    s.src = "https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js";
+    s.crossOrigin = "anonymous";
+    s.onload = () => initMap();
+    s.onerror = () => { if (!cancelled) setMapError("Failed to load Apple Maps SDK"); };
+    document.head.appendChild(s);
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current || !selectedSpot) return;
+    mapInstanceRef.current.setCenterAnimated(
+      new mapkit.Coordinate(selectedSpot.lat, selectedSpot.lng), true
+    );
+  }, [selectedSpot]);
 
   return (
-    <div style={{ position: "relative", width: "100%", height: 360, background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(232,177,0,0.12)" }}>
-      {/* Grid overlay */}
-      <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, opacity: 0.06 }}>
-        {[...Array(30)].map((_, i) => <line key={`h${i}`} x1="0" y1={i * 14} x2="500" y2={i * 14} stroke="#E8B100" strokeWidth="0.5" />)}
-        {[...Array(30)].map((_, i) => <line key={`v${i}`} x1={i * 14} y1="0" x2={i * 14} y2="500" stroke="#E8B100" strokeWidth="0.5" />)}
-      </svg>
-      {/* Texas outline hint */}
-      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", fontSize: 180, opacity: 0.03, pointerEvents: "none" }}>⭐</div>
-      {/* Label */}
-      <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", padding: "5px 10px", borderRadius: 6, fontSize: 10, color: "#777", letterSpacing: 1, textTransform: "uppercase", fontFamily: "'Courier Prime', monospace" }}>
-        🗺️ Apple Maps · Texas
+    <div style={{ position: "relative", width: "100%", height: 400, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(232,177,0,0.15)" }}>
+      <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+      {/* Overlay labels */}
+      <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", padding: "5px 10px", borderRadius: 6, fontSize: 10, color: "#999", letterSpacing: 1, textTransform: "uppercase", fontFamily: "'Courier Prime', monospace", zIndex: 10, pointerEvents: "none" }}>
+         Apple Maps · Texas
       </div>
-      {/* Stats */}
-      <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", padding: "5px 10px", borderRadius: 6, fontSize: 10, color: "#E8B100" }}>
+      <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", padding: "5px 10px", borderRadius: 6, fontSize: 10, color: "#E8B100", zIndex: 10, pointerEvents: "none" }}>
         {spots.length} spots reviewed
       </div>
-      {/* Route lines */}
-      <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-        <path d="M 110 155 Q 180 130 240 85 M 110 155 L 100 185 M 100 185 L 128 210 M 128 210 L 210 245 M 210 245 L 180 140 M 180 140 L 186 270" fill="none" stroke="#E8B100" strokeWidth="1" strokeDasharray="4 6" opacity="0.2" />
-      </svg>
-      {/* Pins */}
-      {spots.map((spot, i) => {
-        const pos = pinPositions[i] || { x: "50%", y: "50%" };
-        const sel = selectedSpot?.id === spot.id;
-        return (
-          <div key={spot.id} onClick={() => onSelectSpot(sel ? null : spot)} style={{
-            position: "absolute", left: pos.x, top: pos.y, transform: "translate(-50%, -100%)",
-            cursor: "pointer", zIndex: sel ? 20 : 2, transition: "all 0.25s ease",
-          }}>
-            {sel && (
-              <div style={{
-                background: "rgba(0,0,0,0.9)", backdropFilter: "blur(12px)", border: `1px solid ${ratingColor(spot.richRating)}`,
-                borderRadius: 12, padding: "10px 14px", marginBottom: 6, minWidth: 160, textAlign: "center",
-                boxShadow: `0 4px 20px rgba(0,0,0,0.5)`,
-              }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{spot.name}</div>
-                <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{spot.city}</div>
-                <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 6 }}>
-                  <div>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Playfair Display', serif" }}>{spot.richRating}</div>
-                    <div style={{ fontSize: 8, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Rich</div>
-                  </div>
-                  <div style={{ width: 1, background: "rgba(255,255,255,0.1)" }} />
-                  <div>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: "#60A5FA", fontFamily: "'Playfair Display', serif" }}>{spot.fanRating}</div>
-                    <div style={{ fontSize: 8, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Fans</div>
-                  </div>
-                </div>
-                {spot.trending && <div style={{ fontSize: 9, color: "#E8B100", marginTop: 6 }}>🔥 TRENDING</div>}
+      {/* Selected spot card */}
+      {selectedSpot && (
+        <div style={{
+          position: "absolute", bottom: 12, left: 12, right: 12, zIndex: 20,
+          background: "rgba(0,0,0,0.88)", backdropFilter: "blur(16px)",
+          border: "1px solid " + ratingColor(selectedSpot.richRating) + "44",
+          borderRadius: 14, padding: "12px 16px",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{selectedSpot.name}</div>
+              <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>{selectedSpot.city}</div>
+              {selectedSpot.tags && <div style={{ display: "flex", gap: 4, marginTop: 4 }}>{selectedSpot.tags.map(t => <span key={t} style={{ fontSize: 9, color: "#aaa", background: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: 4 }}>{t}</span>)}</div>}
+            </div>
+            <div style={{ display: "flex", gap: 16 }}>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: ratingColor(selectedSpot.richRating), fontFamily: "'Playfair Display', serif" }}>{selectedSpot.richRating}</div>
+                <div style={{ fontSize: 8, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Rich</div>
               </div>
-            )}
-            <div style={{
-              width: sel ? 42 : 30, height: sel ? 42 : 30, borderRadius: "50%",
-              background: `radial-gradient(circle, ${ratingColor(spot.richRating)}33, ${ratingColor(spot.richRating)}aa)`,
-              border: `2px solid ${ratingColor(spot.richRating)}`, display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: sel ? 20 : 14, boxShadow: `0 0 ${sel ? 24 : 10}px ${ratingColor(spot.richRating)}55`, transition: "all 0.25s ease",
-            }}>🌮</div>
+              <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.1)" }} />
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#60A5FA", fontFamily: "'Playfair Display', serif" }}>{selectedSpot.fanRating}</div>
+                <div style={{ fontSize: 8, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Fans</div>
+              </div>
+            </div>
           </div>
-        );
-      })}
+          {selectedSpot.richQuote && <div style={{ fontSize: 11, color: "#ccc", fontStyle: "italic", marginTop: 8 }}>"{selectedSpot.richQuote}"</div>}
+          {selectedSpot.trending && <div style={{ fontSize: 9, color: "#E8B100", marginTop: 6 }}>🔥 TRENDING</div>}
+          <div onClick={() => onSelectSpot(null)} style={{ position: "absolute", top: 8, right: 12, fontSize: 16, color: "#666", cursor: "pointer" }}>✕</div>
+        </div>
+      )}
+      {!mapReady && !mapError && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)", zIndex: 5 }}>
+          <div style={{ color: "#E8B100", fontSize: 13 }}>Loading Apple Maps...</div>
+        </div>
+      )}
+      {mapError && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.8)", color: "#EF4444", fontSize: 12, zIndex: 30 }}>
+          Map error: {mapError}
+        </div>
+      )}
     </div>
   );
 }
