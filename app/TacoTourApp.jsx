@@ -268,9 +268,10 @@ function AuthScreen({ mode, onComplete, onBack }) {
 // 3. MAP VIEW
 const MAPKIT_TOKEN = "eyJhbGciOiJFUzI1NiIsImtpZCI6IlAzNUtLS0M5TFEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI5UzM3MldHUFI0IiwiaWF0IjoxNzcyNTg4MjIzLCJleHAiOjE4MDQxMjQyMjMsIm9yaWdpbiI6IioifQ.CNUY_VFZhmEUUz7q6GBTZYZWL8rahOY_Lp_Abit1ymMecab4AoL3Bdmt6KZPdjXkSgN33_V7DGhXP3ijD_6HiA";
 
-function MapView({ spots, onSelectSpot, selectedSpot }) {
+function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const tourAnnsRef = useRef([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(null);
   const onSelectSpotRef = useRef(onSelectSpot);
@@ -311,9 +312,10 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
           ann.addEventListener("select", () => onSelectSpotRef.current(spot));
           map.addAnnotation(ann);
         });
-        // Tour date pins - small by default, scale up on zoom
+        // Tour date pins - Texas flag themed
         const seen = {};
         const tourEls = [];
+        const tourAnns = [];
         TOUR_DATES.forEach((td) => {
           if (!td.lat || !td.lng) return;
           const key = td.lat + "," + td.lng;
@@ -323,22 +325,22 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
           const ann = new mapkit.Annotation(coord, (coordinate, options) => {
             const el = document.createElement("div");
             el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;transition:transform 0.3s;";
-            // Pin circle - small by default
+            // Pin circle - Texas flag: blue left half, red/white right half, white star
             const pin = document.createElement("div");
-            pin.style.cssText = "width:20px;height:20px;border-radius:50%;background:#E8B100;display:flex;align-items:center;justify-content:center;font-size:10px;border:1.5px solid rgba(0,0,0,0.3);box-shadow:0 1px 4px rgba(0,0,0,0.4);transition:all 0.3s;";
-            pin.textContent = "\u266A";
+            pin.style.cssText = "width:22px;height:22px;border-radius:50%;background:linear-gradient(90deg, #002868 40%, #BF0A30 40%, #BF0A30 70%, #fff 70%);display:flex;align-items:center;justify-content:center;font-size:9px;border:2px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,0.5);transition:all 0.3s;color:#fff;font-weight:900;";
+            pin.textContent = "★";
             el.appendChild(pin);
-            // Date label - hidden by default, shown when zoomed
+            // Date label - hidden by default
             const label = document.createElement("div");
-            label.style.cssText = "background:rgba(0,0,0,0.8);color:#E8B100;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:1px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;display:none;transition:opacity 0.3s;";
+            label.style.cssText = "background:rgba(0,40,104,0.9);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;display:none;transition:opacity 0.3s;border:1px solid rgba(191,10,48,0.4);";
             label.textContent = td.day + " " + td.date;
             el.appendChild(label);
             // Popup bubble on select
             const bubble = document.createElement("div");
-            bubble.style.cssText = "display:none;position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.95);border:1px solid rgba(232,177,0,0.4);border-radius:10px;padding:8px 12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.6);z-index:50;min-width:140px;text-align:center;";
-            bubble.innerHTML = "<div style='font-size:12px;font-weight:700;color:#fff;'>" + td.venue + "</div><div style='font-size:10px;color:#ccc;margin-top:2px;'>" + td.city + "</div><div style='font-size:9px;color:#E8B100;margin-top:3px;'>" + td.day + " " + td.date + "</div>";
+            bubble.style.cssText = "display:none;position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,40,104,0.95);border:1px solid rgba(191,10,48,0.5);border-radius:10px;padding:8px 12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.6);z-index:50;min-width:140px;text-align:center;";
+            bubble.innerHTML = "<div style='font-size:12px;font-weight:700;color:#fff;'>" + td.venue + "</div><div style='font-size:10px;color:#ccc;margin-top:2px;'>" + td.city + "</div><div style='font-size:9px;color:#BF0A30;margin-top:3px;font-weight:700;'>★ " + td.day + " " + td.date + "</div>";
             const arrow = document.createElement("div");
-            arrow.style.cssText = "position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(13,13,20,0.95);";
+            arrow.style.cssText = "position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(0,40,104,0.95);";
             bubble.appendChild(arrow);
             el.appendChild(bubble);
             el._bubble = bubble;
@@ -353,10 +355,12 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
           });
           ann.addEventListener("deselect", (e) => {
             const el = e.target.element;
-            if (el && el._bubble) { el._bubble.style.display = "none"; el._pin.style.transform = "scale(1)"; el._pin.style.width = "20px"; el._pin.style.height = "20px"; el._pin.style.fontSize = "10px"; }
+            if (el && el._bubble) { el._bubble.style.display = "none"; el._pin.style.transform = "scale(1)"; el._pin.style.width = "22px"; el._pin.style.height = "22px"; el._pin.style.fontSize = "9px"; }
           });
           map.addAnnotation(ann);
+          tourAnns.push(ann);
         });
+        tourAnnsRef.current = tourAnns;
         // Listen for zoom changes to scale tour pins
         map.addEventListener("region-change-end", () => {
           const span = map.region.span;
@@ -364,13 +368,13 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
           const veryZoomed = span.latitudeDelta < 1.5;
           tourEls.forEach(el => {
             if (veryZoomed) {
-              el._pin.style.width = "28px"; el._pin.style.height = "28px"; el._pin.style.fontSize = "14px";
+              el._pin.style.width = "30px"; el._pin.style.height = "30px"; el._pin.style.fontSize = "14px";
               el._label.style.display = "block"; el._label.style.fontSize = "9px";
             } else if (zoomed) {
-              el._pin.style.width = "24px"; el._pin.style.height = "24px"; el._pin.style.fontSize = "12px";
+              el._pin.style.width = "26px"; el._pin.style.height = "26px"; el._pin.style.fontSize = "12px";
               el._label.style.display = "block"; el._label.style.fontSize = "8px";
             } else {
-              el._pin.style.width = "20px"; el._pin.style.height = "20px"; el._pin.style.fontSize = "10px";
+              el._pin.style.width = "22px"; el._pin.style.height = "22px"; el._pin.style.fontSize = "9px";
               el._label.style.display = "none";
             }
           });
@@ -402,6 +406,19 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
     );
   }, [selectedSpot]);
 
+  // Toggle tour date pins visibility
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !tourAnnsRef.current.length) return;
+    tourAnnsRef.current.forEach(ann => {
+      if (showTourDates) {
+        if (!map.annotations.includes(ann)) map.addAnnotation(ann);
+      } else {
+        map.removeAnnotation(ann);
+      }
+    });
+  }, [showTourDates]);
+
   return (
     <div style={{ position: "relative", width: "100%", height: 400, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(232,177,0,0.15)" }}>
       <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
@@ -415,7 +432,7 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
       {/* Legend */}
       <div style={{ position: "absolute", bottom: selectedSpot ? 140 : 12, left: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 6, fontSize: 9, color: "#aaa", zIndex: 10, pointerEvents: "none", display: "flex", flexDirection: "column", gap: 3, transition: "bottom 0.3s" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "#22C55E", display: "inline-block" }}></span> Taco Spots</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "#E8B100", display: "inline-block" }}></span> Tour Dates</div>
+        {showTourDates && <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "linear-gradient(90deg, #002868 40%, #BF0A30 40%)", display: "inline-block", border: "1px solid #fff", fontSize: 5, color: "#fff", textAlign: "center", lineHeight: "10px" }}>★</span> Tour Dates</div>}
       </div>
       {/* Selected spot card */}
       {selectedSpot && (
@@ -1143,6 +1160,7 @@ export default function TacoTourApp() {
   const [fanRatings, setFanRatings] = useState({});
   const [pollVotes, setPollVotes] = useState({});
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showTourDates, setShowTourDates] = useState(true);
   const [reviewFilter, setReviewFilter] = useState("All");
   const [regionFilter, setRegionFilter] = useState("All");
 
@@ -1235,7 +1253,26 @@ export default function TacoTourApp() {
         <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 14 }}>
           {tab === "map" && (
             <>
-              <MapView spots={TACO_SPOTS} onSelectSpot={setSelectedSpot} selectedSpot={selectedSpot} />
+              {/* Tour dates toggle */}
+              <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 10, color: showTourDates ? "#fff" : "#555", fontWeight: 600 }}>★ Tour Dates</span>
+                <div
+                  onClick={() => setShowTourDates(v => !v)}
+                  style={{
+                    width: 36, height: 20, borderRadius: 10, cursor: "pointer",
+                    background: showTourDates ? "linear-gradient(90deg, #002868, #BF0A30)" : "rgba(255,255,255,0.1)",
+                    position: "relative", transition: "background 0.3s",
+                    border: showTourDates ? "1px solid rgba(255,255,255,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                  }}
+                >
+                  <div style={{
+                    width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                    position: "absolute", top: 1, left: showTourDates ? 18 : 1,
+                    transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+                  }} />
+                </div>
+              </div>
+              <MapView spots={TACO_SPOTS} onSelectSpot={setSelectedSpot} selectedSpot={selectedSpot} showTourDates={showTourDates} />
               {selectedSpot && (
                 <div ref={el => {
                   if (el) {
