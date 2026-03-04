@@ -471,38 +471,27 @@ function ShareSection({ spot }) {
     setBusy(true);
     const shareText = `🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}"`;
     const shareUrl = "https://tacos-lime.vercel.app";
+    const shareData = { title: spot.name, text: shareText, url: shareUrl };
 
     try {
-      // Try generating the image
-      let file = null;
+      // Try to generate image and include it
       try {
         const canvas = await html2canvas(cardRef.current, {
-          backgroundColor: "#0d0d14", scale: 2, useCORS: true, logging: false,
-          windowWidth: 400,
+          backgroundColor: "#0d0d14", scale: 2, useCORS: true, logging: false, windowWidth: 400,
         });
         const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-        if (blob) file = new File([blob], "taco-tour-review.png", { type: "image/png" });
+        if (blob) {
+          const file = new File([blob], "taco-tour-review.png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            shareData.files = [file];
+          }
+        }
       } catch {}
 
-      // Share with image + text + url
-      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ text: shareText, url: shareUrl, files: [file] });
-      } else if (navigator.share) {
-        // No image support (Chrome, etc) — share text + url
-        await navigator.share({ title: spot.name, text: shareText, url: shareUrl });
-      } else {
-        // No share API at all — copy to clipboard
-        await navigator.clipboard.writeText(shareText + " " + shareUrl);
-        alert("Copied to clipboard!");
-      }
+      // Always open share sheet — with image if we got it, without if we didn't
+      await navigator.share(shareData);
     } catch (e) {
-      if (e.name !== "AbortError") {
-        // Last resort fallback
-        try {
-          await navigator.clipboard.writeText(shareText + " " + shareUrl);
-          alert("Copied to clipboard!");
-        } catch {}
-      }
+      if (e.name !== "AbortError") console.error("Share error:", e);
     }
     setBusy(false);
   }, [spot]);
