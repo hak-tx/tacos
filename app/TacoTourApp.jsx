@@ -742,14 +742,32 @@ function MusicSection() {
 
       {/* Discography */}
       <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
-        <div style={{ fontSize: 10, color: "#888", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Discography</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {ALBUMS.map(a => (
-            <div key={a.title} style={{ padding: "6px 10px", borderRadius: 6, background: a.current ? "rgba(232,177,0,0.12)" : "rgba(255,255,255,0.03)", border: a.current ? "1px solid rgba(232,177,0,0.3)" : "1px solid rgba(255,255,255,0.04)", }}>
-              <div style={{ fontSize: 11, color: a.current ? "#E8B100" : "#ccc", fontWeight: a.current ? 700 : 400 }}>{a.title}</div>
-              <div style={{ fontSize: 9, color: "#555" }}>{a.year}</div>
-            </div>
-          ))}
+        <div style={{ fontSize: 12, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>🎵 Full Discography · {ALBUMS.length} Albums</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {ALBUMS.map((a, i) => {
+            const hues = [45, 200, 340, 120, 280, 30, 170, 60, 310];
+            const hue = hues[i % hues.length];
+            return (
+              <div key={a.title} style={{
+                display: "flex", alignItems: "center", gap: 12, padding: 10, borderRadius: 10,
+                background: a.current ? "rgba(232,177,0,0.08)" : "rgba(255,255,255,0.02)",
+                border: a.current ? "1px solid rgba(232,177,0,0.25)" : "1px solid rgba(255,255,255,0.04)",
+              }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: 6, flexShrink: 0,
+                  background: `linear-gradient(135deg, hsl(${hue}, 60%, 15%), hsl(${hue}, 70%, 30%))`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 20, border: "1px solid rgba(255,255,255,0.08)",
+                }}>🤠</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, color: a.current ? "#E8B100" : "#eee", fontWeight: 700, fontFamily: "'Playfair Display', serif" }}>{a.title}</div>
+                  <div style={{ fontSize: 10, color: "#777", marginTop: 2 }}>{a.year} · {RICH.label}</div>
+                </div>
+                {a.current && <span style={{ fontSize: 8, color: "#E8B100", background: "rgba(232,177,0,0.15)", padding: "3px 8px", borderRadius: 4, fontWeight: 700 }}>NEW</span>}
+                <a href={RICH.spotify} target="_blank" rel="noopener noreferrer" style={{ fontSize: 9, color: "#1DB954", fontWeight: 700, textDecoration: "none" }}>Play</a>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -924,7 +942,7 @@ export default function TacoTourApp() {
   return (
     <Shell>
       <style>{`@keyframes eqB { from { height: 3px; } to { height: 14px; } }`}</style>
-      <div style={{ position: "relative", zIndex: 1, paddingBottom: 76 }}>
+      <div style={{ position: "relative", zIndex: 1, paddingBottom: 120 }}>
         {/* Header */}
         <div style={{ padding: "16px 16px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
