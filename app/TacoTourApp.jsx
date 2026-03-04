@@ -1253,8 +1253,9 @@ export default function TacoTourApp() {
         <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 14 }}>
           {tab === "map" && (
             <>
+              <MapView spots={TACO_SPOTS} onSelectSpot={setSelectedSpot} selectedSpot={selectedSpot} showTourDates={showTourDates} />
               {/* Tour dates toggle */}
-              <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: -6 }}>
                 <span style={{ fontSize: 10, color: showTourDates ? "#fff" : "#555", fontWeight: 600 }}>★ Tour Dates</span>
                 <div
                   onClick={() => setShowTourDates(v => !v)}
@@ -1272,7 +1273,6 @@ export default function TacoTourApp() {
                   }} />
                 </div>
               </div>
-              <MapView spots={TACO_SPOTS} onSelectSpot={setSelectedSpot} selectedSpot={selectedSpot} showTourDates={showTourDates} />
               {selectedSpot && (
                 <div ref={el => {
                   if (el) {
