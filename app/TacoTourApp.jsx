@@ -1418,25 +1418,26 @@ export default function TacoTourApp() {
       {/* Bottom nav */}
       <div className="shell-nav" style={{
         position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%",
-        background: "linear-gradient(180deg, rgba(13,13,20,0.85) 0%, rgba(13,13,20,0.98) 40%)", backdropFilter: "blur(24px)", borderTop: "1px solid rgba(232,177,0,0.08)",
+        background: "linear-gradient(180deg, rgba(20,20,30,0.92) 0%, rgba(10,10,16,0.99) 50%)", backdropFilter: "blur(24px)", borderTop: "1px solid rgba(232,177,0,0.15)",
         display: "flex", justifyContent: "space-around", padding: "8px 0 env(safe-area-inset-bottom, 12px)", zIndex: 100,
+        boxShadow: "0 -4px 20px rgba(0,0,0,0.5), 0 -1px 0 rgba(232,177,0,0.06)",
       }}>
         {tabs.map(t => {
           const active = tab === t.id;
-          const iconColor = active ? "#E8B100" : "#ffffff";
+          const iconColor = active ? "#E8B100" : "#888";
           return (
             <button key={t.id} onClick={() => { setTab(t.id); setShowReviewForm(false); setShowShareCard(null); }}
               style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "4px 14px", position: "relative" }}>
               <div style={{
                 width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                background: active ? "rgba(232,177,0,0.18)" : "rgba(255,255,255,0.08)",
-                border: active ? "2px solid rgba(232,177,0,0.7)" : "2px solid rgba(255,255,255,0.2)",
-                boxShadow: active ? "0 0 18px rgba(232,177,0,0.35), inset 0 0 10px rgba(232,177,0,0.1)" : "0 0 6px rgba(255,255,255,0.05)",
+                background: active ? "rgba(232,177,0,0.18)" : "transparent",
+                border: active ? "2px solid rgba(232,177,0,0.7)" : "2px solid transparent",
+                boxShadow: active ? "0 0 18px rgba(232,177,0,0.35), inset 0 0 10px rgba(232,177,0,0.1)" : "none",
                 transition: "all 0.3s ease",
               }}>
                 {tabIcons[t.id](iconColor)}
               </div>
-              <span style={{ fontSize: 9, color: active ? "#E8B100" : "#ddd", fontWeight: active ? 700 : 600, letterSpacing: active ? 0.5 : 0, transition: "all 0.3s" }}>{t.label}</span>
+              <span style={{ fontSize: 9, color: active ? "#E8B100" : "#666", fontWeight: active ? 700 : 500, letterSpacing: active ? 0.5 : 0, transition: "all 0.3s" }}>{t.label}</span>
             </button>
           );
         })}
