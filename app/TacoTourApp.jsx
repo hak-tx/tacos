@@ -677,8 +677,8 @@ function TourSection() {
             <div style={{ fontSize: 9, color: "#666" }}>{d.date.split(" ")[0]}</div>
           </div>
           <div style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,0.06)", paddingLeft: 12 }}>
-            <div style={{ fontSize: 13, color: "#fff", fontWeight: 600 }}>{d.venue}</div>
-            <div style={{ fontSize: 11, color: "#666" }}>{d.city}</div>
+            <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Bitter', serif" }}>{d.venue}</div>
+            <div style={{ fontSize: 12, color: "#ccc", fontWeight: 500, marginTop: 2 }}>{d.city}</div>
             <div style={{ fontSize: 10, color: "#E8B100", marginTop: 3 }}>🌮 {d.tacoHunt}</div>
             {d.rsvp > 0 && <div style={{ fontSize: 9, color: "#555", marginTop: 2 }}>{d.rsvp} fans going</div>}
           </div>
