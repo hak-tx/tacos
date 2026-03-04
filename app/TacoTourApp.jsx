@@ -469,27 +469,39 @@ function ShareSection({ spot }) {
 
   const handleShare = useCallback(async () => {
     setBusy(true);
-    const shareText = `🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}" richstacotour.com`;
-    try {
-      // Render the hidden card to canvas
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: "#0d0d14", scale: 2, useCORS: true, logging: false,
-        windowWidth: 400,
-      });
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-      const file = new File([blob], "taco-tour-review.png", { type: "image/png" });
+    const shareText = `🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}"`;
+    const shareUrl = "https://tacos-lime.vercel.app";
 
-      // Share with image if supported, otherwise text only
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ text: shareText, files: [file] });
+    try {
+      // Try generating the image
+      let file = null;
+      try {
+        const canvas = await html2canvas(cardRef.current, {
+          backgroundColor: "#0d0d14", scale: 2, useCORS: true, logging: false,
+          windowWidth: 400,
+        });
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+        if (blob) file = new File([blob], "taco-tour-review.png", { type: "image/png" });
+      } catch {}
+
+      // Share with image + text + url
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ text: shareText, url: shareUrl, files: [file] });
       } else if (navigator.share) {
-        await navigator.share({ text: shareText, url: "https://tacos-lime.vercel.app" });
+        // No image support (Chrome, etc) — share text + url
+        await navigator.share({ title: spot.name, text: shareText, url: shareUrl });
+      } else {
+        // No share API at all — copy to clipboard
+        await navigator.clipboard.writeText(shareText + " " + shareUrl);
+        alert("Copied to clipboard!");
       }
     } catch (e) {
-      // AbortError = user cancelled share sheet, that's fine
       if (e.name !== "AbortError") {
-        // Fallback to text-only share
-        try { await navigator.share({ text: shareText, url: "https://tacos-lime.vercel.app" }); } catch {}
+        // Last resort fallback
+        try {
+          await navigator.clipboard.writeText(shareText + " " + shareUrl);
+          alert("Copied to clipboard!");
+        } catch {}
       }
     }
     setBusy(false);
