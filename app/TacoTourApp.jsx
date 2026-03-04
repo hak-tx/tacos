@@ -27,15 +27,15 @@ const RICH = {
 };
 
 const ALBUMS = [
-  { title: "God Is a Gentleman", year: 2026, current: true },
-  { title: "Ghost", year: 2024 },
-  { title: "New York", year: 2020 },
-  { title: "American Kid", year: 2017 },
-  { title: "Jaded", year: 2014 },
-  { title: "Brightwork", year: 2013 },
-  { title: "Kiss of a Liar", year: 2011 },
-  { title: "In a Minute or 2", year: 2008 },
-  { title: "Seventeen", year: 2007 },
+  { title: "God Is a Gentleman", year: 2025, current: true, art: "https://i.scdn.co/image/ab67616d00001e02c26ff27f3afc82242f45ad6a", spotifyUrl: "https://open.spotify.com/album/54Q7cSAqRRUzbtxP2WoFm6" },
+  { title: "Ghost", year: 2024, art: "https://i.scdn.co/image/ab67616d00001e0233971e9507ea4756d0f08b92", spotifyUrl: "https://open.spotify.com/album/7LgNSIMG2MAX32nnXbHyow" },
+  { title: "New York", year: 2020, art: "https://i.scdn.co/image/ab67616d00001e02ae51055fa23016e3b99e4e9e", spotifyUrl: "https://open.spotify.com/album/24xglegMJV5kxktiDQFfds" },
+  { title: "American Kid", year: 2017, art: "https://i.scdn.co/image/ab67616d00001e02ddbf3db588c8c192cc0db886", spotifyUrl: "https://open.spotify.com/album/6rGiUaNoDwsLSdx0NpLkh4" },
+  { title: "Jaded", year: 2014, art: "https://i.scdn.co/image/ab67616d00001e02092755e728a7cda940e32755", spotifyUrl: "https://open.spotify.com/album/5kTIfBD6aBOr68R6RzPd03" },
+  { title: "Brightwork", year: 2013, art: "https://i.scdn.co/image/ab67616d00001e020565eae42ac814ae0d62b748", spotifyUrl: "https://open.spotify.com/album/4c09dk4xQNosTXzzxwTJCx" },
+  { title: "Kiss of a Liar", year: 2011, art: "https://i.scdn.co/image/ab67616d00001e024553d2a2f6e41d783d4cd1f6", spotifyUrl: "https://open.spotify.com/album/64LVAaSTfpRZm77EJULBFi" },
+  { title: "In a Minute or 2", year: 2008, art: "https://i.scdn.co/image/ab67616d00001e02828fbd0901ad9db89a7b04ce", spotifyUrl: "https://open.spotify.com/album/3ujrqgumKaAgVQek8HmKY2" },
+  { title: "Seventeen", year: 2007, art: null, spotifyUrl: "https://open.spotify.com/album/2l68DnC8EtvHv7YyH2Fd37" },
 ];
 
 const TACO_SPOTS = [
@@ -727,7 +727,9 @@ function MusicSection() {
       <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
         <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>🎵 Latest Album</div>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 72, height: 72, borderRadius: 8, background: "linear-gradient(135deg, #1a1a2e, #E8B100)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, border: "1px solid rgba(232,177,0,0.2)" }}>🤠</div>
+          <div style={{ width: 72, height: 72, borderRadius: 8, overflow: "hidden", border: "1px solid rgba(232,177,0,0.2)", flexShrink: 0 }}>
+            <img src={ALBUMS[0].art} alt={ALBUMS[0].title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{RICH.latestAlbum}</div>
             <div style={{ fontSize: 11, color: "#888" }}>{RICH.label} · 2026</div>
@@ -745,27 +747,26 @@ function MusicSection() {
         <div style={{ fontSize: 12, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>🎵 Full Discography · {ALBUMS.length} Albums</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {ALBUMS.map((a, i) => {
-            const hues = [45, 200, 340, 120, 280, 30, 170, 60, 310];
-            const hue = hues[i % hues.length];
             return (
-              <div key={a.title} style={{
-                display: "flex", alignItems: "center", gap: 12, padding: 10, borderRadius: 10,
+              <a key={a.title} href={a.spotifyUrl} target="_blank" rel="noopener noreferrer" style={{
+                display: "flex", alignItems: "center", gap: 12, padding: 10, borderRadius: 10, textDecoration: "none",
                 background: a.current ? "rgba(232,177,0,0.08)" : "rgba(255,255,255,0.02)",
                 border: a.current ? "1px solid rgba(232,177,0,0.25)" : "1px solid rgba(255,255,255,0.04)",
               }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 6, flexShrink: 0,
-                  background: `linear-gradient(135deg, hsl(${hue}, 60%, 15%), hsl(${hue}, 70%, 30%))`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 20, border: "1px solid rgba(255,255,255,0.08)",
-                }}>🤠</div>
+                  width: 52, height: 52, borderRadius: 6, flexShrink: 0, overflow: "hidden",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "#1a1a2e",
+                }}>
+                  {a.art ? <img src={a.art} alt={a.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🤠</div>}
+                </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, color: a.current ? "#E8B100" : "#eee", fontWeight: 700, fontFamily: "'Playfair Display', serif" }}>{a.title}</div>
                   <div style={{ fontSize: 10, color: "#777", marginTop: 2 }}>{a.year} · {RICH.label}</div>
                 </div>
                 {a.current && <span style={{ fontSize: 8, color: "#E8B100", background: "rgba(232,177,0,0.15)", padding: "3px 8px", borderRadius: 4, fontWeight: 700 }}>NEW</span>}
-                <a href={RICH.spotify} target="_blank" rel="noopener noreferrer" style={{ fontSize: 9, color: "#1DB954", fontWeight: 700, textDecoration: "none" }}>Play</a>
-              </div>
+                <span style={{ fontSize: 9, color: "#1DB954", fontWeight: 700 }}>Play</span>
+              </a>
             );
           })}
         </div>
