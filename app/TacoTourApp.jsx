@@ -283,7 +283,7 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
             subtitle: td.date + " \u00B7 " + td.city,
             color: "#E8B100",
             glyphColor: "#000",
-            glyphText: "\u2605",
+            glyphText: "\u266A",
           });
           map.addAnnotation(ann);
         });
