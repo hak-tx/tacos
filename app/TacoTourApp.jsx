@@ -886,11 +886,11 @@ export default function TacoTourApp() {
     : [...TACO_SPOTS].sort((a, b) => b.richRating - a.richRating);
 
   const tabs = [
-    { id: "map", label: "Map", icon: "📍" },
+    { id: "map", label: "Map", icon: "🗺️" },
     { id: "reviews", label: "Reviews", icon: "🌮" },
     { id: "tour", label: "Tour", icon: "🎸" },
-    { id: "music", label: "Music", icon: "🎶" },
-    { id: "profile", label: user?.guest ? "Join" : "Profile", icon: "👤" },
+    { id: "music", label: "Music", icon: "🎵" },
+    { id: "profile", label: user?.guest ? "Join" : "Profile", icon: "⭐" },
   ];
 
   // --- RENDER ---
