@@ -462,43 +462,34 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
   );
 }
 
-// 4b. SHARE SECTION — generates branded image, uses native share sheet
+// 4b. SHARE SECTION — platform buttons with pre-populated text + optional image
 function ShareSection({ spot }) {
   const cardRef = useRef(null);
-  const [sharing, setSharing] = useState(false);
 
-  const handleShare = useCallback(async () => {
-    if (!cardRef.current) return;
-    setSharing(true);
+  // Generate branded image and share via native share sheet
+  const shareNative = useCallback(async (text) => {
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null, scale: 2, useCORS: true, logging: false,
-      });
+      const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2, useCORS: true, logging: false });
       const blob = await new Promise(r => canvas.toBlob(r, "image/png"));
-      const file = new File([blob], `taco-tour-${spot.name.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase()}.png`, { type: "image/png" });
-      const shareText = `🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}!\n"${spot.richQuote}"\nrichstacotour.com`;
-
+      const file = new File([blob], "taco-tour.png", { type: "image/png" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ text: shareText, files: [file] });
-      } else if (navigator.share) {
-        await navigator.share({ title: "Rich O'Toole's Taco Tour", text: shareText, url: "https://tacos-lime.vercel.app" });
-      } else {
-        await navigator.clipboard.writeText(shareText);
-        alert("Copied to clipboard!");
+        await navigator.share({ text, files: [file] });
+        return;
       }
-    } catch (e) { if (e.name !== "AbortError") console.error("Share failed:", e); }
-    setSharing(false);
-  }, [spot]);
+    } catch (e) { if (e.name === "AbortError") return; }
+    // Fallback to text-only share
+    if (navigator.share) { try { await navigator.share({ text, url: "https://tacos-lime.vercel.app" }); } catch {} }
+  }, []);
+
+  const shareText = `🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}" richstacotour.com`;
 
   return (
-    <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 10 }}>
-      {/* Hidden branded share card — captured as image */}
+    <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 8 }}>
+      {/* Hidden branded card for image capture */}
       <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
         <div ref={cardRef} style={{ width: 400, fontFamily: "system-ui, -apple-system, sans-serif", background: "linear-gradient(160deg, #0d0d14 0%, #1a1a2e 50%, #0d0d14 100%)" }}>
-          {/* Gold accent bar */}
           <div style={{ height: 4, background: "linear-gradient(90deg, #E8B100, #D97706, #E8B100)" }} />
           <div style={{ padding: "24px 28px 28px" }}>
-            {/* Header */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
               <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 900, color: "#000" }}>R</div>
               <div>
@@ -507,26 +498,20 @@ function ShareSection({ spot }) {
               </div>
               <div style={{ marginLeft: "auto", fontSize: 28 }}>🌮</div>
             </div>
-            {/* Spot */}
-            <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1.15, marginBottom: 4, letterSpacing: -0.5 }}>{spot.name}</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1.15, marginBottom: 4 }}>{spot.name}</div>
             <div style={{ fontSize: 13, color: "#888", marginBottom: 24 }}>{spot.city}</div>
-            {/* Scores */}
             <div style={{ display: "flex", alignItems: "flex-end", gap: 16, marginBottom: 24, padding: "16px 20px", background: "rgba(255,255,255,0.03)", borderRadius: 12 }}>
               <div style={{ textAlign: "center", flex: 1 }}>
-                <div style={{ fontSize: 56, fontWeight: 900, color: ratingColor(spot.richRating), lineHeight: 1, letterSpacing: -2 }}>{spot.richRating}</div>
+                <div style={{ fontSize: 56, fontWeight: 900, color: ratingColor(spot.richRating), lineHeight: 1 }}>{spot.richRating}</div>
                 <div style={{ fontSize: 10, color: "#E8B100", textTransform: "uppercase", letterSpacing: 2, fontWeight: 700, marginTop: 6 }}>Rich Says</div>
               </div>
               <div style={{ fontSize: 18, color: "#444", fontWeight: 300, paddingBottom: 14 }}>vs</div>
               <div style={{ textAlign: "center", flex: 1 }}>
-                <div style={{ fontSize: 56, fontWeight: 900, color: "#60A5FA", lineHeight: 1, letterSpacing: -2 }}>{spot.fanRating}</div>
+                <div style={{ fontSize: 56, fontWeight: 900, color: "#60A5FA", lineHeight: 1 }}>{spot.fanRating}</div>
                 <div style={{ fontSize: 10, color: "#60A5FA", textTransform: "uppercase", letterSpacing: 2, fontWeight: 700, marginTop: 6 }}>Fans Say</div>
               </div>
             </div>
-            {/* Quote */}
-            <div style={{ fontSize: 14, color: "#ccc", fontStyle: "italic", lineHeight: 1.6, marginBottom: 22, paddingLeft: 14, borderLeft: "3px solid #E8B100" }}>
-              &ldquo;{spot.richQuote}&rdquo;
-            </div>
-            {/* Footer */}
+            <div style={{ fontSize: 14, color: "#ccc", fontStyle: "italic", lineHeight: 1.6, marginBottom: 22, paddingLeft: 14, borderLeft: "3px solid #E8B100" }}>&ldquo;{spot.richQuote}&rdquo;</div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
               <div style={{ fontSize: 12, color: "#E8B100", fontWeight: 700 }}>richstacotour.com</div>
               <div style={{ fontSize: 11, color: "#666" }}>Tag @RichOToole</div>
@@ -535,27 +520,25 @@ function ShareSection({ spot }) {
         </div>
       </div>
 
-      {/* Single share button */}
-      <button onClick={handleShare} disabled={sharing} style={{
-        width: "100%", padding: "12px 0", borderRadius: 10,
-        border: "1px solid rgba(232,177,0,0.3)",
-        background: sharing ? "rgba(232,177,0,0.08)" : "linear-gradient(135deg, rgba(232,177,0,0.12), rgba(232,177,0,0.04))",
-        color: "#E8B100", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-        letterSpacing: 0.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-        transition: "all 0.2s",
-      }}>
-        {sharing ? (
-          <span>Generating image...</span>
-        ) : (
-          <>
-            <span style={{ fontSize: 16 }}>📲</span>
-            <span>Share This Take</span>
-            <span style={{ fontSize: 10, color: "#888" }}>· image + text</span>
-          </>
-        )}
-      </button>
-      <div style={{ textAlign: "center", marginTop: 4, fontSize: 9, color: "#555" }}>
-        Tag @RichOToole — he might repost! 🔥
+      <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>📲 Share This Take · tag @RichOToole</div>
+      <div style={{ display: "flex", gap: 6 }}>
+        {[
+          { label: "Post", icon: "𝕏", bg: "#000", color: "#fff", border: "1px solid #555", action: () => shareNative(`🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}" richstacotour.com`) },
+          { label: "Share", icon: "f", bg: "#1877F2", color: "#fff", border: "none", action: () => shareNative(`🌮 ${spot.name} — Rich O'Toole rated it ${spot.richRating}! richstacotour.com`) },
+          { label: "Story", icon: "📸", bg: "linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)", color: "#fff", border: "none", action: () => shareNative(`🌮 ${spot.name} — ${spot.richRating}/10 by @RichOToole! Do you agree? richstacotour.com`) },
+          { label: "Copy", icon: "📋", bg: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", action: () => { navigator.clipboard.writeText(shareText).then(() => alert("Copied!")).catch(()=>{}); } },
+        ].map(p => (
+          <button key={p.label} onClick={p.action} style={{
+            flex: 1, padding: "8px 4px", borderRadius: 8, border: p.border,
+            background: p.bg, color: p.color, fontSize: 9, fontWeight: 800,
+            cursor: "pointer", fontFamily: "inherit",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+          }}>
+            <span style={{ fontSize: p.icon === "𝕏" ? 14 : p.icon === "f" ? 14 : 12, fontWeight: 900, lineHeight: 1, fontFamily: p.icon === "f" ? "Georgia, serif" : "inherit" }}>{p.icon}</span>
+            <span>{p.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
