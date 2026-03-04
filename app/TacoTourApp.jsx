@@ -103,6 +103,7 @@ const LEADERBOARD = [
 function getRegion(city) {
   if (!city) return "Other";
   const c = city.toLowerCase();
+  // Texas metro regions
   if (c.includes("austin") || c.includes("round rock") || c.includes("cedar park") || c.includes("pflugerville")) return "Austin";
   if (c.includes("houston") || c.includes("tomball") || c.includes("katy") || c.includes("sugar land")) return "Houston";
   if (c.includes("dallas") || c.includes("plano") || c.includes("frisco") || c.includes("arlington") || c.includes("irving")) return "Dallas";
@@ -114,15 +115,20 @@ function getRegion(city) {
   if (c.includes("el paso")) return "El Paso";
   if (c.includes("laredo") || c.includes("mcallen") || c.includes("brownsville")) return "Border TX";
   if (c.includes("kerrville") || c.includes("fredericksburg") || c.includes("round mountain")) return "Hill Country";
-  // Out of state
+  // Out-of-state: show as state name only
   if (c.includes(", tn") || c.includes("nashville") || c.includes("memphis")) return "Tennessee";
-  if (c.includes(", ga") || c.includes("georgia") || c.includes("gainesville, ga")) return "Georgia";
+  if (c.includes(", ga") || c.includes("gainesville, ga") || c.includes("atlanta")) return "Georgia";
   if (c.includes(", ok") || c.includes("oklahoma")) return "Oklahoma";
   if (c.includes(", la") || c.includes("louisiana")) return "Louisiana";
+  // Catch-all for any other TX city
+  if (c.includes(", tx")) return "Other TX";
   return "Other";
 }
 
-const ALL_REGIONS = [...new Set(TACO_SPOTS.map(s => getRegion(s.city)))].sort();
+// Only include regions that have taco spots OR out-of-state tour dates
+const TACO_REGIONS = [...new Set(TACO_SPOTS.map(s => getRegion(s.city)))].sort();
+const TOUR_STATE_REGIONS = [...new Set(TOUR_DATES.map(d => getRegion(d.city)).filter(r => ["Tennessee", "Georgia", "Oklahoma", "Louisiana"].includes(r)))];
+const ALL_REGIONS = [...TACO_REGIONS, ...TOUR_STATE_REGIONS.filter(r => !TACO_REGIONS.includes(r))].sort();
 
 const ratingColor = (r) => r >= 9 ? "#E8B100" : r >= 8 ? "#4ADE80" : r >= 7 ? "#60A5FA" : "#FB923C";
 const ratingLabel = (r) => r >= 9.5 ? "LEGENDARY" : r >= 9 ? "FIRE" : r >= 8 ? "SOLID" : r >= 7 ? "DECENT" : "MEH";
@@ -1032,13 +1038,13 @@ export default function TacoTourApp() {
                         }, 50);
                       }
                     }} style={{
-                      padding: "5px 10px", borderRadius: 8, border: "none",
-                      background: regionFilter === r ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.03)",
-                      color: regionFilter === r ? "#22C55E" : "#555", fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                      display: "flex", alignItems: "center", gap: 4,
+                      padding: "6px 12px", borderRadius: 8, border: regionFilter === r ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(255,255,255,0.12)",
+                      background: regionFilter === r ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.06)",
+                      color: regionFilter === r ? "#22C55E" : "#ccc", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                      display: "flex", alignItems: "center", gap: 5,
                     }}>
                       {r === "All" ? "📍 All Regions" : r}
-                      <span style={{ fontSize: 8, color: regionFilter === r ? "#22C55E" : "#444", fontWeight: 700 }}>{count}</span>
+                      <span style={{ fontSize: 9, color: regionFilter === r ? "#4ADE80" : "#888", fontWeight: 700 }}>{count}</span>
                     </button>
                   );
                 })}
