@@ -48,12 +48,20 @@ const TACO_SPOTS = [
   { id: 7, name: "Rosario's", city: "San Antonio, TX", richRating: 8.1, fanRating: 8.7, fanVotes: 891, lat: 29.424, lng: -98.493, tags: ["Upscale Tex-Mex", "Date Night"], reviewDate: "Feb 5, 2026", tourDate: null, hasVideo: false, richQuote: "San Antonio always delivers. The puffy taco is legit.", trending: false, image: "🌮" },
 ];
 
-// Real upcoming tour dates from Bandsintown/Shazam data
+// Real upcoming tour dates from Bandsintown
 const TOUR_DATES = [
-  { date: "Mar 7", day: "Sat", venue: "Round Mountain Cider Mill", city: "Round Mountain, TX", tacoHunt: "Scouting spots...", soldOut: false, rsvp: 243 },
-  { date: "Mar 14", day: "Sat", venue: "Old Tomball Honky Tonk", city: "Tomball, TX", tacoHunt: "Scouting spots...", soldOut: false, rsvp: 187 },
-  { date: "Mar 27", day: "Fri", venue: "TBA", city: "TBA", tacoHunt: "Where should Rich eat? Vote below!", soldOut: false, rsvp: 0 },
-  { date: "Apr 2", day: "Thu", venue: "Private Event", city: "Austin, TX", tacoHunt: "Invite only", soldOut: true, rsvp: null },
+  { date: "Mar 7", day: "Fri", venue: "Round Mountain Cider Mill", city: "Round Mountain, TX", lat: 30.434, lng: -98.383, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 243 },
+  { date: "Mar 14", day: "Fri", venue: "Old Tomball Honky Tonk", city: "Tomball, TX", lat: 30.097, lng: -95.616, tacoHunt: "Scouting spots...", soldOut: false, free: false, rsvp: 187 },
+  { date: "Mar 20", day: "Thu", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 112 },
+  { date: "Mar 21", day: "Fri", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 98 },
+  { date: "Mar 27", day: "Thu", venue: "Lone Star Live", city: "Flower Mound, TX", lat: 33.014, lng: -97.097, tacoHunt: "Where should Rich eat? Vote!", soldOut: false, free: false, rsvp: 76 },
+  { date: "Apr 2", day: "Wed", venue: "Private Event", city: "Austin, TX", lat: 30.267, lng: -97.743, tacoHunt: "Invite only", soldOut: true, free: true, rsvp: null },
+  { date: "Apr 17", day: "Thu", venue: "LBK Fest 2026", city: "Lubbock, TX", lat: 33.577, lng: -101.855, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 340 },
+  { date: "Apr 18", day: "Fri", venue: "The Lumberyard", city: "Canyon, TX", lat: 34.980, lng: -101.919, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 55 },
+  { date: "Apr 23", day: "Wed", venue: "The Hall - Gainesville", city: "Gainesville, GA", lat: 34.297, lng: -83.824, tacoHunt: "Georgia taco hunt!", soldOut: false, free: false, rsvp: 63 },
+  { date: "Apr 30", day: "Wed", venue: "Chief's on Broadway", city: "Nashville, TN", lat: 36.156, lng: -86.776, tacoHunt: "Nashville taco hunt!", soldOut: false, free: true, rsvp: 201 },
+  { date: "May 21", day: "Wed", venue: "Kerrville Folk Festival 2026", city: "Kerrville, TX", lat: 30.047, lng: -99.140, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 158 },
+  { date: "May 30", day: "Fri", venue: "Boyz R Back Music Festival 2026", city: "Midland, TX", lat: 31.997, lng: -102.077, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 220 },
 ];
 
 const PLAYLIST_TRACKS = [
@@ -238,10 +246,10 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
         }
         if (mapInstanceRef.current) { mapInstanceRef.current.destroy(); }
         const map = new mapkit.Map(mapRef.current, {
-          center: new mapkit.Coordinate(30.5, -98.5),
+          center: new mapkit.Coordinate(32.0, -97.0),
           region: new mapkit.CoordinateRegion(
-            new mapkit.Coordinate(30.5, -98.5),
-            new mapkit.CoordinateSpan(5, 7)
+            new mapkit.Coordinate(32.0, -97.0),
+            new mapkit.CoordinateSpan(8, 12)
           ),
           showsCompass: mapkit.FeatureVisibility.Hidden,
           showsZoomControl: false,
@@ -260,6 +268,22 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
             glyphText: "\uD83C\uDF2E",
           });
           ann.addEventListener("select", () => onSelectSpotRef.current(spot));
+          map.addAnnotation(ann);
+        });
+        // Tour date pins
+        const seen = {};
+        TOUR_DATES.forEach((td) => {
+          if (!td.lat || !td.lng) return;
+          const key = td.lat + "," + td.lng;
+          if (seen[key]) return;
+          seen[key] = true;
+          const coord = new mapkit.Coordinate(td.lat, td.lng);
+          const ann = new mapkit.MarkerAnnotation(coord, {
+            title: td.venue,
+            subtitle: td.date + " · " + td.city,
+            color: "#EF4444",
+            glyphText: "\uD83C\uDFB8",
+          });
           map.addAnnotation(ann);
         });
         if (!cancelled) setMapReady(true);
@@ -294,10 +318,15 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
       <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
       {/* Overlay labels */}
       <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", padding: "5px 10px", borderRadius: 6, fontSize: 10, color: "#999", letterSpacing: 1, textTransform: "uppercase", fontFamily: "'Courier Prime', monospace", zIndex: 10, pointerEvents: "none" }}>
-         Apple Maps · Texas
+         Apple Maps
       </div>
       <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", padding: "5px 10px", borderRadius: 6, fontSize: 10, color: "#E8B100", zIndex: 10, pointerEvents: "none" }}>
-        {spots.length} spots reviewed
+        {spots.length} spots · {TOUR_DATES.length} shows
+      </div>
+      {/* Legend */}
+      <div style={{ position: "absolute", bottom: selectedSpot ? 140 : 12, left: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 6, fontSize: 9, color: "#aaa", zIndex: 10, pointerEvents: "none", display: "flex", flexDirection: "column", gap: 3, transition: "bottom 0.3s" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ fontSize: 12 }}>🌮</span> Taco Spots</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ fontSize: 12 }}>🎸</span> Tour Dates</div>
       </div>
       {/* Selected spot card */}
       {selectedSpot && (
@@ -1000,14 +1029,14 @@ export default function TacoTourApp() {
               style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "4px 14px", position: "relative" }}>
               <div style={{
                 width: 38, height: 38, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                background: active ? "rgba(232,177,0,0.12)" : "rgba(255,255,255,0.03)",
-                border: active ? "1.5px solid rgba(232,177,0,0.5)" : "1.5px solid rgba(255,255,255,0.06)",
+                background: active ? "rgba(232,177,0,0.12)" : "rgba(255,255,255,0.05)",
+                border: active ? "1.5px solid rgba(232,177,0,0.5)" : "1.5px solid rgba(255,255,255,0.12)",
                 boxShadow: active ? "0 0 16px rgba(232,177,0,0.2), inset 0 0 8px rgba(232,177,0,0.08)" : "none",
                 transition: "all 0.3s ease",
               }}>
-                <span style={{ fontSize: 17, filter: active ? "brightness(1.2)" : "brightness(0.7)", transition: "filter 0.3s" }}>{t.icon}</span>
+                <span style={{ fontSize: 17, filter: active ? "brightness(1.3)" : "brightness(1)", transition: "filter 0.3s" }}>{t.icon}</span>
               </div>
-              <span style={{ fontSize: 9, color: active ? "#E8B100" : "#666", fontWeight: active ? 700 : 500, letterSpacing: active ? 0.5 : 0, transition: "all 0.3s" }}>{t.label}</span>
+              <span style={{ fontSize: 9, color: active ? "#E8B100" : "#aaa", fontWeight: active ? 700 : 500, letterSpacing: active ? 0.5 : 0, transition: "all 0.3s" }}>{t.label}</span>
             </button>
           );
         })}
