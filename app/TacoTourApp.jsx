@@ -125,9 +125,10 @@ function getRegion(city) {
   return "Other";
 }
 
-// Only include regions that have taco spots OR out-of-state tour dates
+// Only include regions that have taco spots, plus out-of-state tour date states
 const TACO_REGIONS = [...new Set(TACO_SPOTS.map(s => getRegion(s.city)))].sort();
-const TOUR_STATE_REGIONS = [...new Set(TOUR_DATES.map(d => getRegion(d.city)).filter(r => ["Tennessee", "Georgia", "Oklahoma", "Louisiana"].includes(r)))];
+const OUT_OF_STATE = ["Tennessee", "Georgia", "Oklahoma", "Louisiana"];
+const TOUR_STATE_REGIONS = [...new Set(TOUR_DATES.map(d => getRegion(d.city)).filter(r => OUT_OF_STATE.includes(r)))];
 const ALL_REGIONS = [...TACO_REGIONS, ...TOUR_STATE_REGIONS.filter(r => !TACO_REGIONS.includes(r))].sort();
 
 const ratingColor = (r) => r >= 9 ? "#E8B100" : r >= 8 ? "#4ADE80" : r >= 7 ? "#60A5FA" : "#FB923C";
@@ -898,7 +899,7 @@ const badgeStyle = (color) => ({
 // --- MAIN APP ------------------------------------------------------------
 
 export default function TacoTourApp() {
-  const [screen, setScreen] = useState("splash"); // splash | auth | main
+  const [screen, setScreen] = useState("main"); // splash | auth | main
   const [authMode, setAuthMode] = useState("signup");
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState("map");
