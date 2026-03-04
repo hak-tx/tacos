@@ -913,45 +913,162 @@ function PollWidget({ debate, onVote, userVote }) {
   );
 }
 
-// 8. TOUR DATES
-function TourSection() {
-  const [suggestFor, setSuggestFor] = useState(null); // index of tour date to suggest for
-  const [spotName, setSpotName] = useState("");
-  const [spotWhy, setSpotWhy] = useState("");
-  const [submitted, setSubmitted] = useState({});
-  const [suggestions, setSuggestions] = useState({}); // { tourIndex: [{name, why, ts}] }
+// 8. TOUR DATES - Recommendation Ranking Modal
+function RecommendModal({ tourDate, tourIndex, onClose }) {
+  const [rankings, setRankings] = useState([]); // [{name, votes, addedBy}]
+  const [newSpot, setNewSpot] = useState("");
+  const [voted, setVoted] = useState({}); // {spotName: true}
+  const [adding, setAdding] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const storageKey = "taco-recs-" + tourIndex;
 
-  // Load suggestions from storage on mount
   useEffect(() => {
     (async () => {
       try {
-        const result = await window.storage.get("taco-suggestions");
-        if (result && result.value) setSuggestions(JSON.parse(result.value));
-      } catch (e) { /* no data yet */ }
+        const result = await window.storage.get(storageKey, true);
+        if (result && result.value) setRankings(JSON.parse(result.value));
+      } catch (e) {}
+      setLoading(false);
     })();
   }, []);
 
-  const handleSubmit = async (tourIndex) => {
-    if (!spotName.trim()) return;
-    const entry = { name: spotName.trim(), why: spotWhy.trim(), ts: Date.now() };
-    const updated = { ...suggestions };
-    if (!updated[tourIndex]) updated[tourIndex] = [];
-    updated[tourIndex].push(entry);
-    setSuggestions(updated);
-    setSubmitted(prev => ({ ...prev, [tourIndex]: true }));
-    setSpotName("");
-    setSpotWhy("");
-    // Save to persistent storage
-    try { await window.storage.set("taco-suggestions", JSON.stringify(updated), true); } catch (e) {}
-    // Auto-close after delay
-    setTimeout(() => { setSuggestFor(null); setSubmitted(prev => ({ ...prev, [tourIndex]: false })); }, 2000);
+  const saveRankings = async (updated) => {
+    setRankings(updated);
+    try { await window.storage.set(storageKey, JSON.stringify(updated), true); } catch (e) {}
   };
+
+  const handleUpvote = (name) => {
+    if (voted[name]) return;
+    const updated = rankings.map(r => r.name === name ? { ...r, votes: r.votes + 1 } : r);
+    updated.sort((a, b) => b.votes - a.votes);
+    saveRankings(updated);
+    setVoted(prev => ({ ...prev, [name]: true }));
+  };
+
+  const handleAdd = () => {
+    if (!newSpot.trim()) return;
+    const name = newSpot.trim();
+    const existing = rankings.find(r => r.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      handleUpvote(existing.name);
+    } else {
+      const updated = [...rankings, { name, votes: 1 }];
+      updated.sort((a, b) => b.votes - a.votes);
+      saveRankings(updated);
+      setVoted(prev => ({ ...prev, [name]: true }));
+    }
+    setNewSpot("");
+    setAdding(false);
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 430, maxHeight: "80vh", background: "#141420", borderRadius: "20px 20px 0 0", padding: "0 0 env(safe-area-inset-bottom, 16px)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        {/* Header */}
+        <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>🌮 Fan Picks</div>
+              <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>Where should Rich eat near <span style={{ color: "#E8B100" }}>{tourDate.city.split(",")[0]}</span>?</div>
+            </div>
+            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: "none", color: "#888", fontSize: 18, width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+          </div>
+          <div style={{ fontSize: 9, color: "#555", marginTop: 6 }}>{tourDate.venue} · {tourDate.date}</div>
+        </div>
+        {/* Rankings list */}
+        <div style={{ flex: 1, overflow: "auto", padding: "8px 20px" }}>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: 20, color: "#555", fontSize: 12 }}>Loading...</div>
+          ) : rankings.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "30px 0", color: "#555" }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🌮</div>
+              <div style={{ fontSize: 13, color: "#888" }}>No recommendations yet</div>
+              <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>Be the first to suggest a spot!</div>
+            </div>
+          ) : (
+            rankings.map((r, j) => (
+              <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                {/* Rank */}
+                <div style={{ minWidth: 28, textAlign: "center", fontSize: j < 3 ? 18 : 13, fontWeight: 900, color: j === 0 ? "#E8B100" : j === 1 ? "#C0C0C0" : j === 2 ? "#CD7F32" : "#444", fontFamily: "'Bitter', serif" }}>
+                  {j === 0 ? "🥇" : j === 1 ? "🥈" : j === 2 ? "🥉" : (j + 1)}
+                </div>
+                {/* Spot name */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{r.name}</div>
+                </div>
+                {/* Upvote button */}
+                <button onClick={() => handleUpvote(r.name)}
+                  disabled={voted[r.name]}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "8px 14px", borderRadius: 8, cursor: voted[r.name] ? "default" : "pointer",
+                    background: voted[r.name] ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.05)",
+                    border: voted[r.name] ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.1)",
+                    color: voted[r.name] ? "#22C55E" : "#fff",
+                    fontSize: 13, fontWeight: 700, fontFamily: "inherit", transition: "all 0.2s",
+                  }}>
+                  <span style={{ fontSize: 16 }}>{voted[r.name] ? "✓" : "👍"}</span>
+                  <span>{r.votes}</span>
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+        {/* Add new spot */}
+        <div style={{ padding: "12px 20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          {adding ? (
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                autoFocus
+                value={newSpot}
+                onChange={e => setNewSpot(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleAdd()}
+                placeholder="Taco spot name..."
+                style={{ flex: 1, padding: "10px 12px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 8, color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none" }}
+              />
+              <button onClick={handleAdd} disabled={!newSpot.trim()}
+                style={{ padding: "10px 18px", borderRadius: 8, border: "none", background: newSpot.trim() ? "#E8B100" : "#333", color: newSpot.trim() ? "#000" : "#666", fontWeight: 800, fontSize: 13, cursor: newSpot.trim() ? "pointer" : "default", fontFamily: "inherit" }}>
+                Add
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => setAdding(true)}
+              style={{ width: "100%", padding: "12px", borderRadius: 10, border: "1px dashed rgba(232,177,0,0.3)", background: "rgba(232,177,0,0.06)", color: "#E8B100", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+              + Recommend a Spot
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TourSection() {
+  const [recModal, setRecModal] = useState(null); // tour date index
+  const [recCounts, setRecCounts] = useState({}); // { index: count }
+
+  // Load recommendation counts
+  useEffect(() => {
+    (async () => {
+      const counts = {};
+      for (let i = 0; i < TOUR_DATES.length; i++) {
+        try {
+          const result = await window.storage.get("taco-recs-" + i, true);
+          if (result && result.value) {
+            const recs = JSON.parse(result.value);
+            counts[i] = recs.length;
+          }
+        } catch (e) {}
+      }
+      setRecCounts(counts);
+    })();
+  }, [recModal]); // refresh counts when modal closes
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
         <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>🎸 Tour Dates via Bandsintown</div>
-        <a href="https://www.bandsintown.com/a/39860-rich-otoole" target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#555", textDecoration: "none" }}>See all →</a>
+        <a href={BANDSINTOWN_ARTIST} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#555", textDecoration: "none" }}>See all →</a>
       </div>
       {TOUR_DATES.map((d, i) => (
         <div key={i} style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, overflow: "hidden" }}>
@@ -967,73 +1084,26 @@ function TourSection() {
               <div style={{ fontSize: 10, color: "#E8B100", marginTop: 3 }}>🌮 {d.tacoHunt}</div>
               {d.rsvp > 0 && <div style={{ fontSize: 9, color: "#555", marginTop: 2 }}>{d.rsvp} fans going</div>}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "stretch", minWidth: 90 }}>
               {d.soldOut ? (
-                <span style={{ fontSize: 9, color: "#EF4444", fontWeight: 700, border: "1px solid rgba(239,68,68,0.25)", padding: "4px 8px", borderRadius: 6 }}>SOLD OUT</span>
+                <span style={{ fontSize: 11, color: "#EF4444", fontWeight: 700, border: "1px solid rgba(239,68,68,0.25)", padding: "8px 12px", borderRadius: 8, textAlign: "center" }}>SOLD OUT</span>
               ) : (
-                <a href={BANDSINTOWN_ARTIST} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#000", fontWeight: 800, background: "#E8B100", border: "none", padding: "7px 14px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit", textDecoration: "none", display: "inline-block" }}>RSVP</a>
+                <a href={BANDSINTOWN_ARTIST} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: "#000", fontWeight: 800, background: "#E8B100", border: "none", padding: "10px 16px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", textDecoration: "none", textAlign: "center" }}>RSVP</a>
               )}
               {!d.soldOut && (
-                <button onClick={() => { setSuggestFor(suggestFor === i ? null : i); setSpotName(""); setSpotWhy(""); }}
-                  style={{ fontSize: 8, color: suggestFor === i ? "#E8B100" : "#666", fontWeight: 700, background: "none", border: "1px solid " + (suggestFor === i ? "rgba(232,177,0,0.3)" : "rgba(255,255,255,0.08)"), padding: "4px 8px", borderRadius: 5, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                  🌮 Suggest Spot
+                <button onClick={() => setRecModal(i)}
+                  style={{ fontSize: 11, color: "#E8B100", fontWeight: 700, background: "rgba(232,177,0,0.08)", border: "1px solid rgba(232,177,0,0.2)", padding: "8px 12px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                  🌮 Fan Picks{recCounts[i] > 0 ? (" (" + recCounts[i] + ")") : ""}
                 </button>
               )}
             </div>
           </div>
-          {/* Suggestion count */}
-          {suggestions[i] && suggestions[i].length > 0 && suggestFor !== i && (
-            <div onClick={() => setSuggestFor(i)} style={{ padding: "6px 14px 10px", cursor: "pointer" }}>
-              <span style={{ fontSize: 9, color: "#E8B100" }}>🌮 {suggestions[i].length} fan suggestion{suggestions[i].length > 1 ? "s" : ""}</span>
-            </div>
-          )}
-          {/* Suggest a spot form */}
-          {suggestFor === i && (
-            <div style={{ padding: "0 14px 14px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-              {submitted[i] ? (
-                <div style={{ textAlign: "center", padding: "12px 0", color: "#22C55E", fontSize: 12, fontWeight: 700 }}>
-                  ✓ Suggestion sent to Rich!
-                </div>
-              ) : (
-                <>
-                  <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, marginTop: 10, marginBottom: 8 }}>Suggest a taco spot near {d.city.split(",")[0]}</div>
-                  <input
-                    value={spotName}
-                    onChange={e => setSpotName(e.target.value)}
-                    placeholder="Spot name (e.g. Taco Loco)"
-                    style={{ width: "100%", padding: "8px 10px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, color: "#fff", fontSize: 12, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 6 }}
-                  />
-                  <input
-                    value={spotWhy}
-                    onChange={e => setSpotWhy(e.target.value)}
-                    placeholder="Why should Rich go? (optional)"
-                    style={{ width: "100%", padding: "8px 10px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, color: "#fff", fontSize: 12, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 8 }}
-                  />
-                  <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                    <button onClick={() => setSuggestFor(null)} style={{ fontSize: 10, color: "#666", background: "none", border: "1px solid rgba(255,255,255,0.08)", padding: "6px 12px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
-                    <button onClick={() => handleSubmit(i)} disabled={!spotName.trim()}
-                      style={{ fontSize: 10, color: "#000", fontWeight: 800, background: spotName.trim() ? "#E8B100" : "#555", border: "none", padding: "6px 14px", borderRadius: 6, cursor: spotName.trim() ? "pointer" : "default", fontFamily: "inherit", opacity: spotName.trim() ? 1 : 0.5 }}>
-                      Send to Rich 🌮
-                    </button>
-                  </div>
-                </>
-              )}
-              {/* Show existing suggestions */}
-              {suggestions[i] && suggestions[i].length > 0 && !submitted[i] && (
-                <div style={{ marginTop: 10, borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: 8 }}>
-                  <div style={{ fontSize: 9, color: "#666", marginBottom: 6 }}>Fan suggestions ({suggestions[i].length})</div>
-                  {suggestions[i].slice(-5).map((s, j) => (
-                    <div key={j} style={{ fontSize: 11, color: "#aaa", padding: "4px 0", borderBottom: "1px solid rgba(255,255,255,0.02)" }}>
-                      <span style={{ color: "#fff", fontWeight: 600 }}>{s.name}</span>
-                      {s.why && <span style={{ color: "#666" }}> — {s.why}</span>}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       ))}
+      {/* Recommendation modal */}
+      {recModal !== null && (
+        <RecommendModal tourDate={TOUR_DATES[recModal]} tourIndex={recModal} onClose={() => setRecModal(null)} />
+      )}
       {/* Merch callout */}
       <a href="https://godtexasandtacos.com" target="_blank" rel="noopener noreferrer" style={{
         display: "flex", alignItems: "center", gap: 12, padding: 14, background: "rgba(232,177,0,0.04)", border: "1px solid rgba(232,177,0,0.12)", borderRadius: 12, textDecoration: "none",
