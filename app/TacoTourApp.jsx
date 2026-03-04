@@ -885,12 +885,20 @@ export default function TacoTourApp() {
     : reviewFilter === "Hot Takes" ? TACO_SPOTS.filter(s => Math.abs(s.richRating - s.fanRating) > 0.5)
     : [...TACO_SPOTS].sort((a, b) => b.richRating - a.richRating);
 
+  const tabIcons = {
+    map: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>,
+    reviews: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill={c} stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+    tour: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+    music: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
+    profile: (c) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  };
+
   const tabs = [
-    { id: "map", label: "Map", icon: "🗺️" },
-    { id: "reviews", label: "Reviews", icon: "🌮" },
-    { id: "tour", label: "Tour", icon: "🎸" },
-    { id: "music", label: "Music", icon: "🎵" },
-    { id: "profile", label: user?.guest ? "Join" : "Profile", icon: "⭐" },
+    { id: "map", label: "Map" },
+    { id: "reviews", label: "Reviews" },
+    { id: "tour", label: "Tour" },
+    { id: "music", label: "Music" },
+    { id: "profile", label: user?.guest ? "Join" : "Profile" },
   ];
 
   // --- RENDER ---
@@ -1024,17 +1032,18 @@ export default function TacoTourApp() {
       }}>
         {tabs.map(t => {
           const active = tab === t.id;
+          const iconColor = active ? "#E8B100" : "#ffffff";
           return (
             <button key={t.id} onClick={() => { setTab(t.id); setShowReviewForm(false); setShowShareCard(null); }}
               style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "4px 14px", position: "relative" }}>
               <div style={{
                 width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                background: active ? "rgba(232,177,0,0.18)" : "rgba(255,255,255,0.1)",
-                border: active ? "2px solid rgba(232,177,0,0.7)" : "2px solid rgba(255,255,255,0.25)",
-                boxShadow: active ? "0 0 18px rgba(232,177,0,0.35), inset 0 0 10px rgba(232,177,0,0.1)" : "0 0 8px rgba(255,255,255,0.06)",
+                background: active ? "rgba(232,177,0,0.18)" : "rgba(255,255,255,0.08)",
+                border: active ? "2px solid rgba(232,177,0,0.7)" : "2px solid rgba(255,255,255,0.2)",
+                boxShadow: active ? "0 0 18px rgba(232,177,0,0.35), inset 0 0 10px rgba(232,177,0,0.1)" : "0 0 6px rgba(255,255,255,0.05)",
                 transition: "all 0.3s ease",
               }}>
-                <span style={{ fontSize: 18, filter: "brightness(1.4) saturate(1.3)", transition: "filter 0.3s" }}>{t.icon}</span>
+                {tabIcons[t.id](iconColor)}
               </div>
               <span style={{ fontSize: 9, color: active ? "#E8B100" : "#ddd", fontWeight: active ? 700 : 600, letterSpacing: active ? 0.5 : 0, transition: "all 0.3s" }}>{t.label}</span>
             </button>
