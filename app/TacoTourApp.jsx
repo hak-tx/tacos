@@ -1109,7 +1109,22 @@ export default function TacoTourApp() {
             <>
               <MapView spots={TACO_SPOTS} onSelectSpot={setSelectedSpot} selectedSpot={selectedSpot} />
               {selectedSpot && (
-                <ReviewCard spot={selectedSpot} userVote={votes[selectedSpot.id]} onVote={handleVote} expanded={true} onToggle={() => setSelectedSpot(null)} user={user} />
+                <div ref={el => {
+                  if (el) {
+                    setTimeout(() => {
+                      const rect = el.getBoundingClientRect();
+                      const viewH = window.innerHeight;
+                      // Scroll so review top sits at ~55% of viewport height (map still visible above)
+                      const targetY = viewH * 0.55;
+                      const scrollBy = rect.top - targetY;
+                      if (scrollBy > 20) {
+                        window.scrollBy({ top: scrollBy, behavior: "smooth" });
+                      }
+                    }, 150);
+                  }
+                }}>
+                  <ReviewCard spot={selectedSpot} userVote={votes[selectedSpot.id]} onVote={handleVote} expanded={true} onToggle={() => setSelectedSpot(null)} user={user} />
+                </div>
               )}
               {!selectedSpot && <div style={{ textAlign: "center", color: "#444", fontSize: 12, padding: 4 }}>Tap a pin to see Rich's take</div>}
 
