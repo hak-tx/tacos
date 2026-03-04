@@ -462,48 +462,69 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
   );
 }
 
-// 4b. SHARE SECTION — one share button, generates image + text via native share
+// 4b. SHARE SECTION — pre-generates image on mount, instant share on tap
 function ShareSection({ spot }) {
   const cardRef = useRef(null);
-  const [busy, setBusy] = useState(false);
+  const cachedFile = useRef(null);
+  const [ready, setReady] = useState(false);
 
-  const handleShare = useCallback(async () => {
-    const shareText = `🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}"`;
-    const shareUrl = "https://tacos-lime.vercel.app";
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-    if (isSafari) {
-      // Safari supports file sharing — generate image first, then share
-      setBusy(true);
-      const shareData = { title: spot.name, text: shareText, url: shareUrl };
+  // Pre-generate the share image as soon as this section mounts (card expanded)
+  useEffect(() => {
+    let cancelled = false;
+    const generate = async () => {
       try {
+        if (!cardRef.current) return;
+        // Small delay to let the hidden card render in DOM
+        await new Promise(r => setTimeout(r, 100));
+        if (cancelled || !cardRef.current) return;
         const canvas = await html2canvas(cardRef.current, {
           backgroundColor: "#0d0d14", scale: 2, useCORS: true, logging: false, windowWidth: 400,
         });
         const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-        if (blob) {
-          const file = new File([blob], "taco-tour-review.png", { type: "image/png" });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            shareData.files = [file];
-          }
+        if (blob && !cancelled) {
+          cachedFile.current = new File([blob], "taco-tour-review.png", { type: "image/png", lastModified: Date.now() });
+          setReady(true);
+        }
+      } catch (e) {
+        console.error("Image pre-gen failed:", e);
+        // Share will still work, just without image
+        setReady(true);
+      }
+    };
+    generate();
+    return () => { cancelled = true; };
+  }, [spot.id]);
+
+  // Share handler — no async work before navigator.share, image is pre-cached
+  const handleShare = useCallback(async () => {
+    const shareText = `🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}"`;
+    const shareUrl = "https://tacos-lime.vercel.app";
+    const shareData = { title: spot.name, text: shareText, url: shareUrl };
+
+    // Attach cached image if available and supported
+    if (cachedFile.current) {
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [cachedFile.current] })) {
+          shareData.files = [cachedFile.current];
         }
       } catch {}
-      try { await navigator.share(shareData); } catch {}
-      setBusy(false);
-    } else {
-      // Chrome/other — share immediately (no async before share call)
-      try { await navigator.share({ title: spot.name, text: shareText, url: shareUrl }); } catch {}
+    }
+
+    try {
+      await navigator.share(shareData);
+    } catch (e) {
+      if (e.name !== "AbortError") console.error("Share error:", e);
     }
   }, [spot]);
 
   return (
     <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 8 }}>
-      {/* Hidden branded share card — rendered off-screen, captured as image */}
+      {/* Hidden branded share card — rendered in DOM but invisible, for html2canvas */}
       <div style={{ position: "fixed", left: 0, top: 0, opacity: 0, pointerEvents: "none", zIndex: -1 }}>
         <div ref={cardRef} style={{ width: 400, fontFamily: "system-ui, -apple-system, sans-serif", background: "#0d0d14" }}>
           <div style={{ height: 4, background: "linear-gradient(90deg, #E8B100, #D97706, #E8B100)" }} />
           <div style={{ padding: "24px 28px 28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: 22 }}>
               <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 900, color: "#000" }}>R</div>
               <div>
                 <div style={{ fontSize: 15, color: "#fff", fontWeight: 700 }}>Rich O'Toole</div>
@@ -513,7 +534,7 @@ function ShareSection({ spot }) {
             </div>
             <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1.15, marginBottom: 4 }}>{spot.name}</div>
             <div style={{ fontSize: 13, color: "#888", marginBottom: 24 }}>{spot.city}</div>
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 16, marginBottom: 24, padding: "16px 20px", background: "rgba(255,255,255,0.04)", borderRadius: 12 }}>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: "16px", marginBottom: 24, padding: "16px 20px", background: "rgba(255,255,255,0.04)", borderRadius: 12 }}>
               <div style={{ textAlign: "center", flex: 1 }}>
                 <div style={{ fontSize: 56, fontWeight: 900, color: ratingColor(spot.richRating), lineHeight: 1 }}>{spot.richRating}</div>
                 <div style={{ fontSize: 10, color: "#E8B100", textTransform: "uppercase", letterSpacing: 2, fontWeight: 700, marginTop: 6 }}>Rich Says</div>
@@ -533,16 +554,18 @@ function ShareSection({ spot }) {
         </div>
       </div>
 
-      <button onClick={handleShare} disabled={busy} style={{
+      <button onClick={handleShare} disabled={!ready} style={{
         width: "100%", padding: "12px 0", borderRadius: 10,
         border: "1px solid rgba(232,177,0,0.3)",
         background: "linear-gradient(135deg, rgba(232,177,0,0.12), rgba(232,177,0,0.04))",
         color: "#E8B100", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-        letterSpacing: 0.5, opacity: busy ? 0.6 : 1,
+        letterSpacing: 0.5, opacity: ready ? 1 : 0.5,
       }}>
-        {busy ? "Generating..." : "📲 Share This Take"}
+        {ready ? "📲 Share This Take" : "Preparing share..."}
       </button>
-      <div style={{ textAlign: "center", marginTop: 4, fontSize: 9, color: "#555" }}>Opens with image + text · tag @RichOToole 🔥</div>
+      <div style={{ textAlign: "center", marginTop: 4, fontSize: 9, color: "#555" }}>
+        {ready && cachedFile.current ? "Image + text ready · tag @RichOToole 🔥" : "Tag @RichOToole 🔥"}
+      </div>
     </div>
   );
 }
