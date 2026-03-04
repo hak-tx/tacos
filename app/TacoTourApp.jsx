@@ -160,7 +160,7 @@ function SplashScreen({ onGetStarted }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: 32, textAlign: "center", opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease" }}>
       <div style={{ fontSize: 56, marginBottom: 20, filter: "drop-shadow(0 0 20px rgba(232,177,0,0.3))" }}>{s.emoji}</div>
-      <h1 style={{ fontSize: 26, fontWeight: 900, color: "#fff", fontFamily: "'Playfair Display', serif", margin: "0 0 8px", lineHeight: 1.2 }}>{s.title}</h1>
+      <h1 style={{ fontSize: 26, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px", lineHeight: 1.2 }}>{s.title}</h1>
       <p style={{ fontSize: 14, color: "#E8B100", fontWeight: 600, margin: "0 0 8px" }}>{s.subtitle}</p>
       <p style={{ fontSize: 12, color: "#888", margin: "0 0 32px", maxWidth: 280, lineHeight: 1.5 }}>{s.detail}</p>
       {/* Dots */}
@@ -198,7 +198,7 @@ function AuthScreen({ mode, onComplete, onBack }) {
   return (
     <div style={{ minHeight: "100vh", padding: "60px 24px 24px" }}>
       <button onClick={onBack} style={{ background: "none", border: "none", color: "#666", fontSize: 12, cursor: "pointer", marginBottom: 24, fontFamily: "inherit" }}>← Back</button>
-      <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", fontFamily: "'Playfair Display', serif", margin: "0 0 4px" }}>
+      <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 4px" }}>
         {authMode === "signup" ? "Join the Tour" : "Welcome Back"}
       </h1>
       <p style={{ fontSize: 12, color: "#888", margin: "0 0 28px" }}>
@@ -372,18 +372,18 @@ function MapView({ spots, onSelectSpot, selectedSpot }) {
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{selectedSpot.name}</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>{selectedSpot.name}</div>
               <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>{selectedSpot.city}</div>
               {selectedSpot.tags && <div style={{ display: "flex", gap: 4, marginTop: 4 }}>{selectedSpot.tags.map(t => <span key={t} style={{ fontSize: 9, color: "#aaa", background: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: 4 }}>{t}</span>)}</div>}
             </div>
             <div style={{ display: "flex", gap: 16 }}>
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: ratingColor(selectedSpot.richRating), fontFamily: "'Playfair Display', serif" }}>{selectedSpot.richRating}</div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: ratingColor(selectedSpot.richRating), fontFamily: "'Bitter', serif" }}>{selectedSpot.richRating}</div>
                 <div style={{ fontSize: 8, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Rich</div>
               </div>
               <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.1)" }} />
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#60A5FA", fontFamily: "'Playfair Display', serif" }}>{selectedSpot.fanRating}</div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif" }}>{selectedSpot.fanRating}</div>
                 <div style={{ fontSize: 8, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Fans</div>
               </div>
             </div>
@@ -422,7 +422,7 @@ function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{spot.name}</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>{spot.name}</span>
             {spot.trending && <span style={badgeStyle("#E8B100")}>TRENDING</span>}
             {hotTake && <span style={badgeStyle("#EF4444")}>HOT TAKE</span>}
           </div>
@@ -432,7 +432,7 @@ function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
           </div>
         </div>
         <div style={{ textAlign: "center", minWidth: 54 }}>
-          <div style={{ fontSize: 30, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{spot.richRating}</div>
+          <div style={{ fontSize: 30, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.richRating}</div>
           <div style={{ fontSize: 8, color: ratingColor(spot.richRating), textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginTop: 2 }}>{ratingLabel(spot.richRating)}</div>
         </div>
       </div>
@@ -545,16 +545,16 @@ function ShareCardPreview({ spot }) {
         </div>
         {/* Card body */}
         <div style={{ padding: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", fontFamily: "'Playfair Display', serif", marginBottom: 4 }}>{spot.name}</div>
+          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", marginBottom: 4 }}>{spot.name}</div>
           <div style={{ fontSize: 11, color: "#888", marginBottom: 12 }}>{spot.city}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 36, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{spot.richRating}</div>
+              <div style={{ fontSize: 36, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.richRating}</div>
               <div style={{ fontSize: 9, color: "#E8B100", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Rich says</div>
             </div>
             <div style={{ fontSize: 20, color: "#333" }}>vs</div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 36, fontWeight: 900, color: "#60A5FA", fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{spot.fanRating}</div>
+              <div style={{ fontSize: 36, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.fanRating}</div>
               <div style={{ fontSize: 9, color: "#60A5FA", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Fans say</div>
             </div>
           </div>
@@ -587,7 +587,7 @@ function FanReviewForm({ user, onClose }) {
     return (
       <div style={{ padding: 24, textAlign: "center" }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>🌮</div>
-        <h2 style={{ fontSize: 20, fontWeight: 900, color: "#fff", fontFamily: "'Playfair Display', serif", margin: "0 0 8px" }}>Take Submitted!</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px" }}>Take Submitted!</h2>
         <p style={{ fontSize: 12, color: "#888", margin: "0 0 20px" }}>Your review is live. Let's see if Rich agrees.</p>
         <div style={{ background: "rgba(232,177,0,0.06)", borderRadius: 10, padding: 12, marginBottom: 16 }}>
           <div style={{ fontSize: 11, color: "#999" }}>+15 XP earned · Review #{Math.floor(Math.random() * 50) + 1} for you</div>
@@ -640,7 +640,7 @@ function PollWidget({ debate, onVote, userVote }) {
   return (
     <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
       <div style={{ fontSize: 10, color: "#EF4444", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>🔥 Fan Debate</div>
-      <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Playfair Display', serif", marginBottom: 12, lineHeight: 1.4 }}>{debate.question}</div>
+      <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Bitter', serif", marginBottom: 12, lineHeight: 1.4 }}>{debate.question}</div>
       {debate.options.map((opt, i) => (
         <button key={i} onClick={() => onVote(debate.id, i)} style={{
           width: "100%", marginBottom: 6, padding: "10px 14px", borderRadius: 8, border: "none",
@@ -673,7 +673,7 @@ function TourSection() {
         <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: 14, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12 }}>
           <div style={{ minWidth: 50, textAlign: "center" }}>
             <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase" }}>{d.day}</div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: "#E8B100", fontFamily: "'Playfair Display', serif" }}>{d.date.split(" ")[1]}</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: "#E8B100", fontFamily: "'Bitter', serif" }}>{d.date.split(" ")[1]}</div>
             <div style={{ fontSize: 9, color: "#666" }}>{d.date.split(" ")[0]}</div>
           </div>
           <div style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,0.06)", paddingLeft: 12 }}>
@@ -716,7 +716,7 @@ function MusicSection() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
           <div>
             <div style={{ fontSize: 10, color: "#1DB954", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>♫ Spotify</div>
-            <div style={{ fontSize: 16, color: "#fff", fontWeight: 700, fontFamily: "'Playfair Display', serif" }}>Taco Tour Playlist</div>
+            <div style={{ fontSize: 16, color: "#fff", fontWeight: 700, fontFamily: "'Bitter', serif" }}>Taco Tour Playlist</div>
             <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>Curated by Rich · {PLAYLIST_TRACKS.length} tracks</div>
           </div>
           <a href={RICH.spotify} target="_blank" rel="noopener noreferrer" style={{ background: "#1DB954", border: "none", color: "#000", fontSize: 10, fontWeight: 800, padding: "7px 14px", borderRadius: 20, cursor: "pointer", textDecoration: "none" }}>OPEN</a>
@@ -754,7 +754,7 @@ function MusicSection() {
             <img src={ALBUMS[0].art} alt={ALBUMS[0].title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{RICH.latestAlbum}</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>{RICH.latestAlbum}</div>
             <div style={{ fontSize: 11, color: "#888" }}>{RICH.label} · 2026</div>
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
               <a href={RICH.spotify} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#1DB954", fontWeight: 700, textDecoration: "none" }}>Spotify</a>
@@ -784,7 +784,7 @@ function MusicSection() {
                   {a.art ? <img src={a.art} alt={a.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🤠</div>}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, color: a.current ? "#E8B100" : "#eee", fontWeight: 700, fontFamily: "'Playfair Display', serif" }}>{a.title}</div>
+                  <div style={{ fontSize: 13, color: a.current ? "#E8B100" : "#eee", fontWeight: 700, fontFamily: "'Bitter', serif" }}>{a.title}</div>
                   <div style={{ fontSize: 10, color: "#777", marginTop: 2 }}>{a.year} · {RICH.label}</div>
                 </div>
                 {a.current && <span style={{ fontSize: 8, color: "#E8B100", background: "rgba(232,177,0,0.15)", padding: "3px 8px", borderRadius: 4, fontWeight: 700 }}>NEW</span>}
@@ -806,7 +806,7 @@ function ProfileSection({ user, onLogout }) {
         <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 900, color: "#000", margin: "0 auto 10px" }}>
           {(user?.name || "T")[0].toUpperCase()}
         </div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{user?.name || "Taco Fan"}</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", fontFamily: "'Bitter', serif" }}>{user?.name || "Taco Fan"}</div>
         <div style={{ fontSize: 11, color: "#888" }}>{user?.city || "Texas"} · Joined Mar 2026</div>
         <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 14 }}>
           <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#E8B100" }}>0</div><div style={{ fontSize: 9, color: "#666" }}>Reviews</div></div>
@@ -978,7 +978,7 @@ export default function TacoTourApp() {
         <div style={{ padding: "16px 16px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>Rich O'Toole's</div>
-            <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: 0, fontFamily: "'Playfair Display', serif" }}>Taco Tour</h1>
+            <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: 0, fontFamily: "'Bitter', serif" }}>Taco Tour</h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ textAlign: "right" }}>
@@ -1024,12 +1024,20 @@ export default function TacoTourApp() {
                   }}>{f}</button>
                 ))}
               </div>
-              {/* Region Filters */}
+              {/* Region Filters - scroll to section on tap */}
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                 {["All", ...ALL_REGIONS].map(r => {
                   const count = r === "All" ? TACO_SPOTS.length : TACO_SPOTS.filter(s => getRegion(s.city) === r).length;
                   return (
-                    <button key={r} onClick={() => setRegionFilter(r)} style={{
+                    <button key={r} onClick={() => {
+                      setRegionFilter(r);
+                      if (r !== "All") {
+                        setTimeout(() => {
+                          const el = document.getElementById("region-" + r.replace(/\s/g, "-"));
+                          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 50);
+                      }
+                    }} style={{
                       padding: "5px 10px", borderRadius: 8, border: "none",
                       background: regionFilter === r ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.03)",
                       color: regionFilter === r ? "#22C55E" : "#555", fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
@@ -1041,23 +1049,40 @@ export default function TacoTourApp() {
                   );
                 })}
               </div>
-              {/* Results count */}
-              {regionFilter !== "All" && (
-                <div style={{ fontSize: 11, color: "#22C55E", fontWeight: 600 }}>
-                  {filteredSpots.length} spot{filteredSpots.length !== 1 ? "s" : ""} in {regionFilter}
-                </div>
-              )}
-              {filteredSpots.map(spot => (
-                <ReviewCard key={spot.id} spot={spot} userVote={votes[spot.id]} onVote={handleVote}
-                  expanded={expandedReview === spot.id} onToggle={() => setExpandedReview(expandedReview === spot.id ? null : spot.id)} user={user} />
-              ))}
+              {/* Grouped reviews by region */}
+              {(() => {
+                const grouped = {};
+                filteredSpots.forEach(s => {
+                  const r = getRegion(s.city);
+                  if (!grouped[r]) grouped[r] = [];
+                  grouped[r].push(s);
+                });
+                const regionOrder = Object.keys(grouped).sort();
+                return regionOrder.map(region => (
+                  <div key={region} id={"region-" + region.replace(/\s/g, "-")}>
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 8, padding: "10px 0 4px",
+                      borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 6,
+                    }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: "#22C55E", fontFamily: "'Bitter', serif" }}>{region}</span>
+                      <span style={{ fontSize: 9, color: "#555", fontWeight: 600 }}>{grouped[region].length} spot{grouped[region].length !== 1 ? "s" : ""}</span>
+                      <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.04)" }} />
+                      <span style={{ fontSize: 9, color: "#666" }}>Avg {(grouped[region].reduce((a, s) => a + s.richRating, 0) / grouped[region].length).toFixed(1)}</span>
+                    </div>
+                    {grouped[region].map(spot => (
+                      <ReviewCard key={spot.id} spot={spot} userVote={votes[spot.id]} onVote={handleVote}
+                        expanded={expandedReview === spot.id} onToggle={() => setExpandedReview(expandedReview === spot.id ? null : spot.id)} user={user} />
+                    ))}
+                  </div>
+                ));
+              })()}
               {/* Submit CTA */}
               {showReviewForm ? (
                 <FanReviewForm user={user} onClose={() => setShowReviewForm(false)} />
               ) : (
                 <div style={{ background: "rgba(232,177,0,0.04)", border: "1px solid rgba(232,177,0,0.12)", borderRadius: 14, padding: 16, textAlign: "center" }}>
                   <div style={{ fontSize: 28, marginBottom: 6 }}>🌮</div>
-                  <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Playfair Display', serif", marginBottom: 4 }}>Got a Taco Take?</div>
+                  <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Bitter', serif", marginBottom: 4 }}>Got a Taco Take?</div>
                   <div style={{ fontSize: 11, color: "#888", marginBottom: 12 }}>Rate a spot. Climb the leaderboard. Prove Rich wrong.</div>
                   <button onClick={() => setShowReviewForm(true)} style={{ ...btnPrimary, width: "auto", padding: "10px 28px", display: "inline-block" }}>SUBMIT A REVIEW</button>
                 </div>
@@ -1073,7 +1098,7 @@ export default function TacoTourApp() {
             user?.guest ? (
               <div style={{ textAlign: "center", padding: "40px 20px" }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>🌮</div>
-                <h2 style={{ fontSize: 20, fontWeight: 900, color: "#fff", fontFamily: "'Playfair Display', serif", margin: "0 0 8px" }}>Join the Tour</h2>
+                <h2 style={{ fontSize: 20, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px" }}>Join the Tour</h2>
                 <p style={{ fontSize: 12, color: "#888", margin: "0 0 24px" }}>Create an account to submit reviews, vote on debates, and earn badges.</p>
                 <button onClick={() => { setScreen("auth"); setAuthMode("signup"); }} style={btnPrimary}>Create Account</button>
               </div>
