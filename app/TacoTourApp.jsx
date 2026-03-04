@@ -593,45 +593,52 @@ function ReviewCard({ spot, userVote, onVote, expanded, onToggle, user }) {
 function ShareCardPreview({ spot }) {
   if (!spot) return null;
   return (
-    <div style={{ padding: 16 }}>
-      <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>📱 Social Share Preview</div>
-      <div style={{ background: "linear-gradient(135deg, #0d0d14, #1a1a2e)", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(232,177,0,0.2)", maxWidth: 340 }}>
+    <div style={{ background: "rgba(232,177,0,0.03)", border: "1px solid rgba(232,177,0,0.15)", borderRadius: 16, padding: 16 }}>
+      {/* Header with sharing encouragement */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>📲 Share This Take</div>
+          <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>Tag @RichOToole — he might repost!</div>
+        </div>
+      </div>
+      {/* Share card */}
+      <div style={{ background: "linear-gradient(135deg, #0d0d14, #1a1a2e)", borderRadius: 14, overflow: "hidden", border: "1px solid rgba(232,177,0,0.2)" }}>
         {/* Card header */}
-        <div style={{ background: "rgba(232,177,0,0.08)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900, color: "#000" }}>R</div>
+        <div style={{ background: "rgba(232,177,0,0.08)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: "#000" }}>R</div>
           <div>
-            <div style={{ fontSize: 12, color: "#fff", fontWeight: 700 }}>Rich O'Toole</div>
-            <div style={{ fontSize: 10, color: "#E8B100" }}>Taco Tour 🌮</div>
+            <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>Rich O'Toole</div>
+            <div style={{ fontSize: 9, color: "#E8B100" }}>Taco Tour 🌮</div>
           </div>
         </div>
         {/* Card body */}
-        <div style={{ padding: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", marginBottom: 4 }}>{spot.name}</div>
-          <div style={{ fontSize: 11, color: "#888", marginBottom: 12 }}>{spot.city}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+        <div style={{ padding: 14 }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", marginBottom: 3 }}>{spot.name}</div>
+          <div style={{ fontSize: 10, color: "#888", marginBottom: 10 }}>{spot.city}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 10 }}>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 36, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.richRating}</div>
-              <div style={{ fontSize: 9, color: "#E8B100", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Rich says</div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.richRating}</div>
+              <div style={{ fontSize: 8, color: "#E8B100", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Rich says</div>
             </div>
-            <div style={{ fontSize: 20, color: "#333" }}>vs</div>
+            <div style={{ fontSize: 16, color: "#333" }}>vs</div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 36, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.fanRating}</div>
-              <div style={{ fontSize: 9, color: "#60A5FA", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Fans say</div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.fanRating}</div>
+              <div style={{ fontSize: 8, color: "#60A5FA", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Fans say</div>
             </div>
           </div>
-          <div style={{ fontSize: 11, color: "#ccc", fontStyle: "italic", lineHeight: 1.5 }}>"{spot.richQuote}"</div>
+          <div style={{ fontSize: 10, color: "#ccc", fontStyle: "italic", lineHeight: 1.4 }}>"{spot.richQuote}"</div>
         </div>
-        {/* CTA */}
-        <div style={{ padding: "10px 16px", background: "rgba(232,177,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 10, color: "#888" }}>richstacotour.com</span>
-          <span style={{ fontSize: 10, color: "#E8B100", fontWeight: 700 }}>Who's right? Vote now →</span>
+        <div style={{ padding: "8px 14px", background: "rgba(232,177,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 9, color: "#888" }}>richstacotour.com</span>
+          <span style={{ fontSize: 9, color: "#E8B100", fontWeight: 700 }}>Who's right? Vote now →</span>
         </div>
       </div>
+      {/* Share buttons */}
       <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
         {[
-          { label: "Post", icon: "𝕏", bg: "#000", color: "#fff", border: "1px solid #555", action: () => window.open("https://x.com/intent/tweet?text=" + encodeURIComponent(`🌮 ${spot.name} — Rich O'Toole gave it a ${spot.richRating}! "${spot.richQuote}" richstacotour.com @RichOToole`), "_blank") },
+          { label: "Post", icon: "𝕏", bg: "#000", color: "#fff", border: "1px solid #555", action: () => window.open("https://x.com/intent/tweet?text=" + encodeURIComponent(`🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}" richstacotour.com`), "_blank") },
           { label: "Share", icon: "f", bg: "#1877F2", color: "#fff", border: "none", action: () => window.open("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent("https://tacos-lime.vercel.app") + "&quote=" + encodeURIComponent(`🌮 ${spot.name} — Rich O'Toole rated it ${spot.richRating}!`), "_blank") },
-          { label: "Story", icon: "📸", bg: "linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)", color: "#fff", border: "none", action: () => { if (navigator.share) navigator.share({ title: spot.name, text: `${spot.name} — ${spot.richRating}/10 🌮`, url: "https://tacos-lime.vercel.app" }).catch(()=>{}); else alert("Open Instagram and share from your camera roll!"); } },
+          { label: "Story", icon: "📸", bg: "linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)", color: "#fff", border: "none", action: () => { if (navigator.share) navigator.share({ title: spot.name, text: `🌮 ${spot.name} — ${spot.richRating}/10 by @RichOToole! Do you agree?`, url: "https://tacos-lime.vercel.app" }).catch(()=>{}); else alert("Open Instagram and share from your camera roll!"); } },
           { label: "Copy", icon: "📋", bg: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", action: () => { navigator.clipboard.writeText(`🌮 ${spot.name} (${spot.city}) — ${spot.richRating}/10 by Rich O'Toole. "${spot.richQuote}" https://tacos-lime.vercel.app`).then(() => alert("Copied!")).catch(()=>{}); } },
         ].map(p => (
           <button key={p.label} onClick={p.action} style={{
@@ -645,6 +652,10 @@ function ShareCardPreview({ spot }) {
             <span>{p.label}</span>
           </button>
         ))}
+      </div>
+      {/* Encouragement */}
+      <div style={{ textAlign: "center", marginTop: 10, fontSize: 10, color: "#666", fontStyle: "italic" }}>
+        Share your take & tag @RichOToole for a chance to be featured 🔥
       </div>
     </div>
   );
@@ -1073,13 +1084,10 @@ export default function TacoTourApp() {
               {selectedSpot && (
                 <>
                   <ReviewCard spot={selectedSpot} userVote={votes[selectedSpot.id]} onVote={handleVote} expanded={true} onToggle={() => setSelectedSpot(null)} user={user} />
-                  <button onClick={() => setShowShareCard(selectedSpot)} style={{ ...btnSecondary, fontSize: 11, padding: "10px 0" }}>
-                    👀 Preview Share Card
-                  </button>
+                  <ShareCardPreview spot={selectedSpot} />
                 </>
               )}
               {!selectedSpot && <div style={{ textAlign: "center", color: "#444", fontSize: 12, padding: 4 }}>Tap a pin to see Rich's take</div>}
-              {showShareCard && <ShareCardPreview spot={showShareCard} />}
 
               {/* Poll */}
               <PollWidget debate={DEBATES[0]} onVote={handlePollVote} userVote={pollVotes[DEBATES[0].id] ?? null} />
