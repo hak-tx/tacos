@@ -468,34 +468,32 @@ function ShareSection({ spot }) {
   const [busy, setBusy] = useState(false);
 
   const handleShare = useCallback(async () => {
-    setBusy(true);
     const shareText = `🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}"`;
     const shareUrl = "https://tacos-lime.vercel.app";
-    const shareData = { title: spot.name, text: shareText, url: shareUrl };
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-    // Try image generation with a 3s timeout so it never blocks the share
-    try {
-      const imagePromise = html2canvas(cardRef.current, {
-        backgroundColor: "#0d0d14", scale: 2, useCORS: true, logging: false, windowWidth: 400,
-      });
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 3000));
-      const canvas = await Promise.race([imagePromise, timeoutPromise]);
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-      if (blob) {
-        const file = new File([blob], "taco-tour-review.png", { type: "image/png" });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          shareData.files = [file];
+    if (isSafari) {
+      // Safari supports file sharing — generate image first, then share
+      setBusy(true);
+      const shareData = { title: spot.name, text: shareText, url: shareUrl };
+      try {
+        const canvas = await html2canvas(cardRef.current, {
+          backgroundColor: "#0d0d14", scale: 2, useCORS: true, logging: false, windowWidth: 400,
+        });
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+        if (blob) {
+          const file = new File([blob], "taco-tour-review.png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            shareData.files = [file];
+          }
         }
-      }
-    } catch {}
-
-    // Always open share sheet
-    try {
-      await navigator.share(shareData);
-    } catch (e) {
-      if (e.name !== "AbortError") console.error("Share error:", e);
+      } catch {}
+      try { await navigator.share(shareData); } catch {}
+      setBusy(false);
+    } else {
+      // Chrome/other — share immediately (no async before share call)
+      try { await navigator.share({ title: spot.name, text: shareText, url: shareUrl }); } catch {}
     }
-    setBusy(false);
   }, [spot]);
 
   return (
