@@ -926,39 +926,57 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
   const searchTimeout = useRef(null);
   const storageKey = "taco-recs-" + tourIndex;
 
-  // Load rankings from localStorage
+  // Load rankings + ensure mapkit is available
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) setRankings(JSON.parse(saved));
     } catch (e) {}
     setLoading(false);
-    // Check if mapkit is ready
-    if (window.mapkit && window.mapkit.maps && window.mapkit.maps.length > 0) {
-      setMapkitReady(true);
-    } else {
-      const check = setInterval(() => {
-        if (window.mapkit) {
-          try {
-            if (!window.mapkit.maps || window.mapkit.maps.length === 0) {
-              mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) });
-            }
-            setMapkitReady(true);
-            clearInterval(check);
-          } catch (e) { clearInterval(check); }
+
+    // Ensure mapkit script is loaded and initialized
+    function tryInit() {
+      if (!window.mapkit) return false;
+      try {
+        // If already initialized (map tab was visited), just mark ready
+        if (window.mapkit.loadedLibraries && window.mapkit.loadedLibraries.length > 0) {
+          setMapkitReady(true);
+          return true;
         }
-      }, 300);
-      return () => clearInterval(check);
+        // Try init
+        mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) });
+        setMapkitReady(true);
+        return true;
+      } catch (e) {
+        // Already initialized error is fine
+        if (e.message && e.message.includes("already")) {
+          setMapkitReady(true);
+          return true;
+        }
+        return false;
+      }
     }
+
+    if (tryInit()) return;
+
+    // If mapkit script isn't loaded yet, load it
+    if (!document.getElementById("mapkit-script")) {
+      const s = document.createElement("script");
+      s.id = "mapkit-script";
+      s.src = "https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js";
+      s.crossOrigin = "anonymous";
+      s.onload = () => setTimeout(tryInit, 100);
+      document.head.appendChild(s);
+    }
+
+    // Poll until ready
+    const iv = setInterval(() => { if (tryInit()) clearInterval(iv); }, 500);
+    return () => clearInterval(iv);
   }, []);
 
-  const saveRankings = async (updated) => {
+  const saveRankings = (updated) => {
     setRankings(updated);
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(updated));
-    } catch (e) {
-      console.error("Failed to save recs:", e);
-    }
+    try { localStorage.setItem(storageKey, JSON.stringify(updated)); } catch (e) {}
   };
 
   const handleUpvote = (name) => {
@@ -972,38 +990,39 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    if (!query.trim() || query.trim().length < 2) { setSearchResults([]); return; }
-    if (!mapkitReady || !window.mapkit) { return; }
+    if (!query.trim() || query.trim().length < 2) { setSearchResults([]); setSearching(false); return; }
+
     searchTimeout.current = setTimeout(() => {
+      if (!window.mapkit) { console.error("mapkit not available"); return; }
       setSearching(true);
-      const search = new mapkit.Search({
-        region: new mapkit.CoordinateRegion(
-          new mapkit.Coordinate(tourDate.lat, tourDate.lng),
-          new mapkit.CoordinateSpan(0.5, 0.5)
-        ),
-      });
-      search.search(query, (err, data) => {
+      try {
+        const search = new mapkit.Search({
+          coordinate: new mapkit.Coordinate(tourDate.lat, tourDate.lng),
+          region: new mapkit.CoordinateRegion(
+            new mapkit.Coordinate(tourDate.lat, tourDate.lng),
+            new mapkit.CoordinateSpan(1, 1)
+          ),
+        });
+        search.search(query, (err, data) => {
+          setSearching(false);
+          if (err) { console.error("Search error:", err); setSearchResults([]); return; }
+          if (!data || !data.places || data.places.length === 0) { setSearchResults([]); return; }
+          const filtered = data.places
+            .map(p => {
+              const dlat = p.coordinate.latitude - tourDate.lat;
+              const dlng = p.coordinate.longitude - tourDate.lng;
+              const dist = Math.round(Math.sqrt(dlat * dlat + dlng * dlng) * 69 * 10) / 10;
+              return { name: p.name, address: p.formattedAddress || "", dist };
+            })
+            .filter(p => p.dist < 30)
+            .slice(0, 8);
+          setSearchResults(filtered);
+        });
+      } catch (e) {
+        console.error("Search failed:", e);
         setSearching(false);
-        if (err || !data || !data.places) { setSearchResults([]); return; }
-        const venueCoord = { lat: tourDate.lat, lng: tourDate.lng };
-        const filtered = data.places
-          .filter(p => {
-            const dlat = p.coordinate.latitude - venueCoord.lat;
-            const dlng = p.coordinate.longitude - venueCoord.lng;
-            const dist = Math.sqrt(dlat * dlat + dlng * dlng) * 69;
-            return dist < 30;
-          })
-          .slice(0, 6)
-          .map(p => ({
-            name: p.name,
-            address: p.formattedAddress || "",
-            lat: p.coordinate.latitude,
-            lng: p.coordinate.longitude,
-            dist: Math.round(Math.sqrt(Math.pow(p.coordinate.latitude - venueCoord.lat, 2) + Math.pow(p.coordinate.longitude - venueCoord.lng, 2)) * 69 * 10) / 10,
-          }));
-        setSearchResults(filtered);
-      });
-    }, 400);
+      }
+    }, 500);
   };
 
   const handleSelectPlace = (place) => {
@@ -1040,16 +1059,20 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
         <div style={{ padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
           {adding ? (
             <>
-              <div style={{ position: "relative", marginBottom: 8 }}>
-                <input
-                  autoFocus
-                  value={searchQuery}
-                  onChange={e => handleSearch(e.target.value)}
-                  placeholder="Search taco spots near venue..."
-                  style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
-                />
-                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, pointerEvents: "none" }}>🔍</span>
-              </div>
+              {!mapkitReady ? (
+                <div style={{ padding: "12px 0", color: "#888", fontSize: 12, textAlign: "center" }}>Loading Apple Maps search...</div>
+              ) : (
+                <div style={{ position: "relative", marginBottom: 8 }}>
+                  <input
+                    autoFocus
+                    value={searchQuery}
+                    onChange={e => handleSearch(e.target.value)}
+                    placeholder={"Search restaurants near " + tourDate.city.split(",")[0] + "..."}
+                    style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                  />
+                  <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, pointerEvents: "none" }}>🔍</span>
+                </div>
+              )}
               {/* Search results */}
               {searching && <div style={{ padding: "8px 0", color: "#888", fontSize: 12, textAlign: "center" }}>Searching near {tourDate.city.split(",")[0]}...</div>}
               {searchResults.length > 0 && (
