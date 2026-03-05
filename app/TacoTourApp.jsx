@@ -976,7 +976,9 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
     if (!query.trim() || query.trim().length < 2) { setSearchResults([]); setSearching(false); return; }
 
     searchTimeout.current = setTimeout(() => {
-      if (!window.mapkit) return;
+      if (!window.mapkit) { setSearching(false); return; }
+      // Ensure init
+      try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch(e) {}
       setSearching(true);
       const search = new mapkit.Search({
         region: new mapkit.CoordinateRegion(
@@ -1035,20 +1037,16 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
         <div style={{ padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
           {adding ? (
             <>
-              {!mapkitReady ? (
-                <div style={{ padding: "12px 0", color: "#888", fontSize: 12, textAlign: "center" }}>Loading Apple Maps search...</div>
-              ) : (
-                <div style={{ position: "relative", marginBottom: 8 }}>
-                  <input
-                    autoFocus
-                    value={searchQuery}
-                    onChange={e => handleSearch(e.target.value)}
-                    placeholder={"Search restaurants near " + tourDate.city.split(",")[0] + "..."}
-                    style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
-                  />
-                  <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, pointerEvents: "none" }}>🔍</span>
-                </div>
-              )}
+              <div style={{ position: "relative", marginBottom: 8 }}>
+                <input
+                  autoFocus
+                  value={searchQuery}
+                  onChange={e => handleSearch(e.target.value)}
+                  placeholder={"Search restaurants near " + tourDate.city.split(",")[0] + "..."}
+                  style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                />
+                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, pointerEvents: "none" }}>🔍</span>
+              </div>
               {/* Search results */}
               {searching && <div style={{ padding: "8px 0", color: "#888", fontSize: 12, textAlign: "center" }}>Searching near {tourDate.city.split(",")[0]}...</div>}
               {searchResults.length > 0 && (
