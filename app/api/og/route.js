@@ -30,7 +30,7 @@ export async function GET(request) {
             }}>R</div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: "24px", fontWeight: 700 }}>Rich O'Toole</span>
-              <span style={{ fontSize: "16px", color: "#E8B100", fontWeight: 600 }}>Taco Tour</span>
+              <span style={{ fontSize: "16px", color: "#E8B100", fontWeight: 600 }}>Tunes & Tacos</span>
             </div>
           </div>
           <div style={{ fontSize: "52px", fontWeight: 900, lineHeight: 1.1, marginBottom: "8px" }}>{name}</div>
