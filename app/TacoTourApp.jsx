@@ -956,17 +956,30 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
     if (!query.trim() || query.trim().length < 2 || !window.mapkit) { setSearchResults([]); setSearching(false); return; }
     setSearching(true);
     searchTimeout.current = setTimeout(() => {
-      const s = new mapkit.Search({ region: new mapkit.CoordinateRegion(new mapkit.Coordinate(tourDate.lat, tourDate.lng), new mapkit.CoordinateSpan(0.5, 0.5)) });
-      // Append city name to query so MapKit searches locally
-      const localQuery = query + " " + tourDate.city.split(",")[0];
-      s.search(localQuery, (err, data) => {
+      try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch(e) {}
+      const s = new mapkit.Search({
+        region: new mapkit.CoordinateRegion(new mapkit.Coordinate(tourDate.lat, tourDate.lng), new mapkit.CoordinateSpan(0.5, 0.5)),
+        includeAddresses: false,
+        includePointsOfInterest: true,
+        pointOfInterestFilter: mapkit.PointOfInterestFilter.including([
+          mapkit.PointOfInterestCategory.Restaurant,
+          mapkit.PointOfInterestCategory.Cafe,
+          mapkit.PointOfInterestCategory.Bakery,
+          mapkit.PointOfInterestCategory.FoodMarket,
+        ]),
+      });
+      s.autocomplete(query, (err, data) => {
         setSearching(false);
-        if (err || !data || !data.places) { setSearchResults([]); return; }
-        setSearchResults(data.places.slice(0, 8).map(p => ({
-          name: p.name,
-          address: p.formattedAddress || "",
-          dist: Math.round(Math.sqrt(Math.pow(p.coordinate.latitude - tourDate.lat, 2) + Math.pow(p.coordinate.longitude - tourDate.lng, 2)) * 69 * 10) / 10,
-        })));
+        if (err || !data || !data.results) { setSearchResults([]); return; }
+        setSearchResults(data.results
+          .filter(r => r.coordinate)
+          .slice(0, 8)
+          .map(r => ({
+            name: r.displayLines[0] || "",
+            address: r.displayLines[1] || "",
+            dist: Math.round(Math.sqrt(Math.pow(r.coordinate.latitude - tourDate.lat, 2) + Math.pow(r.coordinate.longitude - tourDate.lng, 2)) * 69 * 10) / 10,
+          }))
+        );
       });
     }, 300);
   };
