@@ -922,22 +922,43 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [mapkitReady, setMapkitReady] = useState(false);
   const searchTimeout = useRef(null);
   const storageKey = "taco-recs-" + tourIndex;
 
+  // Load rankings from localStorage
   useEffect(() => {
-    (async () => {
-      try {
-        const result = await window.storage.get(storageKey, true);
-        if (result && result.value) setRankings(JSON.parse(result.value));
-      } catch (e) {}
-      setLoading(false);
-    })();
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) setRankings(JSON.parse(saved));
+    } catch (e) {}
+    setLoading(false);
+    // Check if mapkit is ready
+    if (window.mapkit && window.mapkit.maps && window.mapkit.maps.length > 0) {
+      setMapkitReady(true);
+    } else {
+      const check = setInterval(() => {
+        if (window.mapkit) {
+          try {
+            if (!window.mapkit.maps || window.mapkit.maps.length === 0) {
+              mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) });
+            }
+            setMapkitReady(true);
+            clearInterval(check);
+          } catch (e) { clearInterval(check); }
+        }
+      }, 300);
+      return () => clearInterval(check);
+    }
   }, []);
 
   const saveRankings = async (updated) => {
     setRankings(updated);
-    try { await window.storage.set(storageKey, JSON.stringify(updated), true); } catch (e) {}
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(updated));
+    } catch (e) {
+      console.error("Failed to save recs:", e);
+    }
   };
 
   const handleUpvote = (name) => {
@@ -952,8 +973,8 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
     setSearchQuery(query);
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     if (!query.trim() || query.trim().length < 2) { setSearchResults([]); return; }
+    if (!mapkitReady || !window.mapkit) { return; }
     searchTimeout.current = setTimeout(() => {
-      if (!window.mapkit) return;
       setSearching(true);
       const search = new mapkit.Search({
         region: new mapkit.CoordinateRegion(
@@ -961,16 +982,15 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
           new mapkit.CoordinateSpan(0.5, 0.5)
         ),
       });
-      search.search(query + " taco restaurant food", (err, data) => {
+      search.search(query, (err, data) => {
         setSearching(false);
         if (err || !data || !data.places) { setSearchResults([]); return; }
-        // Filter to ~30 min driving radius (~25 miles / ~40km)
         const venueCoord = { lat: tourDate.lat, lng: tourDate.lng };
         const filtered = data.places
           .filter(p => {
             const dlat = p.coordinate.latitude - venueCoord.lat;
             const dlng = p.coordinate.longitude - venueCoord.lng;
-            const dist = Math.sqrt(dlat * dlat + dlng * dlng) * 69; // rough miles
+            const dist = Math.sqrt(dlat * dlat + dlng * dlng) * 69;
             return dist < 30;
           })
           .slice(0, 6)
@@ -1115,19 +1135,17 @@ function TourSection() {
 
   // Load recommendation counts
   useEffect(() => {
-    (async () => {
-      const counts = {};
-      for (let i = 0; i < TOUR_DATES.length; i++) {
-        try {
-          const result = await window.storage.get("taco-recs-" + i, true);
-          if (result && result.value) {
-            const recs = JSON.parse(result.value);
-            counts[i] = recs.length;
-          }
-        } catch (e) {}
-      }
-      setRecCounts(counts);
-    })();
+    const counts = {};
+    for (let i = 0; i < TOUR_DATES.length; i++) {
+      try {
+        const saved = localStorage.getItem("taco-recs-" + i);
+        if (saved) {
+          const recs = JSON.parse(saved);
+          counts[i] = recs.length;
+        }
+      } catch (e) {}
+    }
+    setRecCounts(counts);
   }, [recModal]); // refresh counts when modal closes
 
   return (
