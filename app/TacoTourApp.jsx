@@ -361,22 +361,18 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           const coord = new mapkit.Coordinate(td.lat, td.lng);
           const ann = new mapkit.Annotation(coord, (coordinate, options) => {
             const el = document.createElement("div");
-            el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;transform:scale(0);opacity:0;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;";
-            // Outer tap target — larger invisible area
-            const tapTarget = document.createElement("div");
-            tapTarget.style.cssText = "width:40px;height:40px;display:flex;align-items:center;justify-content:center;";
+            el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;";
             const pin = document.createElement("div");
-            pin.style.cssText = "width:26px;height:26px;border-radius:50%;background:#C41E3A;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5);transition:all 0.3s;";
-            pin.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
-            tapTarget.appendChild(pin);
-            el.appendChild(tapTarget);
+            pin.style.cssText = "width:30px;height:30px;border-radius:50%;background:#C41E3A;display:flex;align-items:center;justify-content:center;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5);transition:transform 0.3s;cursor:pointer;";
+            pin.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
+            el.appendChild(pin);
             const label = document.createElement("div");
-            label.style.cssText = "background:rgba(0,0,0,0.75);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:-2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;";
+            label.style.cssText = "background:rgba(0,0,0,0.75);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;";
             label.textContent = td.date;
             el.appendChild(label);
             // Info bubble with venue details and ticket link
             const bubble = document.createElement("div");
-            bubble.style.cssText = "display:none;position:absolute;bottom:62px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.97);border:1px solid rgba(196,30,58,0.4);border-radius:12px;padding:10px 14px;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,0.7);z-index:50;min-width:160px;text-align:center;";
+            bubble.style.cssText = "display:none;position:absolute;bottom:52px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.97);border:1px solid rgba(196,30,58,0.4);border-radius:12px;padding:10px 14px;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,0.7);z-index:50;min-width:160px;text-align:center;";
             bubble.innerHTML = "<div style='font-size:13px;font-weight:800;color:#fff;font-family:system-ui;'>" + td.venue + "</div>" +
               "<div style='font-size:11px;color:#ccc;margin-top:3px;'>" + td.city + "</div>" +
               "<div style='font-size:10px;color:#C41E3A;margin-top:4px;font-weight:700;'>♪ " + td.day + " " + td.date + "</div>" +
@@ -391,7 +387,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
             el._label = label;
             tourEls.push(el);
             return el;
-          }, { anchorOffset: new DOMPoint(0, -18) });
+          }, { anchorOffset: new DOMPoint(0, -14) });
           ann.addEventListener("select", (e) => {
             const el = e.target.element;
             if (el && el._bubble) { el._bubble.style.display = "block"; el._pin.style.transform = "scale(1.3)"; }
@@ -404,12 +400,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           setTimeout(() => {
             if (cancelled) return;
             map.addAnnotation(ann);
-            // Trigger scale-in animation after adding to DOM
-            setTimeout(() => {
-              const el = ann.element;
-              if (el) { el.style.transform = "scale(1)"; el.style.opacity = "1"; }
-            }, 30);
-          }, tourDelay + thisIdx * 120);
+          }, tourDelay + thisIdx * 100);
           tourAnns.push(ann);
         });
         tourAnnsRef.current = tourAnns;
@@ -420,13 +411,13 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           const veryZoomed = span.latitudeDelta < 1.5;
           tourEls.forEach(el => {
             if (veryZoomed) {
-              el._pin.style.width = "32px"; el._pin.style.height = "32px";
+              el._pin.style.width = "36px"; el._pin.style.height = "36px";
               el._label.style.fontSize = "10px";
             } else if (zoomed) {
-              el._pin.style.width = "28px"; el._pin.style.height = "28px";
+              el._pin.style.width = "33px"; el._pin.style.height = "33px";
               el._label.style.fontSize = "9px";
             } else {
-              el._pin.style.width = "26px"; el._pin.style.height = "26px";
+              el._pin.style.width = "30px"; el._pin.style.height = "30px";
               el._label.style.fontSize = "8px";
             }
           });
