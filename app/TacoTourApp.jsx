@@ -333,7 +333,8 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           isZoomEnabled: true,
         });
         mapInstanceRef.current = map;
-        spots.forEach((spot) => {
+        // Stagger taco spot pins with animation
+        spots.forEach((spot, idx) => {
           const coord = new mapkit.Coordinate(spot.lat, spot.lng);
           const ann = new mapkit.MarkerAnnotation(coord, {
             title: spot.name,
@@ -341,14 +342,17 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
             color: "#22C55E",
             glyphColor: "#000",
             glyphText: "\uD83C\uDF2E",
+            animates: true,
           });
           ann.addEventListener("select", () => onSelectSpotRef.current(spot));
-          map.addAnnotation(ann);
+          setTimeout(() => { if (!cancelled) map.addAnnotation(ann); }, 80 * idx);
         });
-        // Tour date pins - blue circle with white lone star
+        // Tour date pins — delayed after taco spots, with scale-in animation
+        const tourDelay = 80 * spots.length + 400; // wait for all taco pins + 400ms gap
         const seen = {};
         const tourEls = [];
         const tourAnns = [];
+        let tourIdx = 0;
         TOUR_DATES.forEach((td) => {
           if (!td.lat || !td.lng) return;
           const key = td.lat + "," + td.lng;
@@ -357,7 +361,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           const coord = new mapkit.Coordinate(td.lat, td.lng);
           const ann = new mapkit.Annotation(coord, (coordinate, options) => {
             const el = document.createElement("div");
-            el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;transition:transform 0.3s;";
+            el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;transform:scale(0);opacity:0;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;";
             const pin = document.createElement("div");
             pin.style.cssText = "width:22px;height:22px;border-radius:50%;background:#C41E3A;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.5);transition:all 0.3s;";
             pin.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
@@ -387,7 +391,16 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
             const el = e.target.element;
             if (el && el._bubble) { el._bubble.style.display = "none"; el._pin.style.transform = "scale(1)"; }
           });
-          map.addAnnotation(ann);
+          const thisIdx = tourIdx++;
+          setTimeout(() => {
+            if (cancelled) return;
+            map.addAnnotation(ann);
+            // Trigger scale-in animation after adding to DOM
+            setTimeout(() => {
+              const el = ann.element;
+              if (el) { el.style.transform = "scale(1)"; el.style.opacity = "1"; }
+            }, 30);
+          }, tourDelay + thisIdx * 120);
           tourAnns.push(ann);
         });
         tourAnnsRef.current = tourAnns;
