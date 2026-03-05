@@ -976,26 +976,62 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
     searchTimeout.current = setTimeout(() => {
       if (!window.mapkit) { setSearching(false); return; }
       try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch(e) {}
-      const search = new mapkit.Search({
-        region: new mapkit.CoordinateRegion(
-          new mapkit.Coordinate(tourDate.lat, tourDate.lng),
-          new mapkit.CoordinateSpan(0.5, 0.5)
-        ),
-      });
-      search.search(query, (err, data) => {
+      
+      const region = new mapkit.CoordinateRegion(
+        new mapkit.Coordinate(tourDate.lat, tourDate.lng),
+        new mapkit.CoordinateSpan(0.5, 0.5)
+      );
+      const searchObj = new mapkit.Search({ region });
+      
+      // Run both autocomplete (for partial name matching) and regular search
+      let completed = 0;
+      let allResults = [];
+      
+      const finish = () => {
+        completed++;
+        if (completed < 2) return;
+        // Dedupe by name
+        const seen = new Set();
+        const deduped = [];
+        allResults.sort((a, b) => a.dist - b.dist);
+        allResults.forEach(p => {
+          const key = p.name.toLowerCase();
+          if (!seen.has(key)) { seen.add(key); deduped.push(p); }
+        });
+        setSearchResults(deduped.slice(0, 8));
         setSearching(false);
         setHasSearched(true);
-        if (err || !data || !data.places) { setSearchResults([]); return; }
-        const filtered = data.places
-          .map(p => {
-            const dlat = p.coordinate.latitude - tourDate.lat;
-            const dlng = p.coordinate.longitude - tourDate.lng;
-            const dist = Math.round(Math.sqrt(dlat * dlat + dlng * dlng) * 69 * 10) / 10;
-            return { name: p.name, address: p.formattedAddress || "", dist };
-          })
-          .filter(p => p.dist < 30)
-          .slice(0, 8);
-        setSearchResults(filtered);
+      };
+      
+      const processPlaces = (places) => {
+        if (!places) return;
+        places.forEach(p => {
+          const dlat = p.coordinate.latitude - tourDate.lat;
+          const dlng = p.coordinate.longitude - tourDate.lng;
+          const dist = Math.round(Math.sqrt(dlat * dlat + dlng * dlng) * 69 * 10) / 10;
+          allResults.push({ name: p.name, address: p.formattedAddress || "", dist });
+        });
+      };
+      
+      // 1) Regular search
+      searchObj.search(query, (err, data) => {
+        if (!err && data && data.places) processPlaces(data.places);
+        finish();
+      });
+      
+      // 2) Autocomplete for partial name matches
+      searchObj.autocomplete(query, (err, data) => {
+        if (!err && data && data.results && data.results.length > 0) {
+          // Autocomplete returns completions, search for the top ones
+          const topCompletion = data.results[0].displayLines ? data.results[0].displayLines.join(" ") : data.results[0].query || query;
+          const searchObj2 = new mapkit.Search({ region });
+          searchObj2.search(topCompletion, (err2, data2) => {
+            if (!err2 && data2 && data2.places) processPlaces(data2.places);
+            finish();
+          });
+        } else {
+          finish();
+        }
       });
     }, 800);
   };
@@ -1012,7 +1048,6 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
     }
     setSearchQuery("");
     setSearchResults([]);
-    setAdding(false);
   };
 
   return (
@@ -1036,7 +1071,7 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
               value={searchQuery}
               onChange={e => handleSearch(e.target.value)}
               placeholder={"Search restaurants near " + tourDate.city.split(",")[0] + "..."}
-              style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 16, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
             />
             <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, pointerEvents: "none" }}>🔍</span>
             {searchQuery.length > 0 && (

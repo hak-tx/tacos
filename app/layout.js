@@ -28,7 +28,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#0d0d14" />
         <link
           href="https://fonts.googleapis.com/css2?family=Bitter:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&family=Courier+Prime&display=swap"
