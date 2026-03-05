@@ -957,7 +957,9 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
     setSearching(true);
     searchTimeout.current = setTimeout(() => {
       const s = new mapkit.Search({ region: new mapkit.CoordinateRegion(new mapkit.Coordinate(tourDate.lat, tourDate.lng), new mapkit.CoordinateSpan(0.5, 0.5)) });
-      s.search(query, (err, data) => {
+      // Append city name to query so MapKit searches locally
+      const localQuery = query + " " + tourDate.city.split(",")[0];
+      s.search(localQuery, (err, data) => {
         setSearching(false);
         if (err || !data || !data.places) { setSearchResults([]); return; }
         setSearchResults(data.places.slice(0, 8).map(p => ({
