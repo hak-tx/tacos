@@ -331,8 +331,8 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
             pin.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
             el.appendChild(pin);
             const label = document.createElement("div");
-            label.style.cssText = "background:rgba(0,0,0,0.8);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;display:none;transition:opacity 0.3s;";
-            label.textContent = td.day + " " + td.date;
+            label.style.cssText = "background:rgba(0,0,0,0.75);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;";
+            label.textContent = td.date;
             el.appendChild(label);
             const bubble = document.createElement("div");
             bubble.style.cssText = "display:none;position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.95);border:1px solid rgba(0,40,104,0.5);border-radius:10px;padding:8px 12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.6);z-index:50;min-width:140px;text-align:center;";
@@ -367,13 +367,13 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           tourEls.forEach(el => {
             if (veryZoomed) {
               el._pin.style.width = "28px"; el._pin.style.height = "28px"; el._pin.style.fontSize = "15px";
-              el._label.style.display = "block"; el._label.style.fontSize = "9px";
+              el._label.style.fontSize = "9px";
             } else if (zoomed) {
               el._pin.style.width = "25px"; el._pin.style.height = "25px"; el._pin.style.fontSize = "13px";
-              el._label.style.display = "block"; el._label.style.fontSize = "8px";
+              el._label.style.fontSize = "8px";
             } else {
               el._pin.style.width = "22px"; el._pin.style.height = "22px"; el._pin.style.fontSize = "12px";
-              el._label.style.display = "none";
+              el._label.style.fontSize = "8px";
             }
           });
         });
