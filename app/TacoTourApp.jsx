@@ -1618,7 +1618,9 @@ export default function TacoTourApp() {
       <div className="shell-nav" style={{
         position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%",
         background: "#1a1a28", backdropFilter: "blur(24px)", borderTop: "1px solid rgba(232,177,0,0.25)",
-        display: "flex", justifyContent: "space-around", alignItems: "center", padding: "10px 0 env(safe-area-inset-bottom, 14px)", zIndex: 100,
+        display: "flex", justifyContent: "space-around", alignItems: "center",
+        paddingTop: 8, paddingBottom: "calc(8px + env(safe-area-inset-bottom, 0px))",
+        zIndex: 100,
         boxShadow: "0 -6px 30px rgba(0,0,0,0.6)",
       }}>
         {tabs.map(t => {
