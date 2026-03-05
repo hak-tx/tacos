@@ -526,18 +526,8 @@ function ShareSection({ spot }) {
 
   // Facebook — shares the spot-specific URL with dynamic OG preview
   const handleShareFB = () => {
-    const encoded = encodeURIComponent(spotUrl);
-    // Try Facebook app deep link first, fall back to web sharer
-    const fbAppUrl = `fb://share/?link=${encoded}`;
-    const fbWebUrl = `https://www.facebook.com/sharer/sharer.php?u=${encoded}`;
-    // On mobile, try app first
-    if (/iPhone|iPad|Android/i.test(navigator.userAgent)) {
-      window.location.href = fbAppUrl;
-      // If app doesn't open within 500ms, fall back to web
-      setTimeout(() => { window.open(fbWebUrl, "_blank"); }, 500);
-    } else {
-      window.open(fbWebUrl, "_blank", "width=550,height=420");
-    }
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(spotUrl)}`;
+    window.open(url, "_blank");
   };
 
   return (

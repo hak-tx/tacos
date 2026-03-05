@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+// Dynamic spot pages with per-spot OG meta tags
 
 // Static spot data for OG tags (must match TacoTourApp.jsx)
 const SPOTS = {
@@ -47,7 +47,26 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function SpotPage({ params }) {
-  // Redirect to main app — the OG tags are already set for link previews
   const { id } = await params;
-  redirect(`/?spot=${id}`);
+  const spot = SPOTS[id];
+  const name = spot ? spot.name : "Taco Spot";
+  const city = spot ? spot.city : "Texas";
+  const rating = spot ? spot.richRating : "?";
+  const quote = spot ? spot.richQuote : "";
+
+  // Render a simple page that auto-redirects via client-side JS
+  // This ensures OG crawlers see the meta tags (they don't run JS)
+  // while real users get redirected to the main app
+  return (
+    <div style={{ minHeight: "100vh", background: "#0d0d14", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "system-ui, sans-serif", padding: 32, textAlign: "center" }}>
+      <script dangerouslySetInnerHTML={{ __html: `window.location.replace("/?spot=${id}");` }} />
+      <div style={{ fontSize: 48, marginBottom: 16 }}>🌮</div>
+      <h1 style={{ fontSize: 24, fontWeight: 900, margin: "0 0 8px" }}>{name}</h1>
+      <p style={{ fontSize: 14, color: "#888", margin: "0 0 16px" }}>{city}</p>
+      <p style={{ fontSize: 48, fontWeight: 900, color: "#22C55E", margin: "0 0 8px" }}>{rating}</p>
+      <p style={{ fontSize: 13, color: "#E8B100", margin: "0 0 24px" }}>Rich O'Toole's Rating</p>
+      <p style={{ fontSize: 14, color: "#ccc", fontStyle: "italic", maxWidth: 300 }}>"{quote}"</p>
+      <p style={{ fontSize: 12, color: "#555", marginTop: 32 }}>Loading Tunes & Tacos...</p>
+    </div>
+  );
 }
