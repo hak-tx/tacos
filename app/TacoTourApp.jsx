@@ -915,14 +915,13 @@ function PollWidget({ debate, onVote, userVote }) {
 
 // 8. TOUR DATES - Recommendation Ranking Modal
 function RecommendModal({ tourDate, tourIndex, onClose }) {
-  const [rankings, setRankings] = useState([]); // [{name, address, votes}]
+  const [rankings, setRankings] = useState([]);
   const [voted, setVoted] = useState({});
-  const [adding, setAdding] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [mapkitReady, setMapkitReady] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const searchTimeout = useRef(null);
   const storageKey = "taco-recs-" + tourIndex;
 
@@ -934,18 +933,15 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
     } catch (e) {}
     setLoading(false);
 
-    // Wait for mapkit to be available (loaded by map tab or we load it)
+    // Wait for mapkit to be available
     function check() {
       if (window.mapkit) {
         try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch (e) { /* already init */ }
-        setMapkitReady(true);
         return true;
       }
       return false;
     }
     if (check()) return;
-
-    // Load script if not yet loaded
     if (!document.getElementById("mapkit-script")) {
       const s = document.createElement("script");
       s.id = "mapkit-script";
@@ -972,14 +968,14 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
 
   const handleSearch = (query) => {
     setSearchQuery(query);
+    setHasSearched(false);
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    if (!query.trim() || query.trim().length < 2) { setSearchResults([]); setSearching(false); return; }
+    if (!query.trim() || query.trim().length < 3) { setSearchResults([]); return; }
+    setSearching(true);
 
     searchTimeout.current = setTimeout(() => {
       if (!window.mapkit) { setSearching(false); return; }
-      // Ensure init
       try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch(e) {}
-      setSearching(true);
       const search = new mapkit.Search({
         region: new mapkit.CoordinateRegion(
           new mapkit.Coordinate(tourDate.lat, tourDate.lng),
@@ -988,6 +984,7 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
       });
       search.search(query, (err, data) => {
         setSearching(false);
+        setHasSearched(true);
         if (err || !data || !data.places) { setSearchResults([]); return; }
         const filtered = data.places
           .map(p => {
@@ -1000,7 +997,7 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
           .slice(0, 8);
         setSearchResults(filtered);
       });
-    }, 500);
+    }, 800);
   };
 
   const handleSelectPlace = (place) => {
@@ -1020,9 +1017,9 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 430, background: "#141420", borderRadius: "20px 20px 0 0", display: "flex", flexDirection: "column" }}>
-        {/* Header */}
-        <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 430, height: "75vh", background: "#141420", borderRadius: "20px 20px 0 0", display: "flex", flexDirection: "column" }}>
+        {/* Header - fixed */}
+        <div style={{ padding: "16px 20px 10px", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>🌮 Fan Picks</div>
@@ -1030,91 +1027,87 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
             </div>
             <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: "none", color: "#888", fontSize: 18, width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
           </div>
-          <div style={{ fontSize: 9, color: "#555", marginTop: 6 }}>{tourDate.venue} · {tourDate.date} · within 30 mi</div>
         </div>
 
-        {/* Recommend button - ALWAYS at the top, always visible */}
-        <div style={{ padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
-          {adding ? (
-            <>
-              <div style={{ position: "relative", marginBottom: 8 }}>
-                <input
-                  autoFocus
-                  value={searchQuery}
-                  onChange={e => handleSearch(e.target.value)}
-                  placeholder={"Search restaurants near " + tourDate.city.split(",")[0] + "..."}
-                  style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
-                />
-                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, pointerEvents: "none" }}>🔍</span>
-              </div>
-              {/* Search results */}
-              {searching && <div style={{ padding: "8px 0", color: "#888", fontSize: 12, textAlign: "center" }}>Searching near {tourDate.city.split(",")[0]}...</div>}
-              {searchResults.length > 0 && (
-                <div style={{ maxHeight: 220, overflow: "auto", borderRadius: 8, background: "rgba(0,0,0,0.3)" }}>
-                  {searchResults.map((p, j) => (
-                    <button key={j} onClick={() => handleSelectPlace(p)}
-                      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 8px", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}>
-                      <span style={{ fontSize: 20, minWidth: 28, textAlign: "center" }}>📍</span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{p.name}</div>
-                        <div style={{ fontSize: 10, color: "#666", marginTop: 1 }}>{p.address}</div>
-                      </div>
-                      <div style={{ fontSize: 9, color: "#888", whiteSpace: "nowrap" }}>{p.dist} mi</div>
-                    </button>
-                  ))}
-                </div>
+        {/* Search bar - always pinned below header */}
+        <div style={{ padding: "0 20px 12px", flexShrink: 0, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ position: "relative" }}>
+            <input
+              value={searchQuery}
+              onChange={e => handleSearch(e.target.value)}
+              placeholder={"Search restaurants near " + tourDate.city.split(",")[0] + "..."}
+              style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+            />
+            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, pointerEvents: "none" }}>🔍</span>
+            {searchQuery.length > 0 && (
+              <button onClick={() => { setSearchQuery(""); setSearchResults([]); }}
+                style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "rgba(255,255,255,0.1)", border: "none", color: "#888", fontSize: 12, width: 22, height: 22, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+            )}
+          </div>
+        </div>
+
+        {/* Scrollable content area - fixed height, no layout shifts */}
+        <div style={{ flex: 1, overflow: "auto", padding: "0 20px" }}>
+          {/* Search results section */}
+          {searchQuery.length >= 3 && (
+            <div style={{ paddingTop: 8, paddingBottom: 8, borderBottom: rankings.length > 0 ? "1px solid rgba(232,177,0,0.15)" : "none" }}>
+              <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Search Results</div>
+              {searching && <div style={{ padding: "12px 0", color: "#888", fontSize: 12, textAlign: "center" }}>Searching...</div>}
+              {!searching && hasSearched && searchResults.length === 0 && (
+                <div style={{ padding: "12px 0", color: "#555", fontSize: 12, textAlign: "center" }}>No results within 30 miles</div>
               )}
-              {searchQuery.length >= 2 && !searching && searchResults.length === 0 && (
-                <div style={{ padding: "8px 0", color: "#555", fontSize: 11, textAlign: "center" }}>No spots found within 30 miles — try a different search</div>
-              )}
-              <button onClick={() => { setAdding(false); setSearchQuery(""); setSearchResults([]); }}
-                style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginTop: 8 }}>
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button onClick={() => setAdding(true)}
-              style={{ width: "100%", padding: "14px", borderRadius: 10, border: "1px dashed rgba(232,177,0,0.3)", background: "rgba(232,177,0,0.06)", color: "#E8B100", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-              + Recommend a Spot
-            </button>
+              {searchResults.map((p, j) => (
+                <button key={j} onClick={() => handleSelectPlace(p)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 4px", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}>
+                  <span style={{ fontSize: 18, minWidth: 24, textAlign: "center" }}>📍</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{p.name}</div>
+                    <div style={{ fontSize: 10, color: "#666", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.address}</div>
+                  </div>
+                  <div style={{ fontSize: 9, color: "#E8B100", whiteSpace: "nowrap", fontWeight: 600 }}>{p.dist} mi</div>
+                </button>
+              ))}
+            </div>
           )}
-        </div>
 
-        {/* Rankings list - scrollable, takes remaining space */}
-        <div style={{ overflow: "auto", maxHeight: "50vh", padding: "8px 20px 20px" }}>
-          {loading ? (
-            <div style={{ textAlign: "center", padding: 20, color: "#555", fontSize: 12 }}>Loading...</div>
-          ) : rankings.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "30px 0", color: "#555" }}>
+          {/* Rankings section */}
+          {rankings.length > 0 && (
+            <div style={{ paddingTop: 8 }}>
+              <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Fan Rankings</div>
+              {rankings.map((r, j) => (
+                <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <div style={{ minWidth: 26, textAlign: "center", fontSize: j < 3 ? 16 : 12, fontWeight: 900, color: j === 0 ? "#E8B100" : j === 1 ? "#C0C0C0" : j === 2 ? "#CD7F32" : "#444", fontFamily: "'Bitter', serif" }}>
+                    {j === 0 ? "🥇" : j === 1 ? "🥈" : j === 2 ? "🥉" : (j + 1)}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{r.name}</div>
+                    {r.address && <div style={{ fontSize: 9, color: "#555", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.address}</div>}
+                  </div>
+                  <button onClick={() => handleUpvote(r.name)}
+                    disabled={voted[r.name]}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
+                      padding: "7px 12px", borderRadius: 8, cursor: voted[r.name] ? "default" : "pointer",
+                      background: voted[r.name] ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.05)",
+                      border: voted[r.name] ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.1)",
+                      color: voted[r.name] ? "#22C55E" : "#fff",
+                      fontSize: 13, fontWeight: 700, fontFamily: "inherit",
+                    }}>
+                    <span style={{ fontSize: 14 }}>{voted[r.name] ? "✓" : "👍"}</span>
+                    <span>{r.votes}</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty state */}
+          {rankings.length === 0 && searchQuery.length < 3 && (
+            <div style={{ textAlign: "center", padding: "40px 0", color: "#555" }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>🌮</div>
               <div style={{ fontSize: 13, color: "#888" }}>No recommendations yet</div>
-              <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>Be the first to suggest a spot!</div>
+              <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>Search for a restaurant above to add it!</div>
             </div>
-          ) : (
-            rankings.map((r, j) => (
-              <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                <div style={{ minWidth: 28, textAlign: "center", fontSize: j < 3 ? 18 : 13, fontWeight: 900, color: j === 0 ? "#E8B100" : j === 1 ? "#C0C0C0" : j === 2 ? "#CD7F32" : "#444", fontFamily: "'Bitter', serif" }}>
-                  {j === 0 ? "🥇" : j === 1 ? "🥈" : j === 2 ? "🥉" : (j + 1)}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{r.name}</div>
-                  {r.address && <div style={{ fontSize: 9, color: "#555", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.address}</div>}
-                </div>
-                <button onClick={() => handleUpvote(r.name)}
-                  disabled={voted[r.name]}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
-                    padding: "8px 14px", borderRadius: 8, cursor: voted[r.name] ? "default" : "pointer",
-                    background: voted[r.name] ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.05)",
-                    border: voted[r.name] ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.1)",
-                    color: voted[r.name] ? "#22C55E" : "#fff",
-                    fontSize: 13, fontWeight: 700, fontFamily: "inherit", transition: "all 0.2s",
-                  }}>
-                  <span style={{ fontSize: 16 }}>{voted[r.name] ? "✓" : "👍"}</span>
-                  <span>{r.votes}</span>
-                </button>
-              </div>
-            ))
           )}
         </div>
       </div>
