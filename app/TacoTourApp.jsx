@@ -934,43 +934,26 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
     } catch (e) {}
     setLoading(false);
 
-    // Ensure mapkit script is loaded and initialized
-    function tryInit() {
-      if (!window.mapkit) return false;
-      try {
-        // If already initialized (map tab was visited), just mark ready
-        if (window.mapkit.loadedLibraries && window.mapkit.loadedLibraries.length > 0) {
-          setMapkitReady(true);
-          return true;
-        }
-        // Try init
-        mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) });
+    // Wait for mapkit to be available (loaded by map tab or we load it)
+    function check() {
+      if (window.mapkit) {
+        try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch (e) { /* already init */ }
         setMapkitReady(true);
         return true;
-      } catch (e) {
-        // Already initialized error is fine
-        if (e.message && e.message.includes("already")) {
-          setMapkitReady(true);
-          return true;
-        }
-        return false;
       }
+      return false;
     }
+    if (check()) return;
 
-    if (tryInit()) return;
-
-    // If mapkit script isn't loaded yet, load it
+    // Load script if not yet loaded
     if (!document.getElementById("mapkit-script")) {
       const s = document.createElement("script");
       s.id = "mapkit-script";
       s.src = "https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js";
       s.crossOrigin = "anonymous";
-      s.onload = () => setTimeout(tryInit, 100);
       document.head.appendChild(s);
     }
-
-    // Poll until ready
-    const iv = setInterval(() => { if (tryInit()) clearInterval(iv); }, 500);
+    const iv = setInterval(() => { if (check()) clearInterval(iv); }, 300);
     return () => clearInterval(iv);
   }, []);
 
@@ -993,35 +976,28 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
     if (!query.trim() || query.trim().length < 2) { setSearchResults([]); setSearching(false); return; }
 
     searchTimeout.current = setTimeout(() => {
-      if (!window.mapkit) { console.error("mapkit not available"); return; }
+      if (!window.mapkit) return;
       setSearching(true);
-      try {
-        const search = new mapkit.Search({
-          coordinate: new mapkit.Coordinate(tourDate.lat, tourDate.lng),
-          region: new mapkit.CoordinateRegion(
-            new mapkit.Coordinate(tourDate.lat, tourDate.lng),
-            new mapkit.CoordinateSpan(1, 1)
-          ),
-        });
-        search.search(query, (err, data) => {
-          setSearching(false);
-          if (err) { console.error("Search error:", err); setSearchResults([]); return; }
-          if (!data || !data.places || data.places.length === 0) { setSearchResults([]); return; }
-          const filtered = data.places
-            .map(p => {
-              const dlat = p.coordinate.latitude - tourDate.lat;
-              const dlng = p.coordinate.longitude - tourDate.lng;
-              const dist = Math.round(Math.sqrt(dlat * dlat + dlng * dlng) * 69 * 10) / 10;
-              return { name: p.name, address: p.formattedAddress || "", dist };
-            })
-            .filter(p => p.dist < 30)
-            .slice(0, 8);
-          setSearchResults(filtered);
-        });
-      } catch (e) {
-        console.error("Search failed:", e);
+      const search = new mapkit.Search({
+        region: new mapkit.CoordinateRegion(
+          new mapkit.Coordinate(tourDate.lat, tourDate.lng),
+          new mapkit.CoordinateSpan(0.5, 0.5)
+        ),
+      });
+      search.search(query, (err, data) => {
         setSearching(false);
-      }
+        if (err || !data || !data.places) { setSearchResults([]); return; }
+        const filtered = data.places
+          .map(p => {
+            const dlat = p.coordinate.latitude - tourDate.lat;
+            const dlng = p.coordinate.longitude - tourDate.lng;
+            const dist = Math.round(Math.sqrt(dlat * dlat + dlng * dlng) * 69 * 10) / 10;
+            return { name: p.name, address: p.formattedAddress || "", dist };
+          })
+          .filter(p => p.dist < 30)
+          .slice(0, 8);
+        setSearchResults(filtered);
+      });
     }, 500);
   };
 
