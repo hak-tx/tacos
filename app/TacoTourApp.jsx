@@ -139,7 +139,7 @@ const ratingLabel = (r) => r >= 9.5 ? "LEGENDARY" : r >= 9 ? "FIRE" : r >= 8 ? "
 // --- SCREENS -----------------------------------------------------------
 
 // 1. SPLASH / ONBOARDING
-function SplashScreen({ onGetStarted }) {
+function SplashScreen({ onGetStarted, onClose }) {
   const [step, setStep] = useState(0);
   const [fadeIn, setFadeIn] = useState(false);
   useEffect(() => { setTimeout(() => setFadeIn(true), 100); }, []);
@@ -147,7 +147,7 @@ function SplashScreen({ onGetStarted }) {
   const slides = [
     {
       emoji: "🌮🎸",
-      title: "Welcome to Rich's Taco Tour",
+      title: "Welcome to Tunes & Tacos",
       subtitle: "Where Texas Country meets the best tacos on the road",
       detail: "Follow Rich O'Toole as he eats his way across every tour stop",
     },
@@ -167,7 +167,11 @@ function SplashScreen({ onGetStarted }) {
 
   const s = slides[step];
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: 32, textAlign: "center", opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: 32, textAlign: "center", opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease", position: "relative" }}>
+      {/* Close button when launched from ? button */}
+      {onClose && (
+        <button onClick={onClose} style={{ position: "absolute", top: 20, right: 20, background: "rgba(255,255,255,0.08)", border: "none", color: "#888", fontSize: 16, width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+      )}
       <div style={{ fontSize: 56, marginBottom: 20, filter: "drop-shadow(0 0 20px rgba(232,177,0,0.3))" }}>{s.emoji}</div>
       <h1 style={{ fontSize: 26, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px", lineHeight: 1.2 }}>{s.title}</h1>
       <p style={{ fontSize: 14, color: "#E8B100", fontWeight: 600, margin: "0 0 8px" }}>{s.subtitle}</p>
@@ -1452,6 +1456,7 @@ export default function TacoTourApp() {
   const [showTourDates, setShowTourDates] = useState(true);
   const [reviewFilter, setReviewFilter] = useState("All");
   const [regionFilter, setRegionFilter] = useState("All");
+  const [showIntro, setShowIntro] = useState(false);
 
   // Seed admin account + restore session on mount
   useEffect(() => {
@@ -1563,9 +1568,17 @@ export default function TacoTourApp() {
       <div style={{ position: "relative", zIndex: 1, paddingBottom: 120 }}>
         {/* Header */}
         <div style={{ padding: "16px 16px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>Rich O'Toole's</div>
-            <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: 0, fontFamily: "'Bitter', serif" }}>Tunes & Tacos</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div>
+              <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>Rich O'Toole's</div>
+              <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: 0, fontFamily: "'Bitter', serif" }}>Tunes & Tacos</h1>
+            </div>
+            <button onClick={() => setShowIntro(true)} style={{
+              width: 22, height: 22, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)",
+              background: "rgba(255,255,255,0.05)", color: "#555", fontSize: 11, fontWeight: 700,
+              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+              fontFamily: "inherit", marginTop: 14,
+            }}>?</button>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ textAlign: "right" }}>
@@ -1761,6 +1774,16 @@ export default function TacoTourApp() {
 
         </div>
       </div>
+
+      {/* Intro overlay */}
+      {showIntro && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 250, background: "#0d0d14" }}>
+          <SplashScreen
+            onGetStarted={(mode) => { setShowIntro(false); handleAuthStart(mode); }}
+            onClose={() => setShowIntro(false)}
+          />
+        </div>
+      )}
 
       {/* Bottom nav */}
       <div className="shell-nav" style={{
