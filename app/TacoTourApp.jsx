@@ -483,9 +483,7 @@ function ShareSection({ spot }) {
   const cachedFile = useRef(null);
   const [ready, setReady] = useState(false);
 
-  const spotUrl = "https://tacos-lime.vercel.app/spot/" + spot.id;
-
-  // Pre-generate the share image for native share sheet
+  // Pre-generate the share image as soon as this section mounts (card expanded)
   useEffect(() => {
     let cancelled = false;
     const generate = async () => {
@@ -501,38 +499,37 @@ function ShareSection({ spot }) {
           cachedFile.current = new File([blob], "tunes-and-tacos-review.png", { type: "image/png", lastModified: Date.now() });
           setReady(true);
         }
-      } catch (e) { setReady(true); }
+      } catch (e) {
+        setReady(true);
+      }
     };
     generate();
     return () => { cancelled = true; };
   }, [spot.id]);
 
-  // Native share sheet (best for iMessage, WhatsApp, etc)
-  const handleNativeShare = useCallback(async () => {
+  const handleShare = useCallback(async () => {
     const shareText = `🌮 ${spot.name} — @RichOToole gave it a ${spot.richRating}! "${spot.richQuote}"`;
-    const shareData = { title: spot.name, text: shareText, url: spotUrl };
+    const shareUrl = "https://tacos-lime.vercel.app/spot/" + spot.id;
+    const shareData = { title: spot.name, text: shareText, url: shareUrl };
+
     if (cachedFile.current) {
-      try { if (navigator.canShare && navigator.canShare({ files: [cachedFile.current] })) shareData.files = [cachedFile.current]; } catch {}
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [cachedFile.current] })) {
+          shareData.files = [cachedFile.current];
+        }
+      } catch {}
     }
-    try { await navigator.share(shareData); } catch (e) { if (e.name !== "AbortError") console.error(e); }
-  }, [spot, spotUrl]);
 
-  // X/Twitter — pre-composed tweet with @RichOToole tag
-  const handleShareX = () => {
-    const tweet = `🌮 ${spot.name} (${spot.city}) — @RichOToole gave it a ${spot.richRating}!\n\n"${spot.richQuote}"\n\nDo you agree? 🎸🔥`;
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}&url=${encodeURIComponent(spotUrl)}`;
-    window.open(url, "_blank", "width=550,height=420");
-  };
-
-  // Facebook — shares the spot-specific URL with dynamic OG preview
-  const handleShareFB = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(spotUrl)}`;
-    window.open(url, "_blank");
-  };
+    try {
+      await navigator.share(shareData);
+    } catch (e) {
+      if (e.name !== "AbortError") console.error("Share error:", e);
+    }
+  }, [spot]);
 
   return (
-    <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 10 }}>
-      {/* Hidden branded share card for native share image */}
+    <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 8 }}>
+      {/* Hidden branded share card for html2canvas */}
       <div style={{ position: "fixed", left: 0, top: 0, opacity: 0, pointerEvents: "none", zIndex: -1 }}>
         <div ref={cardRef} style={{ width: 400, fontFamily: "system-ui, -apple-system, sans-serif", background: "#0d0d14" }}>
           <div style={{ height: 4, background: "linear-gradient(90deg, #E8B100, #D97706, #E8B100)" }} />
@@ -561,42 +558,23 @@ function ShareSection({ spot }) {
             <div style={{ fontSize: 14, color: "#ccc", fontStyle: "italic", lineHeight: 1.6, marginBottom: 22, paddingLeft: 14, borderLeft: "3px solid #E8B100" }}>&ldquo;{spot.richQuote}&rdquo;</div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
               <div style={{ fontSize: 12, color: "#E8B100", fontWeight: 700 }}>richstacotour.com</div>
-              <div style={{ fontSize: 11, color: "#666" }}>@RichOToole</div>
+              <div style={{ fontSize: 11, color: "#666" }}>Tag @RichOToole</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Share buttons */}
-      <div style={{ display: "flex", gap: 8 }}>
-        {/* X/Twitter */}
-        <button onClick={handleShareX} style={{
-          flex: 1, padding: "10px 0", borderRadius: 8, border: "1px solid rgba(255,255,255,0.12)",
-          background: "rgba(0,0,0,0.4)", color: "#fff", fontSize: 13, fontWeight: 700,
-          cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          Post
-        </button>
-        {/* Facebook */}
-        <button onClick={handleShareFB} style={{
-          flex: 1, padding: "10px 0", borderRadius: 8, border: "1px solid rgba(24,119,242,0.3)",
-          background: "rgba(24,119,242,0.1)", color: "#1877F2", fontSize: 13, fontWeight: 700,
-          cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-          Share
-        </button>
-        {/* Native share sheet */}
-        <button onClick={handleNativeShare} disabled={!ready} style={{
-          flex: 1, padding: "10px 0", borderRadius: 8, border: "1px solid rgba(232,177,0,0.25)",
-          background: "rgba(232,177,0,0.08)", color: "#E8B100", fontSize: 13, fontWeight: 700,
-          cursor: ready ? "pointer" : "default", fontFamily: "inherit", opacity: ready ? 1 : 0.5,
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8B100" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          More
-        </button>
+      <button onClick={handleShare} disabled={!ready} style={{
+        width: "100%", padding: "12px 0", borderRadius: 10,
+        border: "1px solid rgba(232,177,0,0.3)",
+        background: "linear-gradient(135deg, rgba(232,177,0,0.12), rgba(232,177,0,0.04))",
+        color: "#E8B100", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+        letterSpacing: 0.5, opacity: ready ? 1 : 0.5,
+      }}>
+        {ready ? "📲 Share This Take" : "Preparing share..."}
+      </button>
+      <div style={{ textAlign: "center", marginTop: 4, fontSize: 9, color: "#555" }}>
+        {ready && cachedFile.current ? "Image + text ready · tag @RichOToole 🔥" : "Tag @RichOToole 🔥"}
       </div>
     </div>
   );
