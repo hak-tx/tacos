@@ -920,130 +920,62 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [hasSearched, setHasSearched] = useState(false);
   const searchTimeout = useRef(null);
   const storageKey = "taco-recs-" + tourIndex;
 
-  // Load rankings + ensure mapkit is available
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) setRankings(JSON.parse(saved));
     } catch (e) {}
-    setLoading(false);
-
-    // Wait for mapkit to be available
-    function check() {
-      if (window.mapkit) {
-        try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch (e) { /* already init */ }
-        return true;
-      }
-      return false;
+    // Ensure mapkit
+    if (window.mapkit) {
+      try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch (e) {}
     }
-    if (check()) return;
-    if (!document.getElementById("mapkit-script")) {
-      const s = document.createElement("script");
-      s.id = "mapkit-script";
-      s.src = "https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js";
-      s.crossOrigin = "anonymous";
-      document.head.appendChild(s);
-    }
-    const iv = setInterval(() => { if (check()) clearInterval(iv); }, 300);
-    return () => clearInterval(iv);
   }, []);
 
-  const saveRankings = (updated) => {
+  const save = (updated) => {
     setRankings(updated);
     try { localStorage.setItem(storageKey, JSON.stringify(updated)); } catch (e) {}
   };
 
   const handleUpvote = (name) => {
     if (voted[name]) return;
-    const updated = rankings.map(r => r.name === name ? { ...r, votes: r.votes + 1 } : r);
-    updated.sort((a, b) => b.votes - a.votes);
-    saveRankings(updated);
+    const updated = rankings.map(r => r.name === name ? { ...r, votes: r.votes + 1 } : r).sort((a, b) => b.votes - a.votes);
+    save(updated);
     setVoted(prev => ({ ...prev, [name]: true }));
+  };
+
+  const handleRemove = (name) => {
+    save(rankings.filter(r => r.name !== name));
   };
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    setHasSearched(false);
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    if (!query.trim() || query.trim().length < 3) { setSearchResults([]); return; }
+    if (!query.trim() || query.trim().length < 2 || !window.mapkit) { setSearchResults([]); setSearching(false); return; }
     setSearching(true);
-
     searchTimeout.current = setTimeout(() => {
-      if (!window.mapkit) { setSearching(false); return; }
-      try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch(e) {}
-      
-      const region = new mapkit.CoordinateRegion(
-        new mapkit.Coordinate(tourDate.lat, tourDate.lng),
-        new mapkit.CoordinateSpan(0.5, 0.5)
-      );
-      const searchObj = new mapkit.Search({ region });
-      
-      // Run both autocomplete (for partial name matching) and regular search
-      let completed = 0;
-      let allResults = [];
-      
-      const finish = () => {
-        completed++;
-        if (completed < 2) return;
-        // Dedupe by name
-        const seen = new Set();
-        const deduped = [];
-        allResults.sort((a, b) => a.dist - b.dist);
-        allResults.forEach(p => {
-          const key = p.name.toLowerCase();
-          if (!seen.has(key)) { seen.add(key); deduped.push(p); }
-        });
-        setSearchResults(deduped.slice(0, 8));
+      const s = new mapkit.Search({ region: new mapkit.CoordinateRegion(new mapkit.Coordinate(tourDate.lat, tourDate.lng), new mapkit.CoordinateSpan(0.5, 0.5)) });
+      s.search(query, (err, data) => {
         setSearching(false);
-        setHasSearched(true);
-      };
-      
-      const processPlaces = (places) => {
-        if (!places) return;
-        places.forEach(p => {
-          const dlat = p.coordinate.latitude - tourDate.lat;
-          const dlng = p.coordinate.longitude - tourDate.lng;
-          const dist = Math.round(Math.sqrt(dlat * dlat + dlng * dlng) * 69 * 10) / 10;
-          allResults.push({ name: p.name, address: p.formattedAddress || "", dist });
-        });
-      };
-      
-      // 1) Regular search
-      searchObj.search(query, (err, data) => {
-        if (!err && data && data.places) processPlaces(data.places);
-        finish();
+        if (err || !data || !data.places) { setSearchResults([]); return; }
+        setSearchResults(data.places.slice(0, 8).map(p => ({
+          name: p.name,
+          address: p.formattedAddress || "",
+          dist: Math.round(Math.sqrt(Math.pow(p.coordinate.latitude - tourDate.lat, 2) + Math.pow(p.coordinate.longitude - tourDate.lng, 2)) * 69 * 10) / 10,
+        })));
       });
-      
-      // 2) Autocomplete for partial name matches
-      searchObj.autocomplete(query, (err, data) => {
-        if (!err && data && data.results && data.results.length > 0) {
-          // Autocomplete returns completions, search for the top ones
-          const topCompletion = data.results[0].displayLines ? data.results[0].displayLines.join(" ") : data.results[0].query || query;
-          const searchObj2 = new mapkit.Search({ region });
-          searchObj2.search(topCompletion, (err2, data2) => {
-            if (!err2 && data2 && data2.places) processPlaces(data2.places);
-            finish();
-          });
-        } else {
-          finish();
-        }
-      });
-    }, 800);
+    }, 300);
   };
 
-  const handleSelectPlace = (place) => {
+  const handleSelect = (place) => {
     const existing = rankings.find(r => r.name.toLowerCase() === place.name.toLowerCase());
     if (existing) {
       handleUpvote(existing.name);
     } else {
-      const updated = [...rankings, { name: place.name, address: place.address, votes: 1 }];
-      updated.sort((a, b) => b.votes - a.votes);
-      saveRankings(updated);
+      const updated = [...rankings, { name: place.name, address: place.address, votes: 1 }].sort((a, b) => b.votes - a.votes);
+      save(updated);
       setVoted(prev => ({ ...prev, [place.name]: true }));
     }
     setSearchQuery("");
@@ -1051,97 +983,82 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
   };
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 430, height: "75vh", background: "#141420", borderRadius: "20px 20px 0 0", display: "flex", flexDirection: "column" }}>
-        {/* Header - fixed */}
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 430, height: "70vh", background: "#141420", borderRadius: "20px 20px 0 0", display: "flex", flexDirection: "column" }}>
+        {/* Header */}
         <div style={{ padding: "16px 20px 10px", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>🌮 Fan Picks</div>
-              <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>Where should Rich eat near <span style={{ color: "#E8B100" }}>{tourDate.city.split(",")[0]}</span>?</div>
+              <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>Near <span style={{ color: "#E8B100" }}>{tourDate.city.split(",")[0]}</span> · {tourDate.venue}</div>
             </div>
-            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: "none", color: "#888", fontSize: 18, width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: "none", color: "#888", fontSize: 18, width: 32, height: 32, borderRadius: "50%", cursor: "pointer" }}>✕</button>
           </div>
         </div>
 
-        {/* Search bar - always pinned below header */}
-        <div style={{ padding: "0 20px 12px", flexShrink: 0, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ position: "relative" }}>
-            <input
-              value={searchQuery}
-              onChange={e => handleSearch(e.target.value)}
-              placeholder={"Search restaurants near " + tourDate.city.split(",")[0] + "..."}
-              style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 16, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
-            />
-            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, pointerEvents: "none" }}>🔍</span>
-            {searchQuery.length > 0 && (
-              <button onClick={() => { setSearchQuery(""); setSearchResults([]); }}
-                style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "rgba(255,255,255,0.1)", border: "none", color: "#888", fontSize: 12, width: 22, height: 22, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-            )}
-          </div>
+        {/* Search */}
+        <div style={{ padding: "0 20px 10px", flexShrink: 0 }}>
+          <input
+            value={searchQuery}
+            onChange={e => handleSearch(e.target.value)}
+            placeholder="Search any restaurant or place..."
+            style={{ width: "100%", padding: "12px 16px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 16, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+          />
         </div>
 
-        {/* Scrollable content area - fixed height, no layout shifts */}
-        <div style={{ flex: 1, overflow: "auto", padding: "0 20px" }}>
-          {/* Search results section */}
-          {searchQuery.length >= 3 && (
-            <div style={{ paddingTop: 8, paddingBottom: 8, borderBottom: rankings.length > 0 ? "1px solid rgba(232,177,0,0.15)" : "none" }}>
-              <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Search Results</div>
-              {searching && <div style={{ padding: "12px 0", color: "#888", fontSize: 12, textAlign: "center" }}>Searching...</div>}
-              {!searching && hasSearched && searchResults.length === 0 && (
-                <div style={{ padding: "12px 0", color: "#555", fontSize: 12, textAlign: "center" }}>No results within 30 miles</div>
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflow: "auto", padding: "0 20px 20px" }}>
+          {/* Search results */}
+          {searchQuery.length >= 2 && (
+            <>
+              {searching && <div style={{ padding: 12, color: "#888", fontSize: 12, textAlign: "center" }}>Searching...</div>}
+              {!searching && searchResults.length === 0 && searchQuery.length >= 2 && (
+                <div style={{ padding: 12, color: "#555", fontSize: 12, textAlign: "center" }}>No results found</div>
               )}
               {searchResults.map((p, j) => (
-                <button key={j} onClick={() => handleSelectPlace(p)}
-                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 4px", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}>
-                  <span style={{ fontSize: 18, minWidth: 24, textAlign: "center" }}>📍</span>
+                <button key={j} onClick={() => handleSelect(p)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "12px 4px", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}>
+                  <span style={{ fontSize: 16 }}>📍</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{p.name}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{p.name}</div>
                     <div style={{ fontSize: 10, color: "#666", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.address}</div>
                   </div>
-                  <div style={{ fontSize: 9, color: "#E8B100", whiteSpace: "nowrap", fontWeight: 600 }}>{p.dist} mi</div>
+                  <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 600 }}>{p.dist} mi</div>
                 </button>
               ))}
-            </div>
+            </>
           )}
 
-          {/* Rankings section */}
-          {rankings.length > 0 && (
-            <div style={{ paddingTop: 8 }}>
-              <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Fan Rankings</div>
+          {/* Rankings */}
+          {searchQuery.length < 2 && rankings.length > 0 && (
+            <>
+              <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase", letterSpacing: 1, padding: "8px 0 4px" }}>Fan Rankings</div>
               {rankings.map((r, j) => (
-                <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                  <div style={{ minWidth: 26, textAlign: "center", fontSize: j < 3 ? 16 : 12, fontWeight: 900, color: j === 0 ? "#E8B100" : j === 1 ? "#C0C0C0" : j === 2 ? "#CD7F32" : "#444", fontFamily: "'Bitter', serif" }}>
+                <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <div style={{ minWidth: 24, textAlign: "center", fontSize: j < 3 ? 14 : 12, color: j === 0 ? "#E8B100" : j === 1 ? "#C0C0C0" : j === 2 ? "#CD7F32" : "#444", fontWeight: 900 }}>
                     {j === 0 ? "🥇" : j === 1 ? "🥈" : j === 2 ? "🥉" : (j + 1)}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{r.name}</div>
-                    {r.address && <div style={{ fontSize: 9, color: "#555", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.address}</div>}
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{r.name}</div>
+                    {r.address && <div style={{ fontSize: 9, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.address}</div>}
                   </div>
-                  <button onClick={() => handleUpvote(r.name)}
-                    disabled={voted[r.name]}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
-                      padding: "7px 12px", borderRadius: 8, cursor: voted[r.name] ? "default" : "pointer",
-                      background: voted[r.name] ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.05)",
-                      border: voted[r.name] ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.1)",
-                      color: voted[r.name] ? "#22C55E" : "#fff",
-                      fontSize: 13, fontWeight: 700, fontFamily: "inherit",
-                    }}>
-                    <span style={{ fontSize: 14 }}>{voted[r.name] ? "✓" : "👍"}</span>
-                    <span>{r.votes}</span>
+                  <button onClick={() => handleUpvote(r.name)} disabled={voted[r.name]}
+                    style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 10px", borderRadius: 6, border: voted[r.name] ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.1)", background: voted[r.name] ? "rgba(34,197,94,0.1)" : "rgba(255,255,255,0.04)", color: voted[r.name] ? "#22C55E" : "#fff", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: voted[r.name] ? "default" : "pointer", flexShrink: 0 }}>
+                    {voted[r.name] ? "✓" : "👍"} {r.votes}
                   </button>
+                  <button onClick={() => handleRemove(r.name)}
+                    style={{ background: "none", border: "none", color: "#444", fontSize: 14, cursor: "pointer", padding: "4px", flexShrink: 0 }}>✕</button>
                 </div>
               ))}
-            </div>
+            </>
           )}
 
           {/* Empty state */}
-          {rankings.length === 0 && searchQuery.length < 3 && (
-            <div style={{ textAlign: "center", padding: "40px 0", color: "#555" }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🌮</div>
-              <div style={{ fontSize: 13, color: "#888" }}>No recommendations yet</div>
-              <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>Search for a restaurant above to add it!</div>
+          {searchQuery.length < 2 && rankings.length === 0 && (
+            <div style={{ textAlign: "center", padding: "40px 0" }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>🌮</div>
+              <div style={{ fontSize: 13, color: "#888" }}>No picks yet</div>
+              <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>Search above to recommend a spot</div>
             </div>
           )}
         </div>
