@@ -1023,9 +1023,9 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 430, maxHeight: "80vh", background: "#141420", borderRadius: "20px 20px 0 0", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 430, background: "#141420", borderRadius: "20px 20px 0 0", display: "flex", flexDirection: "column" }}>
         {/* Header */}
-        <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>🌮 Fan Picks</div>
@@ -1036,47 +1036,58 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
           <div style={{ fontSize: 9, color: "#555", marginTop: 6 }}>{tourDate.venue} · {tourDate.date} · within 30 mi</div>
         </div>
 
-        {/* Search bar (always visible when adding) */}
-        {adding && (
-          <div style={{ padding: "12px 20px 0" }}>
-            <div style={{ position: "relative" }}>
-              <input
-                autoFocus
-                value={searchQuery}
-                onChange={e => handleSearch(e.target.value)}
-                placeholder="Search taco spots near venue..."
-                style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
-              />
-              <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, pointerEvents: "none" }}>🔍</span>
-            </div>
-            {/* Search results */}
-            {searching && <div style={{ padding: "10px 0", color: "#888", fontSize: 12, textAlign: "center" }}>Searching near {tourDate.city.split(",")[0]}...</div>}
-            {searchResults.length > 0 && (
-              <div style={{ marginTop: 6, maxHeight: 200, overflow: "auto" }}>
-                {searchResults.map((p, j) => (
-                  <button key={j} onClick={() => handleSelectPlace(p)}
-                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 8px", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}>
-                    <span style={{ fontSize: 20, minWidth: 28, textAlign: "center" }}>📍</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{p.name}</div>
-                      <div style={{ fontSize: 10, color: "#666", marginTop: 1 }}>{p.address}</div>
-                    </div>
-                    <div style={{ fontSize: 9, color: "#888", whiteSpace: "nowrap" }}>{p.dist} mi</div>
-                  </button>
-                ))}
+        {/* Recommend button - ALWAYS at the top, always visible */}
+        <div style={{ padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+          {adding ? (
+            <>
+              <div style={{ position: "relative", marginBottom: 8 }}>
+                <input
+                  autoFocus
+                  value={searchQuery}
+                  onChange={e => handleSearch(e.target.value)}
+                  placeholder="Search taco spots near venue..."
+                  style={{ width: "100%", padding: "12px 14px 12px 36px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,177,0,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                />
+                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, pointerEvents: "none" }}>🔍</span>
               </div>
-            )}
-            {searchQuery.length >= 2 && !searching && searchResults.length === 0 && (
-              <div style={{ padding: "10px 0", color: "#555", fontSize: 11, textAlign: "center" }}>No spots found within 30 miles — try a different search</div>
-            )}
-          </div>
-        )}
+              {/* Search results */}
+              {searching && <div style={{ padding: "8px 0", color: "#888", fontSize: 12, textAlign: "center" }}>Searching near {tourDate.city.split(",")[0]}...</div>}
+              {searchResults.length > 0 && (
+                <div style={{ maxHeight: 220, overflow: "auto", borderRadius: 8, background: "rgba(0,0,0,0.3)" }}>
+                  {searchResults.map((p, j) => (
+                    <button key={j} onClick={() => handleSelectPlace(p)}
+                      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 8px", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}>
+                      <span style={{ fontSize: 20, minWidth: 28, textAlign: "center" }}>📍</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{p.name}</div>
+                        <div style={{ fontSize: 10, color: "#666", marginTop: 1 }}>{p.address}</div>
+                      </div>
+                      <div style={{ fontSize: 9, color: "#888", whiteSpace: "nowrap" }}>{p.dist} mi</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {searchQuery.length >= 2 && !searching && searchResults.length === 0 && (
+                <div style={{ padding: "8px 0", color: "#555", fontSize: 11, textAlign: "center" }}>No spots found within 30 miles — try a different search</div>
+              )}
+              <button onClick={() => { setAdding(false); setSearchQuery(""); setSearchResults([]); }}
+                style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginTop: 8 }}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button onClick={() => setAdding(true)}
+              style={{ width: "100%", padding: "14px", borderRadius: 10, border: "1px dashed rgba(232,177,0,0.3)", background: "rgba(232,177,0,0.06)", color: "#E8B100", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+              + Recommend a Spot
+            </button>
+          )}
+        </div>
 
-        {/* Rankings list */}
-        <div style={{ flex: 1, overflow: "auto", padding: "8px 20px" }}>
+        {/* Rankings list - scrollable, takes remaining space */}
+        <div style={{ overflow: "auto", maxHeight: "50vh", padding: "8px 20px 20px" }}>
           {loading ? (
             <div style={{ textAlign: "center", padding: 20, color: "#555", fontSize: 12 }}>Loading...</div>
-          ) : rankings.length === 0 && !adding ? (
+          ) : rankings.length === 0 ? (
             <div style={{ textAlign: "center", padding: "30px 0", color: "#555" }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>🌮</div>
               <div style={{ fontSize: 13, color: "#888" }}>No recommendations yet</div>
@@ -1107,21 +1118,6 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
                 </button>
               </div>
             ))
-          )}
-        </div>
-
-        {/* Add button */}
-        <div style={{ padding: "12px 20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          {adding ? (
-            <button onClick={() => { setAdding(false); setSearchQuery(""); setSearchResults([]); }}
-              style={{ width: "100%", padding: "12px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#888", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-              Cancel Search
-            </button>
-          ) : (
-            <button onClick={() => setAdding(true)}
-              style={{ width: "100%", padding: "12px", borderRadius: 10, border: "1px dashed rgba(232,177,0,0.3)", background: "rgba(232,177,0,0.06)", color: "#E8B100", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-              + Recommend a Spot
-            </button>
           )}
         </div>
       </div>
