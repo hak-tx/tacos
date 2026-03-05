@@ -362,19 +362,28 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           const ann = new mapkit.Annotation(coord, (coordinate, options) => {
             const el = document.createElement("div");
             el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;transform:scale(0);opacity:0;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;";
+            // Outer tap target — larger invisible area
+            const tapTarget = document.createElement("div");
+            tapTarget.style.cssText = "width:40px;height:40px;display:flex;align-items:center;justify-content:center;";
             const pin = document.createElement("div");
-            pin.style.cssText = "width:22px;height:22px;border-radius:50%;background:#C41E3A;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.5);transition:all 0.3s;";
-            pin.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
-            el.appendChild(pin);
+            pin.style.cssText = "width:26px;height:26px;border-radius:50%;background:#C41E3A;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5);transition:all 0.3s;";
+            pin.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
+            tapTarget.appendChild(pin);
+            el.appendChild(tapTarget);
             const label = document.createElement("div");
-            label.style.cssText = "background:rgba(0,0,0,0.75);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;";
+            label.style.cssText = "background:rgba(0,0,0,0.75);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:-2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;";
             label.textContent = td.date;
             el.appendChild(label);
+            // Info bubble with venue details and ticket link
             const bubble = document.createElement("div");
-            bubble.style.cssText = "display:none;position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.95);border:1px solid rgba(0,40,104,0.5);border-radius:10px;padding:8px 12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.6);z-index:50;min-width:140px;text-align:center;";
-            bubble.innerHTML = "<div style='font-size:12px;font-weight:700;color:#fff;'>" + td.venue + "</div><div style='font-size:10px;color:#ccc;margin-top:2px;'>" + td.city + "</div><div style='font-size:9px;color:#5B9BD5;margin-top:3px;font-weight:700;'>♪ " + td.day + " " + td.date + "</div>";
+            bubble.style.cssText = "display:none;position:absolute;bottom:62px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.97);border:1px solid rgba(196,30,58,0.4);border-radius:12px;padding:10px 14px;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,0.7);z-index:50;min-width:160px;text-align:center;";
+            bubble.innerHTML = "<div style='font-size:13px;font-weight:800;color:#fff;font-family:system-ui;'>" + td.venue + "</div>" +
+              "<div style='font-size:11px;color:#ccc;margin-top:3px;'>" + td.city + "</div>" +
+              "<div style='font-size:10px;color:#C41E3A;margin-top:4px;font-weight:700;'>♪ " + td.day + " " + td.date + "</div>" +
+              (td.rsvp ? "<div style='font-size:9px;color:#555;margin-top:2px;'>" + td.rsvp + " fans going</div>" : "") +
+              "<a href='https://www.bandsintown.com/a/39860-rich-otoole' target='_blank' rel='noopener' style='display:inline-block;margin-top:8px;padding:6px 14px;background:#E8B100;color:#000;font-size:10px;font-weight:800;border-radius:6px;text-decoration:none;font-family:system-ui;'>Get Tickets →</a>";
             const arrow = document.createElement("div");
-            arrow.style.cssText = "position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(13,13,20,0.95);";
+            arrow.style.cssText = "position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(13,13,20,0.97);";
             bubble.appendChild(arrow);
             el.appendChild(bubble);
             el._bubble = bubble;
@@ -382,10 +391,10 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
             el._label = label;
             tourEls.push(el);
             return el;
-          }, { anchorOffset: new DOMPoint(0, -10) });
+          }, { anchorOffset: new DOMPoint(0, -18) });
           ann.addEventListener("select", (e) => {
             const el = e.target.element;
-            if (el && el._bubble) { el._bubble.style.display = "block"; el._pin.style.transform = "scale(1.4)"; }
+            if (el && el._bubble) { el._bubble.style.display = "block"; el._pin.style.transform = "scale(1.3)"; }
           });
           ann.addEventListener("deselect", (e) => {
             const el = e.target.element;
@@ -411,13 +420,13 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           const veryZoomed = span.latitudeDelta < 1.5;
           tourEls.forEach(el => {
             if (veryZoomed) {
-              el._pin.style.width = "28px"; el._pin.style.height = "28px"; el._pin.style.fontSize = "15px";
-              el._label.style.fontSize = "9px";
+              el._pin.style.width = "32px"; el._pin.style.height = "32px";
+              el._label.style.fontSize = "10px";
             } else if (zoomed) {
-              el._pin.style.width = "25px"; el._pin.style.height = "25px"; el._pin.style.fontSize = "13px";
-              el._label.style.fontSize = "8px";
+              el._pin.style.width = "28px"; el._pin.style.height = "28px";
+              el._label.style.fontSize = "9px";
             } else {
-              el._pin.style.width = "22px"; el._pin.style.height = "22px"; el._pin.style.fontSize = "12px";
+              el._pin.style.width = "26px"; el._pin.style.height = "26px";
               el._label.style.fontSize = "8px";
             }
           });
