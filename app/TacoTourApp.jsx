@@ -196,46 +196,72 @@ function AuthScreen({ mode, onComplete, onBack }) {
   const [authMode, setAuthMode] = useState(mode);
   const [form, setForm] = useState({ name: "", email: "", password: "", city: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = () => {
+    setError("");
+    const email = form.email.trim().toLowerCase();
+    const password = form.password;
+    if (!email || !password) { setError("Email and password are required"); return; }
+    if (authMode === "signup" && password.length < 6) { setError("Password must be at least 6 characters"); return; }
+
     setLoading(true);
     setTimeout(() => {
-      onComplete({ name: form.name || "Taco Fan", email: form.email, city: form.city || "Texas" });
-    }, 800);
+      try {
+        const usersRaw = localStorage.getItem("tt-users");
+        const users = usersRaw ? JSON.parse(usersRaw) : {};
+
+        if (authMode === "signup") {
+          if (users[email]) { setError("Account already exists. Sign in instead."); setLoading(false); return; }
+          // Hash password (simple for prototype — production would use bcrypt on server)
+          const passHash = btoa(password + ":tunes-tacos-salt");
+          const newUser = {
+            id: "user_" + Date.now(),
+            name: form.name.trim() || "Taco Fan",
+            email,
+            passHash,
+            city: form.city.trim() || "Texas",
+            role: "user", // "user" | "admin"
+            joinedAt: new Date().toISOString(),
+            reviewCount: 0,
+            agreeCount: 0,
+            xp: 0,
+          };
+          users[email] = newUser;
+          localStorage.setItem("tt-users", JSON.stringify(users));
+          localStorage.setItem("tt-session", JSON.stringify(newUser));
+          onComplete(newUser);
+        } else {
+          // Login
+          const existing = users[email];
+          if (!existing) { setError("No account found with that email"); setLoading(false); return; }
+          const passHash = btoa(password + ":tunes-tacos-salt");
+          if (existing.passHash !== passHash) { setError("Incorrect password"); setLoading(false); return; }
+          localStorage.setItem("tt-session", JSON.stringify(existing));
+          onComplete(existing);
+        }
+      } catch (e) {
+        setError("Something went wrong. Try again.");
+        setLoading(false);
+      }
+    }, 400);
   };
 
   return (
     <div style={{ minHeight: "100vh", padding: "60px 24px 24px" }}>
       <button onClick={onBack} style={{ background: "none", border: "none", color: "#666", fontSize: 12, cursor: "pointer", marginBottom: 24, fontFamily: "inherit" }}>← Back</button>
       <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 4px" }}>
-        {authMode === "signup" ? "Join the Tour" : "Welcome Back"}
+        {authMode === "signup" ? "Join Tunes & Tacos" : "Welcome Back"}
       </h1>
       <p style={{ fontSize: 12, color: "#888", margin: "0 0 28px" }}>
-        {authMode === "signup" ? "Create your account to rate tacos and debate Rich" : "Sign in to your Taco Tour account"}
+        {authMode === "signup" ? "Create your account to rate tacos, make recommendations, and debate Rich" : "Sign in to your account"}
       </p>
 
-      {/* Social auth buttons */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
-        {[
-          { label: "Continue with Apple", icon: "🍎", bg: "#fff", color: "#000" },
-          { label: "Continue with Google", icon: "G", bg: "transparent", color: "#fff", border: true },
-          { label: "Continue with Spotify", icon: "♫", bg: "#1DB954", color: "#000" },
-        ].map((btn) => (
-          <button key={btn.label} onClick={handleSubmit} style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%", padding: "12px 0", borderRadius: 10,
-            background: btn.bg, color: btn.color, border: btn.border ? "1px solid rgba(255,255,255,0.2)" : "none",
-            fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-          }}>
-            <span>{btn.icon}</span> {btn.label}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-        <span style={{ fontSize: 11, color: "#555" }}>or</span>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-      </div>
+      {error && (
+        <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#EF4444", fontSize: 12, marginBottom: 16 }}>
+          {error}
+        </div>
+      )}
 
       {/* Form fields */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -244,9 +270,10 @@ function AuthScreen({ mode, onComplete, onBack }) {
             style={inputStyle} />
         )}
         <input placeholder="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-          style={inputStyle} />
+          style={{ ...inputStyle, fontSize: 16 }} />
         <input placeholder="Password" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
-          style={inputStyle} />
+          onKeyDown={e => e.key === "Enter" && handleSubmit()}
+          style={{ ...inputStyle, fontSize: 16 }} />
         {authMode === "signup" && (
           <input placeholder="Home city (for local taco recs)" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
             style={inputStyle} />
@@ -257,10 +284,15 @@ function AuthScreen({ mode, onComplete, onBack }) {
       </div>
 
       <div style={{ textAlign: "center", marginTop: 20 }}>
-        <button onClick={() => setAuthMode(authMode === "signup" ? "login" : "signup")}
+        <button onClick={() => { setAuthMode(authMode === "signup" ? "login" : "signup"); setError(""); }}
           style={{ background: "none", border: "none", color: "#E8B100", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
           {authMode === "signup" ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
         </button>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 32, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ fontSize: 9, color: "#555", marginBottom: 8 }}>PROTOTYPE MODE</div>
+        <div style={{ fontSize: 10, color: "#444" }}>Accounts are stored locally on this device for testing</div>
       </div>
     </div>
   );
@@ -1243,18 +1275,70 @@ function MusicSection() {
 
 // 10. PROFILE / ACCOUNT
 function ProfileSection({ user, onLogout }) {
+  const isAdmin = user?.role === "admin";
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20, textAlign: "center" }}>
-        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 900, color: "#000", margin: "0 auto 10px" }}>
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid " + (isAdmin ? "rgba(232,177,0,0.2)" : "rgba(255,255,255,0.06)"), borderRadius: 14, padding: 20, textAlign: "center" }}>
+        {isAdmin && (
+          <div style={{ display: "inline-block", padding: "3px 10px", borderRadius: 6, background: "rgba(232,177,0,0.15)", border: "1px solid rgba(232,177,0,0.3)", color: "#E8B100", fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>
+            🎸 Admin · Artist Account
+          </div>
+        )}
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: isAdmin ? "linear-gradient(135deg, #E8B100, #D97706)" : "linear-gradient(135deg, #3B82F6, #2563EB)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 900, color: isAdmin ? "#000" : "#fff", margin: "0 auto 10px", border: isAdmin ? "2px solid #E8B100" : "none" }}>
           {(user?.name || "T")[0].toUpperCase()}
         </div>
         <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", fontFamily: "'Bitter', serif" }}>{user?.name || "Taco Fan"}</div>
-        <div style={{ fontSize: 11, color: "#888" }}>{user?.city || "Texas"} · Joined Mar 2026</div>
+        <div style={{ fontSize: 11, color: "#888" }}>{user?.email}</div>
+        <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>{user?.city || "Texas"} · Joined {user?.joinedAt ? new Date(user.joinedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "Mar 2026"}</div>
+        <div style={{ display: "inline-block", marginTop: 8, padding: "3px 10px", borderRadius: 6, background: isAdmin ? "rgba(232,177,0,0.1)" : "rgba(59,130,246,0.1)", color: isAdmin ? "#E8B100" : "#60A5FA", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
+          {isAdmin ? "Artist" : "Fan"} Account
+        </div>
         <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 14 }}>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#E8B100" }}>0</div><div style={{ fontSize: 9, color: "#666" }}>Reviews</div></div>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#4ADE80" }}>0</div><div style={{ fontSize: 9, color: "#666" }}>Agrees</div></div>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#60A5FA" }}>0</div><div style={{ fontSize: 9, color: "#666" }}>XP</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#E8B100" }}>{user?.reviewCount || 0}</div><div style={{ fontSize: 9, color: "#666" }}>Reviews</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#4ADE80" }}>{user?.agreeCount || 0}</div><div style={{ fontSize: 9, color: "#666" }}>Agrees</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#60A5FA" }}>{user?.xp || 0}</div><div style={{ fontSize: 9, color: "#666" }}>XP</div></div>
+        </div>
+      </div>
+
+      {/* Account settings */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Account</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {[
+            { label: "Email", value: user?.email || "—" },
+            { label: "Role", value: isAdmin ? "Admin (Artist)" : "Fan" },
+            { label: "User ID", value: user?.id || "—" },
+          ].map(item => (
+            <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 4px", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+              <span style={{ fontSize: 12, color: "#888" }}>{item.label}</span>
+              <span style={{ fontSize: 12, color: "#ccc", fontWeight: 500 }}>{item.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Permissions info */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>
+          {isAdmin ? "🎸 Admin Permissions" : "✅ Your Permissions"}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {[
+            { action: "View reviews & map", allowed: true },
+            { action: "Vote on debates", allowed: true },
+            { action: "Recommend spots (Fan Picks)", allowed: true },
+            { action: "Submit fan ratings", allowed: true },
+            ...(isAdmin ? [
+              { action: "Post highlighted reviews", allowed: true, admin: true },
+              { action: "Manage tour dates", allowed: true, admin: true },
+              { action: "Manage user accounts", allowed: true, admin: true },
+            ] : []),
+          ].map(p => (
+            <div key={p.action} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
+              <span style={{ fontSize: 12, color: p.admin ? "#E8B100" : "#4ADE80" }}>{p.allowed ? "✓" : "✕"}</span>
+              <span style={{ fontSize: 12, color: p.admin ? "#E8B100" : "#ccc" }}>{p.action}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -1263,12 +1347,12 @@ function ProfileSection({ user, onLogout }) {
         <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>🏆 Badges to Earn</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           {[
-            { icon: "🌮", name: "First Take", desc: "Submit your first review", locked: true },
-            { icon: "🔥", name: "Hot Streak", desc: "5 reviews in a row", locked: true },
+            { icon: "🌮", name: "First Take", desc: "Submit your first review", locked: !isAdmin },
+            { icon: "🔥", name: "Hot Streak", desc: "5 reviews in a row", locked: !isAdmin },
             { icon: "🤠", name: "Rich Approved", desc: "Rich agrees with your take", locked: true },
             { icon: "⭐", name: "Top 10", desc: "Hit the leaderboard", locked: true },
-            { icon: "🗺️", name: "Explorer", desc: "Review in 3 cities", locked: true },
-            { icon: "🎸", name: "Show & Chow", desc: "Review at a tour stop", locked: true },
+            { icon: "🗺️", name: "Explorer", desc: "Review in 3 cities", locked: !isAdmin },
+            { icon: "🎸", name: "Show & Chow", desc: "Review at a tour stop", locked: !isAdmin },
           ].map(b => (
             <div key={b.name} style={{ width: "calc(50% - 5px)", padding: 10, background: "rgba(255,255,255,0.02)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.04)", opacity: b.locked ? 0.4 : 1 }}>
               <div style={{ fontSize: 20, marginBottom: 4 }}>{b.icon}</div>
@@ -1304,6 +1388,7 @@ function ProfileSection({ user, onLogout }) {
       </div>
 
       <button onClick={onLogout} style={{ ...btnSecondary, color: "#EF4444", borderColor: "rgba(239,68,68,0.2)" }}>Sign Out</button>
+      <div style={{ textAlign: "center", fontSize: 9, color: "#333", padding: "4px 0" }}>Prototype v1 · Accounts stored locally</div>
     </div>
   );
 }
@@ -1355,9 +1440,46 @@ export default function TacoTourApp() {
   const [reviewFilter, setReviewFilter] = useState("All");
   const [regionFilter, setRegionFilter] = useState("All");
 
+  // Seed admin account + restore session on mount
+  useEffect(() => {
+    try {
+      const usersRaw = localStorage.getItem("tt-users");
+      const users = usersRaw ? JSON.parse(usersRaw) : {};
+      // Seed Rich's admin account if not exists
+      if (!users["rich@richotoole.com"]) {
+        users["rich@richotoole.com"] = {
+          id: "admin_rich",
+          name: "Rich O'Toole",
+          email: "rich@richotoole.com",
+          passHash: btoa("GodTexasTacos2026:tunes-tacos-salt"),
+          city: "Houston, TX",
+          role: "admin",
+          joinedAt: "2025-12-01T00:00:00Z",
+          reviewCount: 16,
+          agreeCount: 4200,
+          xp: 9999,
+        };
+        localStorage.setItem("tt-users", JSON.stringify(users));
+      }
+      // Restore session
+      const sessionRaw = localStorage.getItem("tt-session");
+      if (sessionRaw) {
+        const session = JSON.parse(sessionRaw);
+        // Verify user still exists in users db
+        if (users[session.email]) {
+          setUser(users[session.email]);
+        }
+      }
+    } catch (e) {}
+    // Prototype: start in guest mode (skip splash)
+    if (!localStorage.getItem("tt-session")) {
+      setUser({ name: "Guest", city: "Texas", guest: true, role: "guest" });
+    }
+  }, []);
+
   const handleAuthStart = (mode) => {
     if (mode === "guest") {
-      setUser({ name: "Guest", city: "Texas", guest: true });
+      setUser({ name: "Guest", city: "Texas", guest: true, role: "guest" });
       setScreen("main");
     } else {
       setAuthMode(mode);
@@ -1368,6 +1490,12 @@ export default function TacoTourApp() {
   const handleAuthComplete = (userData) => {
     setUser(userData);
     setScreen("main");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("tt-session");
+    setUser({ name: "Guest", city: "Texas", guest: true, role: "guest" });
+    setTab("map");
   };
 
   const handleVote = (spotId, type) => {
@@ -1413,7 +1541,7 @@ export default function TacoTourApp() {
   );
 
   if (screen === "auth") return (
-    <Shell><AuthScreen mode={authMode} onComplete={handleAuthComplete} onBack={() => setScreen("splash")} /></Shell>
+    <Shell><AuthScreen mode={authMode} onComplete={handleAuthComplete} onBack={() => setScreen("main")} /></Shell>
   );
 
   return (
@@ -1428,14 +1556,17 @@ export default function TacoTourApp() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 10, color: "#888" }}>{user?.name || "Guest"}</div>
-              <div style={{ fontSize: 9, color: "#555" }}>{TACO_SPOTS.length} spots</div>
+              <div style={{ fontSize: 10, color: user?.role === "admin" ? "#E8B100" : "#888" }}>{user?.name || "Guest"}{user?.role === "admin" ? " 🎸" : ""}</div>
+              <div style={{ fontSize: 9, color: "#555" }}>{user?.guest ? "Guest" : user?.role === "admin" ? "Admin" : "Fan"} · {TACO_SPOTS.length} spots</div>
             </div>
             <div onClick={() => setTab("profile")} style={{
-              width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)",
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900, color: "#000", cursor: "pointer",
+              width: 34, height: 34, borderRadius: "50%",
+              background: user?.role === "admin" ? "linear-gradient(135deg, #E8B100, #D97706)" : user?.guest ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg, #3B82F6, #2563EB)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900,
+              color: user?.role === "admin" ? "#000" : "#fff", cursor: "pointer",
+              border: user?.role === "admin" ? "2px solid #E8B100" : "none",
             }}>
-              {(user?.name || "T")[0].toUpperCase()}
+              {(user?.name || "G")[0].toUpperCase()}
             </div>
           </div>
         </div>
@@ -1597,12 +1728,21 @@ export default function TacoTourApp() {
             user?.guest ? (
               <div style={{ textAlign: "center", padding: "40px 20px" }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>🌮</div>
-                <h2 style={{ fontSize: 20, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px" }}>Join the Tour</h2>
-                <p style={{ fontSize: 12, color: "#888", margin: "0 0 24px" }}>Create an account to submit reviews, vote on debates, and earn badges.</p>
-                <button onClick={() => { setScreen("auth"); setAuthMode("signup"); }} style={btnPrimary}>Create Account</button>
+                <h2 style={{ fontSize: 20, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px" }}>Join Tunes & Tacos</h2>
+                <p style={{ fontSize: 12, color: "#888", margin: "0 0 8px" }}>Create an account to submit reviews, vote on debates, and earn badges.</p>
+                <p style={{ fontSize: 10, color: "#555", margin: "0 0 24px" }}>Guests can browse everything — sign up to participate.</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <button onClick={() => { setScreen("auth"); setAuthMode("signup"); }} style={btnPrimary}>Create Account</button>
+                  <button onClick={() => { setScreen("auth"); setAuthMode("login"); }} style={btnSecondary}>Sign In</button>
+                </div>
+                <div style={{ marginTop: 24, padding: "12px 0", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div style={{ fontSize: 9, color: "#444", marginBottom: 6 }}>GUEST PERMISSIONS</div>
+                  <div style={{ fontSize: 11, color: "#666" }}>✓ View reviews · ✓ Browse map · ✓ See tour dates</div>
+                  <div style={{ fontSize: 11, color: "#444", marginTop: 2 }}>✕ Rate · ✕ Recommend · ✕ Vote</div>
+                </div>
               </div>
             ) : (
-              <ProfileSection user={user} onLogout={() => { setUser(null); setScreen("splash"); }} />
+              <ProfileSection user={user} onLogout={handleLogout} />
             )
           )}
 
