@@ -156,7 +156,7 @@ function SplashScreen({ onGetStarted, onClose }) {
       emoji: "📍⭐",
       title: "Discover. Rate. Debate.",
       subtitle: "See Rich's reviews on an interactive map",
-      detail: "Agree or disagree with his takes. Submit your own fan ratings.",
+      detail: "Agree or disagree with his takes. Submit your own ratings and see what everyone else thinks!",
       bg: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=800&q=70",
     },
     {
