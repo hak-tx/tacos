@@ -170,9 +170,9 @@ function SplashScreen({ onGetStarted, onClose }) {
 
   const s = slides[step];
   return (
-    <div style={{ position: "fixed", inset: 0, overflow: "hidden", opacity: fadeIn ? 1 : 0, transition: "opacity 0.6s ease", zIndex: 260 }}>
+    <div style={{ position: "fixed", inset: 0, overflow: "hidden", opacity: fadeIn ? 1 : 0, transition: "opacity 0.6s ease", zIndex: 260, background: "#0d0d14" }}>
       {/* Background image */}
-      <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${s.bg})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.4, transition: "opacity 0.5s" }} />
+      <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${s.bg})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.4 }} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(13,13,20,0.2) 0%, rgba(13,13,20,0.7) 50%, rgba(13,13,20,0.95) 100%)" }} />
 
       {/* Close button */}
