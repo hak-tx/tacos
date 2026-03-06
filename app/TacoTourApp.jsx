@@ -170,10 +170,11 @@ function SplashScreen({ onGetStarted, onClose }) {
 
   const s = slides[step];
   return (
-    <div style={{ position: "fixed", inset: 0, overflow: "hidden", opacity: fadeIn ? 1 : 0, transition: "opacity 0.6s ease", zIndex: 260, background: "#0d0d14" }}>
-      {/* Background image */}
-      <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${s.bg})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.4 }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(13,13,20,0.2) 0%, rgba(13,13,20,0.7) 50%, rgba(13,13,20,0.95) 100%)" }} />
+    <div style={{ position: "fixed", inset: 0, overflow: "hidden", zIndex: 260, background: "#0d0d14", touchAction: "none" }}
+      onTouchMove={e => e.stopPropagation()}>
+      {/* Background image — subtle */}
+      <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${s.bg})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.2 }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(13,13,20,0.3) 0%, rgba(13,13,20,0.85) 60%, rgba(13,13,20,1) 85%)" }} />
 
       {/* Close button */}
       {onClose && (
@@ -181,7 +182,7 @@ function SplashScreen({ onGetStarted, onClose }) {
       )}
 
       {/* Everything centered in one flex container */}
-      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px 32px", textAlign: "center", zIndex: 5 }}>
+      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px 32px", textAlign: "center", zIndex: 5, opacity: fadeIn ? 1 : 0, transition: "opacity 0.6s ease" }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>{s.emoji}</div>
         <h1 style={{ fontSize: 26, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px", lineHeight: 1.2 }}>{s.title}</h1>
         <p style={{ fontSize: 14, color: "#E8B100", fontWeight: 600, margin: "0 0 6px", maxWidth: 280 }}>{s.subtitle}</p>
