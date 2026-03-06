@@ -1,9 +1,9 @@
 export const metadata = {
   metadataBase: new URL("https://tacos-lime.vercel.app"),
-  title: "Rich O'Toole's Tunes & Tacos",
+  title: "Rich O'Toole's Tacos Setlist",
   description: "Follow Rich O'Toole as he reviews the best tacos on tour. Rate, debate, and discover taco spots across Texas and beyond. Tacos. Tunes. Takes.",
   openGraph: {
-    title: "Rich O'Toole's Tunes & Tacos",
+    title: "Rich O'Toole's Tacos Setlist",
     description: "Tacos. Tunes. Takes. Follow Rich as he rates taco spots across Texas. 🌮🎸🔥",
     type: "website",
     url: "https://tacos-lime.vercel.app",
@@ -12,13 +12,13 @@ export const metadata = {
         url: "/api/og",
         width: 1200,
         height: 630,
-        alt: "Rich O'Toole's Taco Tour",
+        alt: "Rich O'Toole's Tacos Setlist",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rich O'Toole's Tunes & Tacos",
+    title: "Rich O'Toole's Tacos Setlist",
     description: "Tacos. Tunes. Takes. 🌮🎸🔥",
     images: ["/api/og"],
   },

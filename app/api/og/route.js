@@ -4,7 +4,7 @@ export const runtime = "edge";
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const name = searchParams.get("name") || "Rich O'Toole's Taco Tour";
+  const name = searchParams.get("name") || "Rich O'Toole's Tacos Setlist";
   const city = searchParams.get("city") || "Texas";
   const rich = searchParams.get("rich") || "9.0";
   const fans = searchParams.get("fans") || "8.5";
@@ -30,7 +30,7 @@ export async function GET(request) {
             }}>R</div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: "24px", fontWeight: 700 }}>Rich O'Toole</span>
-              <span style={{ fontSize: "16px", color: "#E8B100", fontWeight: 600 }}>Tunes & Tacos</span>
+              <span style={{ fontSize: "16px", color: "#E8B100", fontWeight: 600 }}>Tacos Setlist</span>
             </div>
           </div>
           <div style={{ fontSize: "52px", fontWeight: 900, lineHeight: 1.1, marginBottom: "8px" }}>{name}</div>

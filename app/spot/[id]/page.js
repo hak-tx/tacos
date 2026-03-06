@@ -23,12 +23,12 @@ const SPOTS = {
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const spot = SPOTS[id];
-  if (!spot) return { title: "Rich O'Toole's Tunes & Tacos" };
+  if (!spot) return { title: "Rich O'Toole's Tacos Setlist" };
 
   const ogUrl = `https://tacos-lime.vercel.app/api/og?name=${encodeURIComponent(spot.name)}&city=${encodeURIComponent(spot.city)}&rich=${spot.richRating}&fans=${spot.fanRating}&quote=${encodeURIComponent(spot.richQuote)}`;
 
   return {
-    title: `${spot.name} — Rich O'Toole's Tunes & Tacos`,
+    title: `${spot.name} — Rich O'Toole's Tacos Setlist`,
     description: `Rich gave ${spot.name} a ${spot.richRating}. "${spot.richQuote}" 🌮🎸`,
     openGraph: {
       title: `${spot.name} — Rich rates it ${spot.richRating}`,
@@ -66,7 +66,7 @@ export default async function SpotPage({ params }) {
       <p style={{ fontSize: 48, fontWeight: 900, color: "#22C55E", margin: "0 0 8px" }}>{rating}</p>
       <p style={{ fontSize: 13, color: "#E8B100", margin: "0 0 24px" }}>Rich O'Toole's Rating</p>
       <p style={{ fontSize: 14, color: "#ccc", fontStyle: "italic", maxWidth: 300 }}>"{quote}"</p>
-      <p style={{ fontSize: 12, color: "#555", marginTop: 32 }}>Loading Tunes & Tacos...</p>
+      <p style={{ fontSize: 12, color: "#555", marginTop: 32 }}>Loading Tacos Setlist...</p>
     </div>
   );
 }

@@ -147,7 +147,7 @@ function SplashScreen({ onGetStarted, onClose }) {
   const slides = [
     {
       emoji: "🌮🎸",
-      title: "Welcome to Tunes & Tacos",
+      title: "Welcome to Tacos Setlist",
       subtitle: "Where Texas Country meets the best tacos on the road",
       detail: "Follow Rich O'Toole as he eats his way across every tour stop",
     },
@@ -165,32 +165,68 @@ function SplashScreen({ onGetStarted, onClose }) {
     },
   ];
 
+  // Background image collage URLs (darkened with overlay)
+  const bgImages = [
+    "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&q=60",
+    "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=400&q=60",
+    "https://images.unsplash.com/photo-1508854710579-5cecc3a9ff17?w=400&q=60",
+    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&q=60",
+    "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&q=60",
+    "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?w=400&q=60",
+  ];
+
   const s = slides[step];
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: 32, textAlign: "center", opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease", position: "relative" }}>
-      {/* Close button when launched from ? button */}
-      {onClose && (
-        <button onClick={onClose} style={{ position: "absolute", top: 20, right: 20, background: "rgba(255,255,255,0.08)", border: "none", color: "#888", fontSize: 16, width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-      )}
-      <div style={{ fontSize: 56, marginBottom: 20, filter: "drop-shadow(0 0 20px rgba(232,177,0,0.3))" }}>{s.emoji}</div>
-      <h1 style={{ fontSize: 26, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px", lineHeight: 1.2 }}>{s.title}</h1>
-      <p style={{ fontSize: 14, color: "#E8B100", fontWeight: 600, margin: "0 0 8px" }}>{s.subtitle}</p>
-      <p style={{ fontSize: 12, color: "#888", margin: "0 0 32px", maxWidth: 280, lineHeight: 1.5 }}>{s.detail}</p>
-      {/* Dots */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-        {slides.map((_, i) => (
-          <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i === step ? "#E8B100" : "rgba(255,255,255,0.15)", transition: "all 0.3s" }} />
+    <div style={{ minHeight: "100vh", position: "relative", overflow: "hidden", opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease" }}>
+      {/* Background image collage */}
+      <div style={{ position: "absolute", inset: 0, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 0 }}>
+        {bgImages.map((url, i) => (
+          <div key={i} style={{ backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.15 }} />
         ))}
       </div>
-      {step < slides.length - 1 ? (
-        <button onClick={() => setStep(step + 1)} style={{ ...btnPrimary, width: 200 }}>Next</button>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
-          <button onClick={() => onGetStarted("signup")} style={{ ...btnPrimary }}>Create Account</button>
-          <button onClick={() => onGetStarted("login")} style={{ ...btnSecondary }}>I already have one</button>
-          <button onClick={() => onGetStarted("guest")} style={{ border: "none", background: "none", color: "#666", fontSize: 12, cursor: "pointer", padding: 8, fontFamily: "inherit" }}>Continue as guest</button>
-        </div>
+      {/* Dark overlay gradient */}
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(13,13,20,0.7) 0%, rgba(13,13,20,0.95) 70%)" }} />
+
+      {/* Close button */}
+      {onClose && (
+        <button onClick={onClose} style={{ position: "absolute", top: 20, right: 20, background: "rgba(255,255,255,0.1)", border: "none", color: "#888", fontSize: 16, width: 36, height: 36, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}>✕</button>
       )}
+
+      {/* Content — fixed structure so button stays in same position */}
+      <div style={{ position: "relative", zIndex: 5, minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 32px 40px", textAlign: "center" }}>
+        {/* Top spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Slide content — fixed height area */}
+        <div style={{ minHeight: 220, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ fontSize: 56, marginBottom: 20, filter: "drop-shadow(0 0 24px rgba(232,177,0,0.4))" }}>{s.emoji}</div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 10px", lineHeight: 1.2 }}>{s.title}</h1>
+          <p style={{ fontSize: 15, color: "#E8B100", fontWeight: 600, margin: "0 0 10px", maxWidth: 300 }}>{s.subtitle}</p>
+          <p style={{ fontSize: 13, color: "#999", margin: 0, maxWidth: 280, lineHeight: 1.5 }}>{s.detail}</p>
+        </div>
+
+        {/* Bottom spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Navigation — always in same position */}
+        <div style={{ width: "100%", maxWidth: 300 }}>
+          {/* Dots */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 24 }}>
+            {slides.map((_, i) => (
+              <div key={i} onClick={() => setStep(i)} style={{ width: i === step ? 24 : 8, height: 8, borderRadius: 4, background: i === step ? "#E8B100" : "rgba(255,255,255,0.15)", transition: "all 0.3s", cursor: "pointer" }} />
+            ))}
+          </div>
+          {step < slides.length - 1 ? (
+            <button onClick={() => setStep(step + 1)} style={{ ...btnPrimary, width: "100%" }}>Next</button>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button onClick={() => onGetStarted("signup")} style={{ ...btnPrimary }}>Create Account</button>
+              <button onClick={() => onGetStarted("login")} style={{ ...btnSecondary }}>I already have one</button>
+              <button onClick={() => onGetStarted("guest")} style={{ border: "none", background: "none", color: "#666", fontSize: 12, cursor: "pointer", padding: 8, fontFamily: "inherit" }}>Continue as guest</button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -255,7 +291,7 @@ function AuthScreen({ mode, onComplete, onBack }) {
     <div style={{ minHeight: "100vh", padding: "60px 24px 24px" }}>
       <button onClick={onBack} style={{ background: "none", border: "none", color: "#666", fontSize: 12, cursor: "pointer", marginBottom: 24, fontFamily: "inherit" }}>← Back</button>
       <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 4px" }}>
-        {authMode === "signup" ? "Join Tunes & Tacos" : "Welcome Back"}
+        {authMode === "signup" ? "Join Tacos Setlist" : "Welcome Back"}
       </h1>
       <p style={{ fontSize: 12, color: "#888", margin: "0 0 28px" }}>
         {authMode === "signup" ? "Create your account to rate tacos, make recommendations, and debate Rich" : "Sign in to your account"}
@@ -545,7 +581,7 @@ function ShareSection({ spot }) {
         });
         const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
         if (blob && !cancelled) {
-          cachedFile.current = new File([blob], "tunes-and-tacos-review.png", { type: "image/png", lastModified: Date.now() });
+          cachedFile.current = new File([blob], "tacos-setlist-review.png", { type: "image/png", lastModified: Date.now() });
           setReady(true);
         }
       } catch (e) {
@@ -587,7 +623,7 @@ function ShareSection({ spot }) {
               <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 900, color: "#000" }}>R</div>
               <div>
                 <div style={{ fontSize: 15, color: "#fff", fontWeight: 700 }}>Rich O'Toole</div>
-                <div style={{ fontSize: 11, color: "#E8B100", fontWeight: 600 }}>Tunes & Tacos</div>
+                <div style={{ fontSize: 11, color: "#E8B100", fontWeight: 600 }}>Tacos Setlist</div>
               </div>
               <div style={{ marginLeft: "auto", fontSize: 28 }}>🌮</div>
             </div>
@@ -1571,7 +1607,7 @@ export default function TacoTourApp() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div>
               <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>Rich O'Toole's</div>
-              <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: 0, fontFamily: "'Bitter', serif" }}>Tunes & Tacos</h1>
+              <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: 0, fontFamily: "'Bitter', serif" }}>Tacos Setlist</h1>
             </div>
             <button onClick={() => setShowIntro(true)} style={{
               width: 22, height: 22, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)",
@@ -1754,7 +1790,7 @@ export default function TacoTourApp() {
             user?.guest ? (
               <div style={{ textAlign: "center", padding: "40px 20px" }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>🌮</div>
-                <h2 style={{ fontSize: 20, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px" }}>Join Tunes & Tacos</h2>
+                <h2 style={{ fontSize: 20, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px" }}>Join Tacos Setlist</h2>
                 <p style={{ fontSize: 12, color: "#888", margin: "0 0 8px" }}>Create an account to submit reviews, vote on debates, and earn badges.</p>
                 <p style={{ fontSize: 10, color: "#555", margin: "0 0 24px" }}>Guests can browse everything — sign up to participate.</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
