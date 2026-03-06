@@ -148,22 +148,22 @@ function SplashScreen({ onGetStarted, onClose }) {
     {
       emoji: "🌮🎸",
       title: "Tacos Setlist",
-      subtitle: "Texas Country meets the best tacos on the road",
-      detail: "Rich O'Toole reviews taco spots on tour. Rate them yourself, submit your own, and see what fans think!",
+      subtitle: "Texas Country meets\nthe best tacos on the road",
+      detail: "Rich O'Toole reviews taco spots on tour.\nRate them yourself, submit your own,\nand see what fans think!",
       bg: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&q=70",
     },
     {
       emoji: "🗺️🗳️",
       title: "Map, Rate, Recommend",
-      subtitle: "Explore reviews and help Rich find the best spots",
-      detail: "Browse the interactive taco map, agree or disagree with Rich's ratings, and recommend restaurants near his next show.",
+      subtitle: "Explore reviews and help Rich\nfind the best spots",
+      detail: "Browse the interactive taco map,\nagree or disagree with Rich's ratings,\nand recommend restaurants near his next show.",
       bg: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=800&q=70",
     },
     {
       emoji: "🎶🎟️",
       title: "Tour Dates, Tickets, Music",
-      subtitle: "Shows, Spotify, and everything Rich O'Toole",
-      detail: "See upcoming shows with tickets, stream Rich's latest album and full catalog on Spotify, and shop official merch.",
+      subtitle: "Shows, Spotify, and\neverything Rich O'Toole",
+      detail: "See upcoming shows with tickets,\nstream Rich's latest album and full catalog\non Spotify, and shop official merch.",
       bg: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=70",
     },
   ];
@@ -184,9 +184,9 @@ function SplashScreen({ onGetStarted, onClose }) {
       {/* Everything centered in one flex container */}
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px 32px", textAlign: "center", zIndex: 5, opacity: fadeIn ? 1 : 0, transition: "opacity 0.6s ease" }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>{s.emoji}</div>
-        <h1 style={{ fontSize: 26, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 8px", lineHeight: 1.2 }}>{s.title}</h1>
-        <p style={{ fontSize: 14, color: "#E8B100", fontWeight: 600, margin: "0 0 6px", maxWidth: 280 }}>{s.subtitle}</p>
-        <p style={{ fontSize: 12, color: "#aaa", margin: "0 0 24px", maxWidth: 260, lineHeight: 1.5 }}>{s.detail}</p>
+        <h1 style={{ fontSize: 32, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 12px", lineHeight: 1.2 }}>{s.title}</h1>
+        <p style={{ fontSize: 18, color: "#E8B100", fontWeight: 600, margin: "0 0 12px", maxWidth: 300, lineHeight: 1.4, whiteSpace: "pre-line" }}>{s.subtitle}</p>
+        <p style={{ fontSize: 16, color: "#aaa", margin: "0 0 28px", maxWidth: 300, lineHeight: 1.6, whiteSpace: "pre-line" }}>{s.detail}</p>
 
         {/* Dots */}
         <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 16 }}>
