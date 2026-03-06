@@ -147,85 +147,63 @@ function SplashScreen({ onGetStarted, onClose }) {
   const slides = [
     {
       emoji: "🌮🎸",
-      title: "Welcome to Tacos Setlist",
+      title: "Tacos Setlist",
       subtitle: "Where Texas Country meets the best tacos on the road",
       detail: "Follow Rich O'Toole as he eats his way across every tour stop",
+      bg: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&q=70",
     },
     {
-      emoji: "📍",
+      emoji: "📍⭐",
       title: "Discover. Rate. Debate.",
       subtitle: "See Rich's reviews on an interactive map",
-      detail: "Agree or disagree with his takes. Submit your own reviews. Climb the leaderboard.",
+      detail: "Agree or disagree with his takes. Submit your own fan ratings.",
+      bg: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=800&q=70",
     },
     {
-      emoji: "🎶",
+      emoji: "🎶🤠",
       title: "Tacos + Tunes",
-      subtitle: "Tour dates, Spotify playlists, and merch — all in one place",
+      subtitle: "Tour dates, Spotify, and merch — all in one place",
       detail: "God, Texas & Tacos isn't just a slogan. It's a lifestyle.",
+      bg: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=70",
     },
-  ];
-
-  // Background image collage URLs (darkened with overlay)
-  const bgImages = [
-    "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&q=60",
-    "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=400&q=60",
-    "https://images.unsplash.com/photo-1508854710579-5cecc3a9ff17?w=400&q=60",
-    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&q=60",
-    "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&q=60",
-    "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?w=400&q=60",
   ];
 
   const s = slides[step];
   return (
-    <div style={{ minHeight: "100vh", position: "relative", overflow: "hidden", opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease" }}>
-      {/* Background image collage */}
-      <div style={{ position: "absolute", inset: 0, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 0 }}>
-        {bgImages.map((url, i) => (
-          <div key={i} style={{ backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.15 }} />
-        ))}
-      </div>
-      {/* Dark overlay gradient */}
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(13,13,20,0.7) 0%, rgba(13,13,20,0.95) 70%)" }} />
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden", opacity: fadeIn ? 1 : 0, transition: "opacity 0.6s ease" }}>
+      {/* Background image */}
+      <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${s.bg})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.35, transition: "background-image 0.5s" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(13,13,20,0.3) 0%, rgba(13,13,20,0.85) 60%, rgba(13,13,20,1) 100%)" }} />
 
       {/* Close button */}
       {onClose && (
-        <button onClick={onClose} style={{ position: "absolute", top: 20, right: 20, background: "rgba(255,255,255,0.1)", border: "none", color: "#888", fontSize: 16, width: 36, height: 36, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}>✕</button>
+        <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,0.1)", border: "none", color: "#aaa", fontSize: 16, width: 36, height: 36, borderRadius: "50%", cursor: "pointer", zIndex: 10 }}>✕</button>
       )}
 
-      {/* Content — fixed structure so button stays in same position */}
-      <div style={{ position: "relative", zIndex: 5, minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 32px 40px", textAlign: "center" }}>
-        {/* Top spacer */}
-        <div style={{ flex: 1 }} />
+      {/* Content — vertically centered */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", zIndex: 5, padding: "0 32px", textAlign: "center" }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>{s.emoji}</div>
+        <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 10px", lineHeight: 1.2 }}>{s.title}</h1>
+        <p style={{ fontSize: 15, color: "#E8B100", fontWeight: 600, margin: "0 0 8px", maxWidth: 300 }}>{s.subtitle}</p>
+        <p style={{ fontSize: 13, color: "#aaa", margin: 0, maxWidth: 280, lineHeight: 1.5 }}>{s.detail}</p>
+      </div>
 
-        {/* Slide content — fixed height area */}
-        <div style={{ minHeight: 220, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ fontSize: 56, marginBottom: 20, filter: "drop-shadow(0 0 24px rgba(232,177,0,0.4))" }}>{s.emoji}</div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 10px", lineHeight: 1.2 }}>{s.title}</h1>
-          <p style={{ fontSize: 15, color: "#E8B100", fontWeight: 600, margin: "0 0 10px", maxWidth: 300 }}>{s.subtitle}</p>
-          <p style={{ fontSize: 13, color: "#999", margin: 0, maxWidth: 280, lineHeight: 1.5 }}>{s.detail}</p>
+      {/* Bottom: dots + button — pinned to bottom */}
+      <div style={{ position: "relative", zIndex: 5, padding: "0 32px 40px", textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 20 }}>
+          {slides.map((_, i) => (
+            <div key={i} onClick={() => setStep(i)} style={{ width: i === step ? 24 : 8, height: 8, borderRadius: 4, background: i === step ? "#E8B100" : "rgba(255,255,255,0.2)", transition: "all 0.3s", cursor: "pointer" }} />
+          ))}
         </div>
-
-        {/* Bottom spacer */}
-        <div style={{ flex: 1 }} />
-
-        {/* Navigation — always in same position */}
-        <div style={{ width: "100%", maxWidth: 300 }}>
-          {/* Dots */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 24 }}>
-            {slides.map((_, i) => (
-              <div key={i} onClick={() => setStep(i)} style={{ width: i === step ? 24 : 8, height: 8, borderRadius: 4, background: i === step ? "#E8B100" : "rgba(255,255,255,0.15)", transition: "all 0.3s", cursor: "pointer" }} />
-            ))}
+        {step < slides.length - 1 ? (
+          <button onClick={() => setStep(step + 1)} style={{ ...btnPrimary, width: "100%", maxWidth: 280, margin: "0 auto" }}>Next</button>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 280, margin: "0 auto" }}>
+            <button onClick={() => onGetStarted("signup")} style={btnPrimary}>Get Started</button>
+            <button onClick={() => onGetStarted("login")} style={btnSecondary}>I have an account</button>
+            <button onClick={() => onGetStarted("guest")} style={{ border: "none", background: "none", color: "#666", fontSize: 12, cursor: "pointer", padding: 8, fontFamily: "inherit" }}>Browse as guest</button>
           </div>
-          {step < slides.length - 1 ? (
-            <button onClick={() => setStep(step + 1)} style={{ ...btnPrimary, width: "100%" }}>Next</button>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <button onClick={() => onGetStarted("signup")} style={{ ...btnPrimary }}>Create Account</button>
-              <button onClick={() => onGetStarted("login")} style={{ ...btnSecondary }}>I already have one</button>
-              <button onClick={() => onGetStarted("guest")} style={{ border: "none", background: "none", color: "#666", fontSize: 12, cursor: "pointer", padding: 8, fontFamily: "inherit" }}>Continue as guest</button>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
