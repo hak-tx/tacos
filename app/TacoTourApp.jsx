@@ -1162,6 +1162,20 @@ function TourSection() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {/* Merch banner */}
+      <a href="https://godtexasandtacos.com" target="_blank" rel="noopener noreferrer" style={{
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 16px",
+        background: "linear-gradient(135deg, rgba(232,177,0,0.15), rgba(232,177,0,0.06))",
+        border: "1px solid rgba(232,177,0,0.25)", borderRadius: 12, textDecoration: "none",
+      }}>
+        <span style={{ fontSize: 22 }}>🤠</span>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 14, color: "#E8B100", fontWeight: 800 }}>Shop Rich O'Toole Merch</div>
+          <div style={{ fontSize: 11, color: "#888" }}>godtexasandtacos.com</div>
+        </div>
+        <span style={{ fontSize: 14, color: "#E8B100" }}>→</span>
+      </a>
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
         <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>🎸 Tour Dates via Bandsintown</div>
         <a href={BANDSINTOWN_ARTIST} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: "#555", textDecoration: "none" }}>See all →</a>
