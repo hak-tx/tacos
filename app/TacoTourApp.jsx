@@ -149,7 +149,7 @@ function SplashScreen({ onGetStarted, onClose }) {
       emoji: "🌮🎸",
       title: "Tacos Setlist",
       subtitle: "Where Texas Country meets the best tacos on the road",
-      detail: "Follow Rich O'Toole as he eats his way across every tour stop",
+      detail: "Follow Rich O'Toole as he tours the country trying the very best taco spots — with your recommendations!",
       bg: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&q=70",
     },
     {
