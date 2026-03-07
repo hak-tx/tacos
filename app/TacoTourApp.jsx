@@ -546,7 +546,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         {spots.length} spots · {TOUR_DATES.length} shows
       </div>
       {/* Legend */}
-      <div style={{ position: "absolute", bottom: selectedSpot ? 140 : 12, left: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 6, fontSize: 9, color: "#aaa", zIndex: 10, pointerEvents: "none", display: "flex", flexDirection: "column", gap: 3, transition: "bottom 0.3s" }}>
+      <div style={{ position: "absolute", bottom: 12, left: 12, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", padding: "6px 10px", borderRadius: 6, fontSize: 9, color: "#aaa", zIndex: 10, pointerEvents: "none", display: "flex", flexDirection: "column", gap: 3 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "#22C55E", display: "inline-block" }}></span> Taco Spots</div>
         {showTourDates && <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "#C41E3A", display: "inline-block", border: "1px solid #fff", fontSize: 6, color: "#fff", textAlign: "center", lineHeight: "10px" }}>♪</span> Tour Dates</div>}
       </div>
@@ -567,37 +567,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           <span style={{ fontSize: 10, color: "#ddd", fontWeight: 600, letterSpacing: 0.3 }}>Pinch to zoom · Tap a pin</span>
         </div>
       )}
-      {/* Selected spot card */}
-      {selectedSpot && (
-        <div style={{
-          position: "absolute", bottom: 12, left: 12, right: 12, zIndex: 20,
-          background: "rgba(0,0,0,0.88)", backdropFilter: "blur(16px)",
-          border: "1px solid " + ratingColor(selectedSpot.richRating) + "44",
-          borderRadius: 14, padding: "12px 16px",
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>{selectedSpot.name}</div>
-              <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>{selectedSpot.city}</div>
-              {selectedSpot.tags && <div style={{ display: "flex", gap: 4, marginTop: 4 }}>{selectedSpot.tags.map(t => <span key={t} style={{ fontSize: 11, color: "#aaa", background: "rgba(255,255,255,0.06)", padding: "3px 8px", borderRadius: 4 }}>{t}</span>)}</div>}
-            </div>
-            <div style={{ display: "flex", gap: 16 }}>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: ratingColor(selectedSpot.richRating), fontFamily: "'Bitter', serif" }}>{selectedSpot.richRating}</div>
-                <div style={{ fontSize: 8, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Rich</div>
-              </div>
-              <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.1)" }} />
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif" }}>{selectedSpot.fanRating}</div>
-                <div style={{ fontSize: 8, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Fans</div>
-              </div>
-            </div>
-          </div>
-          {selectedSpot.richQuote && <div style={{ fontSize: 11, color: "#ccc", fontStyle: "italic", marginTop: 8 }}>"{selectedSpot.richQuote}"</div>}
-          {selectedSpot.trending && <div style={{ fontSize: 11, color: "#E8B100", marginTop: 6 }}>🔥 TRENDING</div>}
-          <div onClick={() => onSelectSpot(null)} style={{ position: "absolute", top: 8, right: 12, fontSize: 16, color: "#666", cursor: "pointer" }}>✕</div>
-        </div>
-      )}
+      {/* Mini card removed — pin tap scrolls directly to full review below map */}
       {!mapReady && !mapError && (
         <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)", zIndex: 5 }}>
           <div style={{ color: "#E8B100", fontSize: 13 }}>Loading Apple Maps...</div>
