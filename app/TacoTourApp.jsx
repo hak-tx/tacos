@@ -1711,12 +1711,21 @@ export default function TacoTourApp() {
                       {trending.map(spot => (
                         <div key={spot.id} onClick={() => { setExpandedReview(expandedReview === spot.id ? null : spot.id); }}
                           style={{ scrollSnapAlign: "start", minWidth: 160, maxWidth: 160, background: "rgba(255,255,255,0.03)", border: expandedReview === spot.id ? "1px solid rgba(232,177,0,0.4)" : "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden", cursor: "pointer", flexShrink: 0 }}>
-                          <div style={{ height: 90, backgroundImage: `url(${spot.images[0]})`, backgroundSize: "cover", backgroundPosition: "center", position: "relative" }}>
-                            <div style={{ position: "absolute", top: 6, right: 6, background: ratingColor(spot.richRating), color: "#000", fontSize: 14, fontWeight: 900, padding: "2px 7px", borderRadius: 6, fontFamily: "'Bitter', serif" }}>{spot.richRating}</div>
-                          </div>
+                          <div style={{ height: 90, backgroundImage: `url(${spot.images[0]})`, backgroundSize: "cover", backgroundPosition: "center" }} />
                           <div style={{ padding: "8px 10px" }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 2 }}>{spot.name}</div>
-                            <div style={{ fontSize: 9, color: "#888" }}>{spot.city}</div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 4 }}>{spot.name}</div>
+                            <div style={{ fontSize: 9, color: "#888", marginBottom: 6 }}>{spot.city}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                                <span style={{ fontSize: 8, color: "#E8B100" }}>🌮</span>
+                                <span style={{ fontSize: 14, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif" }}>{spot.richRating}</span>
+                              </div>
+                              <div style={{ width: 1, height: 14, background: "rgba(255,255,255,0.1)" }} />
+                              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                                <span style={{ fontSize: 8, color: "#60A5FA" }}>👥</span>
+                                <span style={{ fontSize: 14, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif" }}>{spot.fanRating}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1737,11 +1746,21 @@ export default function TacoTourApp() {
                           style={{ scrollSnapAlign: "start", minWidth: 160, maxWidth: 160, background: "rgba(255,255,255,0.03)", border: expandedReview === spot.id ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden", cursor: "pointer", flexShrink: 0 }}>
                           <div style={{ height: 90, backgroundImage: `url(${spot.images[0]})`, backgroundSize: "cover", backgroundPosition: "center", position: "relative" }}>
                             <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(0,0,0,0.7)", color: "#E8B100", fontSize: 11, fontWeight: 800, padding: "2px 6px", borderRadius: 4 }}>#{i + 1}</div>
-                            <div style={{ position: "absolute", top: 6, right: 6, background: ratingColor(spot.richRating), color: "#000", fontSize: 14, fontWeight: 900, padding: "2px 7px", borderRadius: 6, fontFamily: "'Bitter', serif" }}>{spot.richRating}</div>
                           </div>
                           <div style={{ padding: "8px 10px" }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 2 }}>{spot.name}</div>
-                            <div style={{ fontSize: 9, color: "#888" }}>{spot.city}</div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 4 }}>{spot.name}</div>
+                            <div style={{ fontSize: 9, color: "#888", marginBottom: 6 }}>{spot.city}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                                <span style={{ fontSize: 8, color: "#E8B100" }}>🌮</span>
+                                <span style={{ fontSize: 14, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif" }}>{spot.richRating}</span>
+                              </div>
+                              <div style={{ width: 1, height: 14, background: "rgba(255,255,255,0.1)" }} />
+                              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                                <span style={{ fontSize: 8, color: "#60A5FA" }}>👥</span>
+                                <span style={{ fontSize: 14, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif" }}>{spot.fanRating}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}
