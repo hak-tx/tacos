@@ -367,7 +367,7 @@ function AuthScreen({ mode, onComplete, onBack }) {
 }
 
 // 3. MAP VIEW
-const MAPKIT_TOKEN = "eyJhbGciOiJFUzI1NiIsImtpZCI6IlAzNUtLS0M5TFEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI5UzM3MldHUFI0IiwiaWF0IjoxNzcyNTg4MjIzLCJleHAiOjE4MDQxMjQyMjMsIm9yaWdpbiI6IioifQ.CNUY_VFZhmEUUz7q6GBTZYZWL8rahOY_Lp_Abit1ymMecab4AoL3Bdmt6KZPdjXkSgN33_V7DGhXP3ijD_6HiA";
+const MAPKIT_TOKEN = "eyJhbGciOiJFUzI1NiIsImtpZCI6IlhNSDlKNEdVRjQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI5UzM3MldHUFI0IiwiaWF0IjoxNzcyOTEyNzAxLCJleHAiOjE4MDQ0NDg3MDEsIm9yaWdpbiI6Imh0dHBzOi8vdGFjb3MtbGltZS52ZXJjZWwuYXBwIn0.iyKlXYDWKGt5UvTt9uezyW6a0tItsab3vN6yPsJ4V2a-0LU5_-HExHC5iFoiMXTusWPHDVe4yvTVLriGj_y0pw";
 
 function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
   const mapRef = useRef(null);
