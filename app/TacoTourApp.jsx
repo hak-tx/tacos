@@ -363,6 +363,50 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         // So: tour pins = custom Annotation (behind), taco spots = MarkerAnnotation (on top).
         // This gives us the layering we want with zero hacks.
 
+        // --- OFFSET ENGINE: spread overlapping pins ---
+        // Collect ALL pin coordinates (tour + taco) and nudge overlaps
+        const OFFSET_THRESHOLD = 0.015; // ~1 mile — pins closer than this get spread
+        const OFFSET_RADIUS = 0.012;    // how far to spread them apart
+        const allPins = [
+          ...TOUR_DATES.filter(td => td.lat && td.lng).map(td => ({ type: "tour", ref: td, lat: td.lat, lng: td.lng })),
+          ...spots.map(s => ({ type: "taco", ref: s, lat: s.lat, lng: s.lng })),
+        ];
+        // Group pins that are within threshold of each other
+        const used = new Set();
+        const groups = [];
+        for (let i = 0; i < allPins.length; i++) {
+          if (used.has(i)) continue;
+          const group = [i];
+          used.add(i);
+          for (let j = i + 1; j < allPins.length; j++) {
+            if (used.has(j)) continue;
+            const dLat = allPins[i].lat - allPins[j].lat;
+            const dLng = allPins[i].lng - allPins[j].lng;
+            if (Math.sqrt(dLat * dLat + dLng * dLng) < OFFSET_THRESHOLD) {
+              group.push(j);
+              used.add(j);
+            }
+          }
+          if (group.length > 1) groups.push(group);
+        }
+        // Spread each group in a circle
+        groups.forEach(group => {
+          const cLat = group.reduce((s, i) => s + allPins[i].lat, 0) / group.length;
+          const cLng = group.reduce((s, i) => s + allPins[i].lng, 0) / group.length;
+          group.forEach((idx, pos) => {
+            const angle = (2 * Math.PI * pos) / group.length - Math.PI / 2;
+            allPins[idx].lat = cLat + OFFSET_RADIUS * Math.sin(angle);
+            allPins[idx].lng = cLng + OFFSET_RADIUS * Math.cos(angle);
+          });
+        });
+        // Write offsets back
+        const tourOffsets = {};
+        const tacoOffsets = {};
+        allPins.forEach(p => {
+          if (p.type === "tour") tourOffsets[p.ref.date + p.ref.venue] = { lat: p.lat, lng: p.lng };
+          else tacoOffsets[p.ref.id] = { lat: p.lat, lng: p.lng };
+        });
+
         // --- TOUR DATE PINS (custom Annotation, renders behind MarkerAnnotations) ---
         const seen = {};
         const tourEls = [];
@@ -372,9 +416,10 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           const key = td.lat + "," + td.lng;
           if (seen[key]) return;
           seen[key] = true;
+          const off = tourOffsets[td.date + td.venue] || { lat: td.lat, lng: td.lng };
 
           const ann = new mapkit.Annotation(
-            new mapkit.Coordinate(td.lat, td.lng),
+            new mapkit.Coordinate(off.lat, off.lng),
             function() {
               const el = document.createElement("div");
               el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;";
@@ -414,8 +459,9 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         const tacoAnns = [];
         const tacoEls = [];
         spots.forEach((spot) => {
+          const off = tacoOffsets[spot.id] || { lat: spot.lat, lng: spot.lng };
           const ann = new mapkit.Annotation(
-            new mapkit.Coordinate(spot.lat, spot.lng),
+            new mapkit.Coordinate(off.lat, off.lng),
             function() {
               const el = document.createElement("div");
               el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;";
