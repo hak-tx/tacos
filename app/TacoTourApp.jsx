@@ -1793,15 +1793,11 @@ export default function TacoTourApp() {
 
               {/* Selected spot review - from map pin tap */}
               {selectedSpot && (
-                <div ref={el => {
+                <div id="selected-review" ref={el => {
                   if (el) {
                     setTimeout(() => {
-                      const rect = el.getBoundingClientRect();
-                      const viewH = window.innerHeight;
-                      const targetY = viewH * 0.55;
-                      const scrollBy = rect.top - targetY;
-                      if (scrollBy > 20) window.scrollBy({ top: scrollBy, behavior: "smooth" });
-                    }, 150);
+                      el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }, 200);
                   }
                 }}>
                   <ReviewCard spot={selectedSpot} userVote={votes[selectedSpot.id]} onVote={handleVote} onFanRate={handleFanRate} fanRatingSubmitted={fanRatings[selectedSpot.id]} expanded={true} onToggle={() => setSelectedSpot(null)} user={user} />
