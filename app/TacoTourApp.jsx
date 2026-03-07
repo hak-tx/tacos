@@ -330,6 +330,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
   const tacoAnnsRef = useRef([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(null);
+  const [showHint, setShowHint] = useState(true);
   const onSelectSpotRef = useRef(onSelectSpot);
   onSelectSpotRef.current = onSelectSpot;
 
@@ -343,10 +344,10 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         }
         if (mapInstanceRef.current) { mapInstanceRef.current.destroy(); }
         const map = new mapkit.Map(mapRef.current, {
-          center: new mapkit.Coordinate(33.0, -95.0),
+          center: new mapkit.Coordinate(33.5, -96.0),
           region: new mapkit.CoordinateRegion(
-            new mapkit.Coordinate(33.0, -95.0),
-            new mapkit.CoordinateSpan(14, 22)
+            new mapkit.Coordinate(33.5, -96.0),
+            new mapkit.CoordinateSpan(16, 24)
           ),
           showsCompass: mapkit.FeatureVisibility.Hidden,
           showsZoomControl: false,
@@ -484,6 +485,14 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         }
         map.addEventListener("region-change-end", updatePinSizes);
         updatePinSizes();
+
+        // Auto-fit map to show all annotations with padding
+        const allAnns = [...tourAnns, ...tacoAnns];
+        if (allAnns.length > 0) {
+          map.showItems(allAnns, { padding: new mapkit.Padding(40, 30, 40, 30), animate: false });
+          setTimeout(() => updatePinSizes(), 100);
+        }
+
         if (!cancelled) setMapReady(true);
       } catch (e) {
         if (!cancelled) setMapError(e.message);
@@ -541,6 +550,23 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "#22C55E", display: "inline-block" }}></span> Taco Spots</div>
         {showTourDates && <div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "#C41E3A", display: "inline-block", border: "1px solid #fff", fontSize: 6, color: "#fff", textAlign: "center", lineHeight: "10px" }}>♪</span> Tour Dates</div>}
       </div>
+      {/* Interactive hint - fades after interaction or timeout */}
+      {showHint && mapReady && (
+        <div
+          onClick={() => setShowHint(false)}
+          style={{
+            position: "absolute", bottom: 14, right: 14, zIndex: 15,
+            background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)",
+            padding: "7px 12px", borderRadius: 8,
+            display: "flex", alignItems: "center", gap: 6,
+            cursor: "pointer",
+            animation: "hintFade 4s ease-in-out forwards",
+          }}
+        >
+          <span style={{ fontSize: 14 }}>👆</span>
+          <span style={{ fontSize: 10, color: "#ddd", fontWeight: 600, letterSpacing: 0.3 }}>Pinch to zoom · Tap a pin</span>
+        </div>
+      )}
       {/* Selected spot card */}
       {selectedSpot && (
         <div style={{
@@ -1703,7 +1729,8 @@ export default function TacoTourApp() {
 
   return (
     <Shell>
-      <style>{`@keyframes eqB { from { height: 3px; } to { height: 14px; } }`}</style>
+      <style>{`@keyframes eqB { from { height: 3px; } to { height: 14px; } }
+@keyframes hintFade { 0% { opacity: 0; } 15% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }`}</style>
       <div style={{ position: "relative", zIndex: 1, paddingBottom: 120 }}>
         {/* Header */}
         <div style={{ padding: "16px 16px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
