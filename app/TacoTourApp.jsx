@@ -1039,14 +1039,6 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
       try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch(e) {}
       const s = new mapkit.Search({
         region: new mapkit.CoordinateRegion(new mapkit.Coordinate(tourDate.lat, tourDate.lng), new mapkit.CoordinateSpan(0.5, 0.5)),
-        includeAddresses: false,
-        includePointsOfInterest: true,
-        pointOfInterestFilter: mapkit.PointOfInterestFilter.including([
-          mapkit.PointOfInterestCategory.Restaurant,
-          mapkit.PointOfInterestCategory.Cafe,
-          mapkit.PointOfInterestCategory.Bakery,
-          mapkit.PointOfInterestCategory.FoodMarket,
-        ]),
       });
       s.autocomplete(query, (err, data) => {
         setSearching(false);
