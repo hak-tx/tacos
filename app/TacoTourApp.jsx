@@ -343,10 +343,10 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         }
         if (mapInstanceRef.current) { mapInstanceRef.current.destroy(); }
         const map = new mapkit.Map(mapRef.current, {
-          center: new mapkit.Coordinate(32.0, -97.0),
+          center: new mapkit.Coordinate(33.0, -95.0),
           region: new mapkit.CoordinateRegion(
-            new mapkit.Coordinate(32.0, -97.0),
-            new mapkit.CoordinateSpan(8, 12)
+            new mapkit.Coordinate(33.0, -95.0),
+            new mapkit.CoordinateSpan(14, 22)
           ),
           showsCompass: mapkit.FeatureVisibility.Hidden,
           showsZoomControl: false,
@@ -378,11 +378,11 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
               const el = document.createElement("div");
               el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;";
               const pin = document.createElement("div");
-              pin.style.cssText = "width:24px;height:24px;border-radius:50%;background:rgba(196,30,58,0.8);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.7);box-shadow:0 1px 4px rgba(0,0,0,0.4);transition:transform 0.2s;";
-              pin.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
+              pin.style.cssText = "width:16px;height:16px;border-radius:50%;background:rgba(196,30,58,0.8);display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,0.7);box-shadow:0 1px 4px rgba(0,0,0,0.4);transition:all 0.25s ease;";
+              pin.innerHTML = '<svg width="8" height="8" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
               el.appendChild(pin);
               const lbl = document.createElement("div");
-              lbl.style.cssText = "background:rgba(0,0,0,0.6);color:rgba(255,255,255,0.8);font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;";
+              lbl.style.cssText = "background:rgba(0,0,0,0.6);color:rgba(255,255,255,0.8);font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;opacity:0;transition:opacity 0.25s ease;";
               lbl.textContent = td.date;
               el.appendChild(lbl);
               const bubble = document.createElement("div");
@@ -425,16 +425,29 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         });
         tacoAnnsRef.current = tacoAnns;
 
-        // --- ZOOM HANDLER for tour pin scaling ---
-        map.addEventListener("region-change-end", () => {
+        // --- ZOOM HANDLER for dynamic pin scaling ---
+        function updatePinSizes() {
           const span = map.region.span;
+          const delta = span.latitudeDelta;
+          // Tour pins: 16px zoomed out → 32px zoomed in
+          let pinSize, svgSize, lblFs, lblOpacity, borderW;
+          if (delta > 10) { pinSize = 14; svgSize = 7; lblFs = 0; lblOpacity = 0; borderW = 1; }
+          else if (delta > 6) { pinSize = 16; svgSize = 8; lblFs = 7; lblOpacity = 0; borderW = 1.5; }
+          else if (delta > 3) { pinSize = 20; svgSize = 9; lblFs = 8; lblOpacity = 0.7; borderW = 1.5; }
+          else if (delta > 1.5) { pinSize = 26; svgSize = 11; lblFs = 9; lblOpacity = 1; borderW = 2; }
+          else { pinSize = 32; svgSize = 13; lblFs = 10; lblOpacity = 1; borderW = 2; }
           tourEls.forEach(el => {
-            const size = span.latitudeDelta < 1.5 ? "30px" : span.latitudeDelta < 3 ? "27px" : "24px";
-            const fs = span.latitudeDelta < 1.5 ? "10px" : span.latitudeDelta < 3 ? "9px" : "8px";
-            el._pin.style.width = size; el._pin.style.height = size;
-            el._label.style.fontSize = fs;
+            el._pin.style.width = pinSize + "px";
+            el._pin.style.height = pinSize + "px";
+            el._pin.style.borderWidth = borderW + "px";
+            el._pin.querySelector("svg").setAttribute("width", svgSize);
+            el._pin.querySelector("svg").setAttribute("height", svgSize);
+            el._label.style.fontSize = lblFs + "px";
+            el._label.style.opacity = lblOpacity;
           });
-        });
+        }
+        map.addEventListener("region-change-end", updatePinSizes);
+        updatePinSizes();
         if (!cancelled) setMapReady(true);
       } catch (e) {
         if (!cancelled) setMapError(e.message);
