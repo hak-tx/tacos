@@ -353,22 +353,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         });
         mapInstanceRef.current = map;
 
-        // Taco spot pins — added LAST so they render ON TOP
-        spots.forEach((spot, idx) => {
-          const coord = new mapkit.Coordinate(spot.lat, spot.lng);
-          const ann = new mapkit.MarkerAnnotation(coord, {
-            title: spot.name,
-            subtitle: "Rich: " + spot.richRating + " \u00B7 Fans: " + spot.fanRating,
-            color: "#22C55E",
-            glyphColor: "#000",
-            glyphText: "\uD83C\uDF2E",
-            animates: true,
-          });
-          ann.addEventListener("select", () => onSelectSpotRef.current(spot));
-          map.addAnnotation(ann);
-        });
-
-        // Tour date pins — added FIRST (but code runs after taco spots are already on map via setTimeout below)
+        // Tour date pins — added FIRST so taco spots render ON TOP of them
         const seen = {};
         const tourEls = [];
         const tourAnns = [];
@@ -418,6 +403,21 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           tourAnns.push(ann);
         });
         tourAnnsRef.current = tourAnns;
+
+        // Taco spot pins — added SECOND so they render ON TOP of tour pins
+        spots.forEach((spot) => {
+          const coord = new mapkit.Coordinate(spot.lat, spot.lng);
+          const ann = new mapkit.MarkerAnnotation(coord, {
+            title: spot.name,
+            subtitle: "Rich: " + spot.richRating + " \u00B7 Fans: " + spot.fanRating,
+            color: "#22C55E",
+            glyphColor: "#000",
+            glyphText: "\uD83C\uDF2E",
+          });
+          ann.addEventListener("select", () => onSelectSpotRef.current(spot));
+          map.addAnnotation(ann);
+        });
+
         // Listen for zoom changes to scale tour pins
         map.addEventListener("region-change-end", () => {
           const span = map.region.span;
