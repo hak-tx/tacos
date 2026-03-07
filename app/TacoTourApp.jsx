@@ -459,17 +459,19 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
     );
   }, [selectedSpot]);
 
-  // Toggle tour date pins visibility (simple: just add/remove tour pins)
+  // Toggle tour date pins visibility - skip initial mount
+  const tourToggleInit = useRef(false);
   useEffect(() => {
+    if (!tourToggleInit.current) { tourToggleInit.current = true; return; }
     const map = mapInstanceRef.current;
     if (!map || !tourAnnsRef.current.length) return;
-    tourAnnsRef.current.forEach(ann => {
-      if (showTourDates) {
-        if (!map.annotations.includes(ann)) map.addAnnotation(ann);
-      } else {
-        map.removeAnnotation(ann);
-      }
-    });
+    if (showTourDates) {
+      // Re-add tour pins, then re-add taco pins on top
+      tourAnnsRef.current.forEach(ann => map.addAnnotation(ann));
+      tacoAnnsRef.current.forEach(ann => { map.removeAnnotation(ann); map.addAnnotation(ann); });
+    } else {
+      tourAnnsRef.current.forEach(ann => map.removeAnnotation(ann));
+    }
   }, [showTourDates]);
 
   return (
