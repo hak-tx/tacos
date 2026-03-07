@@ -1513,6 +1513,7 @@ export default function TacoTourApp() {
   const [tab, setTab] = useState("map");
   const [selectedSpot, setSelectedSpot] = useState(null);
   const [expandedReview, setExpandedReview] = useState(null);
+  const [listExpanded, setListExpanded] = useState(null);
   const [votes, setVotes] = useState({});
   const [fanRatings, setFanRatings] = useState({});
   const [pollVotes, setPollVotes] = useState({});
@@ -1715,7 +1716,7 @@ export default function TacoTourApp() {
                     <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>🔥 Trending</div>
                     <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8, scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
                       {trending.map(spot => (
-                        <div key={spot.id} onClick={() => { const newId = expandedReview === spot.id ? null : spot.id; setExpandedReview(newId); if (newId) setTimeout(() => { const el = document.getElementById("expanded-review"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100); }}
+                        <div key={spot.id} onClick={() => { const newId = expandedReview === spot.id ? null : spot.id; setExpandedReview(newId); setListExpanded(null); if (newId) setTimeout(() => { const el = document.getElementById("expanded-review"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100); }}
                           style={{ scrollSnapAlign: "start", minWidth: 160, maxWidth: 160, background: "rgba(255,255,255,0.03)", border: expandedReview === spot.id ? "1px solid rgba(232,177,0,0.4)" : "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden", cursor: "pointer", flexShrink: 0 }}>
                           <div style={{ height: 90, backgroundImage: `url(${spot.images[0]})`, backgroundSize: "cover", backgroundPosition: "center" }} />
                           <div style={{ padding: "8px 10px" }}>
@@ -1748,7 +1749,7 @@ export default function TacoTourApp() {
                     <div style={{ fontSize: 10, color: "#22C55E", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>⭐ Top Rated</div>
                     <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8, scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
                       {topRated.map((spot, i) => (
-                        <div key={spot.id} onClick={() => { const newId = expandedReview === spot.id ? null : spot.id; setExpandedReview(newId); if (newId) setTimeout(() => { const el = document.getElementById("expanded-review"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100); }}
+                        <div key={spot.id} onClick={() => { const newId = expandedReview === spot.id ? null : spot.id; setExpandedReview(newId); setListExpanded(null); if (newId) setTimeout(() => { const el = document.getElementById("expanded-review"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100); }}
                           style={{ scrollSnapAlign: "start", minWidth: 160, maxWidth: 160, background: "rgba(255,255,255,0.03)", border: expandedReview === spot.id ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden", cursor: "pointer", flexShrink: 0 }}>
                           <div style={{ height: 90, backgroundImage: `url(${spot.images[0]})`, backgroundSize: "cover", backgroundPosition: "center", position: "relative" }}>
                             <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(0,0,0,0.7)", color: "#E8B100", fontSize: 11, fontWeight: 800, padding: "2px 6px", borderRadius: 4 }}>#{i + 1}</div>
@@ -1838,7 +1839,7 @@ export default function TacoTourApp() {
                     </div>
                     {grouped[region].map(spot => (
                       <ReviewCard key={spot.id} spot={spot} userVote={votes[spot.id]} onVote={handleVote} onFanRate={handleFanRate} fanRatingSubmitted={fanRatings[spot.id]}
-                        expanded={expandedReview === spot.id} onToggle={() => setExpandedReview(expandedReview === spot.id ? null : spot.id)} user={user} />
+                        expanded={listExpanded === spot.id} onToggle={() => setListExpanded(listExpanded === spot.id ? null : spot.id)} user={user} />
                     ))}
                   </div>
                 ));
