@@ -354,7 +354,12 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         });
         mapInstanceRef.current = map;
 
-        // Tour date pins — added FIRST so taco spots render ON TOP of them
+        // === PIN SETUP (from scratch) ===
+        // MapKit MarkerAnnotation always renders above custom Annotation.
+        // So: tour pins = custom Annotation (behind), taco spots = MarkerAnnotation (on top).
+        // This gives us the layering we want with zero hacks.
+
+        // --- TOUR DATE PINS (custom Annotation, renders behind MarkerAnnotations) ---
         const seen = {};
         const tourEls = [];
         const tourAnns = [];
@@ -363,58 +368,53 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           const key = td.lat + "," + td.lng;
           if (seen[key]) return;
           seen[key] = true;
-          const coord = new mapkit.Coordinate(td.lat, td.lng);
-          const ann = new mapkit.Annotation(coord, (coordinate, options) => {
-            const el = document.createElement("div");
-            el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;";
-            const pin = document.createElement("div");
-            pin.style.cssText = "width:24px;height:24px;border-radius:50%;background:rgba(196,30,58,0.75);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.7);box-shadow:0 1px 4px rgba(0,0,0,0.4);transition:transform 0.3s,background 0.3s;cursor:pointer;";
-            pin.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
-            el.appendChild(pin);
-            const label = document.createElement("div");
-            label.style.cssText = "background:rgba(0,0,0,0.6);color:rgba(255,255,255,0.8);font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;";
-            label.textContent = td.date;
-            el.appendChild(label);
-            const bubble = document.createElement("div");
-            bubble.style.cssText = "display:none;position:absolute;bottom:48px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.97);border:1px solid rgba(196,30,58,0.4);border-radius:12px;padding:10px 14px;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,0.7);z-index:50;min-width:160px;text-align:center;";
-            bubble.innerHTML = "<div style='font-size:13px;font-weight:800;color:#fff;font-family:system-ui;'>" + td.venue + "</div>" +
-              "<div style='font-size:11px;color:#ccc;margin-top:3px;'>" + td.city + "</div>" +
-              "<div style='font-size:10px;color:#C41E3A;margin-top:4px;font-weight:700;'>♪ " + td.day + " " + td.date + "</div>" +
-              (td.rsvp ? "<div style='font-size:11px;color:#555;margin-top:2px;'>" + td.rsvp + " fans going</div>" : "") +
-              "<a href='https://www.bandsintown.com/a/39860-rich-otoole' target='_blank' rel='noopener' style='display:inline-block;margin-top:8px;padding:6px 14px;background:#E8B100;color:#000;font-size:11px;font-weight:800;border-radius:6px;text-decoration:none;font-family:system-ui;'>Get Tickets →</a>";
-            const arrow = document.createElement("div");
-            arrow.style.cssText = "position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(13,13,20,0.97);";
-            bubble.appendChild(arrow);
-            el.appendChild(bubble);
-            el._bubble = bubble;
-            el._pin = pin;
-            el._label = label;
-            tourEls.push(el);
-            return el;
-          }, { anchorOffset: new DOMPoint(0, -12) });
-          ann.addEventListener("select", (e) => {
-            const el = e.target.element;
-            if (el && el._bubble) { el._bubble.style.display = "block"; el._pin.style.transform = "scale(1.4)"; el._pin.style.background = "#C41E3A"; }
-          });
-          ann.addEventListener("deselect", (e) => {
-            const el = e.target.element;
-            if (el && el._bubble) { el._bubble.style.display = "none"; el._pin.style.transform = "scale(1)"; el._pin.style.background = "rgba(196,30,58,0.75)"; }
-          });
+
+          const ann = new mapkit.Annotation(
+            new mapkit.Coordinate(td.lat, td.lng),
+            function() {
+              const el = document.createElement("div");
+              el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;";
+              const pin = document.createElement("div");
+              pin.style.cssText = "width:24px;height:24px;border-radius:50%;background:rgba(196,30,58,0.8);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.7);box-shadow:0 1px 4px rgba(0,0,0,0.4);transition:transform 0.2s;";
+              pin.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
+              el.appendChild(pin);
+              const lbl = document.createElement("div");
+              lbl.style.cssText = "background:rgba(0,0,0,0.6);color:rgba(255,255,255,0.8);font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;";
+              lbl.textContent = td.date;
+              el.appendChild(lbl);
+              const bubble = document.createElement("div");
+              bubble.style.cssText = "display:none;position:absolute;bottom:48px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.97);border:1px solid rgba(196,30,58,0.4);border-radius:12px;padding:10px 14px;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,0.7);z-index:50;min-width:160px;text-align:center;";
+              bubble.innerHTML = "<div style='font-size:13px;font-weight:800;color:#fff;'>" + td.venue + "</div>" +
+                "<div style='font-size:11px;color:#ccc;margin-top:3px;'>" + td.city + "</div>" +
+                "<div style='font-size:10px;color:#C41E3A;margin-top:4px;font-weight:700;'>♪ " + td.day + " " + td.date + "</div>" +
+                (td.rsvp ? "<div style='font-size:11px;color:#555;margin-top:2px;'>" + td.rsvp + " fans going</div>" : "") +
+                "<a href='https://www.bandsintown.com/a/39860-rich-otoole' target='_blank' rel='noopener' style='display:inline-block;margin-top:8px;padding:6px 14px;background:#E8B100;color:#000;font-size:11px;font-weight:800;border-radius:6px;text-decoration:none;font-family:system-ui;'>Get Tickets →</a>";
+              const arrow = document.createElement("div");
+              arrow.style.cssText = "position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(13,13,20,0.97);";
+              bubble.appendChild(arrow);
+              el.appendChild(bubble);
+              el._bubble = bubble; el._pin = pin; el._label = lbl;
+              tourEls.push(el);
+              return el;
+            },
+            { anchorOffset: new DOMPoint(0, -12) }
+          );
+          ann.addEventListener("select", (e) => { const el = e.target.element; if (el && el._bubble) { el._bubble.style.display = "block"; el._pin.style.transform = "scale(1.4)"; } });
+          ann.addEventListener("deselect", (e) => { const el = e.target.element; if (el && el._bubble) { el._bubble.style.display = "none"; el._pin.style.transform = "scale(1)"; } });
           map.addAnnotation(ann);
           tourAnns.push(ann);
         });
         tourAnnsRef.current = tourAnns;
 
-        // Taco spot pins — added SECOND so they render ON TOP of tour pins
+        // --- TACO SPOT PINS (MarkerAnnotation, always renders on top of custom Annotations) ---
         const tacoAnns = [];
         spots.forEach((spot) => {
-          const coord = new mapkit.Coordinate(spot.lat, spot.lng);
-          const ann = new mapkit.MarkerAnnotation(coord, {
+          const ann = new mapkit.MarkerAnnotation(new mapkit.Coordinate(spot.lat, spot.lng), {
             title: spot.name,
-            subtitle: "Rich: " + spot.richRating + " \u00B7 Fans: " + spot.fanRating,
+            subtitle: "Rich: " + spot.richRating + " · Fans: " + spot.fanRating,
             color: "#22C55E",
             glyphColor: "#000",
-            glyphText: "\uD83C\uDF2E",
+            glyphText: "🌮",
           });
           ann.addEventListener("select", () => onSelectSpotRef.current(spot));
           map.addAnnotation(ann);
@@ -422,22 +422,14 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         });
         tacoAnnsRef.current = tacoAnns;
 
-        // Listen for zoom changes to scale tour pins
+        // --- ZOOM HANDLER for tour pin scaling ---
         map.addEventListener("region-change-end", () => {
           const span = map.region.span;
-          const zoomed = span.latitudeDelta < 3;
-          const veryZoomed = span.latitudeDelta < 1.5;
           tourEls.forEach(el => {
-            if (veryZoomed) {
-              el._pin.style.width = "30px"; el._pin.style.height = "30px";
-              el._label.style.fontSize = "10px";
-            } else if (zoomed) {
-              el._pin.style.width = "27px"; el._pin.style.height = "27px";
-              el._label.style.fontSize = "9px";
-            } else {
-              el._pin.style.width = "24px"; el._pin.style.height = "24px";
-              el._label.style.fontSize = "8px";
-            }
+            const size = span.latitudeDelta < 1.5 ? "30px" : span.latitudeDelta < 3 ? "27px" : "24px";
+            const fs = span.latitudeDelta < 1.5 ? "10px" : span.latitudeDelta < 3 ? "9px" : "8px";
+            el._pin.style.width = size; el._pin.style.height = size;
+            el._label.style.fontSize = fs;
           });
         });
         if (!cancelled) setMapReady(true);
@@ -467,25 +459,17 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
     );
   }, [selectedSpot]);
 
-  // Toggle tour date pins visibility
+  // Toggle tour date pins visibility (simple: just add/remove tour pins)
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !tourAnnsRef.current.length) return;
-    if (showTourDates) {
-      // Add tour pins first, then re-add taco pins on top
-      tourAnnsRef.current.forEach(ann => {
+    tourAnnsRef.current.forEach(ann => {
+      if (showTourDates) {
         if (!map.annotations.includes(ann)) map.addAnnotation(ann);
-      });
-      // Re-add taco spots so they render on top
-      tacoAnnsRef.current.forEach(ann => {
+      } else {
         map.removeAnnotation(ann);
-        map.addAnnotation(ann);
-      });
-    } else {
-      tourAnnsRef.current.forEach(ann => {
-        map.removeAnnotation(ann);
-      });
-    }
+      }
+    });
   }, [showTourDates]);
 
   return (
@@ -680,9 +664,10 @@ function ReviewCard({ spot, userVote, onVote, onFanRate, fanRatingSubmitted, exp
             {spot.tags.map(t => <span key={t} style={{ fontSize: 11, color: "#aaa", background: "rgba(255,255,255,0.04)", padding: "3px 10px", borderRadius: 20 }}>{t}</span>)}
           </div>
         </div>
-        <div style={{ textAlign: "center", minWidth: 54 }}>
+        <div style={{ textAlign: "center", minWidth: 60 }}>
           <div style={{ fontSize: 32, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.richRating}</div>
           <div style={{ fontSize: 10, color: ratingColor(spot.richRating), textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginTop: 2 }}>{ratingLabel(spot.richRating)}</div>
+          <div style={{ fontSize: 12, color: "#60A5FA", fontWeight: 700, marginTop: 6 }}>👥 {spot.fanRating}</div>
         </div>
       </div>
 
@@ -1797,7 +1782,7 @@ export default function TacoTourApp() {
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0 10px" }}>
                   <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-                  <span style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>All Reviews</span>
+                  <span style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>All Rich Reviews</span>
                   <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
                 </div>
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 6 }}>
