@@ -67,12 +67,15 @@ const TOUR_DATES = [
   { date: "Mar 21", day: "Sat", venue: "Junk Gypsy Company", city: "Round Top, TX", lat: 30.060, lng: -96.680, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 98 },
   { date: "Mar 27", day: "Fri", venue: "Lone Star Live", city: "Flower Mound, TX", lat: 33.014, lng: -97.097, tacoHunt: "Where should Rich eat? Vote!", soldOut: false, free: false, rsvp: 76 },
   { date: "Apr 2", day: "Thu", venue: "Private Event", city: "Austin, TX", lat: 30.267, lng: -97.743, tacoHunt: "Invite only", soldOut: true, free: true, rsvp: null },
+  { date: "Apr 15", day: "Tue", venue: "State Line BBQ", city: "El Paso, TX", lat: 31.762, lng: -106.460, tacoHunt: "Border town taco hunt!", soldOut: false, free: false, rsvp: 95 },
   { date: "Apr 17", day: "Fri", venue: "LBK Fest 2026", city: "Lubbock, TX", lat: 33.577, lng: -101.855, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 340 },
   { date: "Apr 18", day: "Sat", venue: "The Lumberyard", city: "Canyon, TX", lat: 34.980, lng: -101.919, tacoHunt: "Scouting spots...", soldOut: false, free: true, rsvp: 55 },
   { date: "Apr 23", day: "Thu", venue: "The Hall - Gainesville", city: "Gainesville, GA", lat: 34.297, lng: -83.824, tacoHunt: "Georgia taco hunt!", soldOut: false, free: false, rsvp: 63 },
   { date: "Apr 30", day: "Thu", venue: "Chief's on Broadway", city: "Nashville, TN", lat: 36.156, lng: -86.776, tacoHunt: "Nashville taco hunt!", soldOut: false, free: true, rsvp: 201 },
+  { date: "May 2", day: "Sat", venue: "La Izquierda Music & Surf Fest", city: "Galveston, TX", lat: 29.301, lng: -94.797, tacoHunt: "Beach taco hunt!", soldOut: false, free: false, rsvp: 175 },
   { date: "May 21", day: "Thu", venue: "Kerrville Folk Festival 2026", city: "Kerrville, TX", lat: 30.047, lng: -99.140, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 158 },
   { date: "May 30", day: "Sat", venue: "Boyz R Back Music Festival 2026", city: "Midland, TX", lat: 31.997, lng: -102.077, tacoHunt: "Festival taco hunt!", soldOut: false, free: false, rsvp: 220 },
+  { date: "Jun 20", day: "Sat", venue: "Rockbox Theater", city: "Fredericksburg, TX", lat: 30.275, lng: -98.872, tacoHunt: "Hill Country taco hunt!", soldOut: false, free: false, rsvp: 130 },
 ];
 
 const PLAYLIST_TRACKS = [
