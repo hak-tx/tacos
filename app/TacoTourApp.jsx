@@ -526,6 +526,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
             { anchorOffset: new DOMPoint(0, -8), displayPriority: 1000 }
           );
           ann.addEventListener("select", () => onSelectSpotRef.current(spot));
+          ann.addEventListener("deselect", () => onSelectSpotRef.current(null));
           map.addAnnotation(ann);
           tacoAnns.push(ann);
         });
