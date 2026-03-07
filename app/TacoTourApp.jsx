@@ -213,70 +213,99 @@ function SplashScreen({ onGetStarted, onClose }) {
   );
 }
 
-// 2. AUTH SCREEN (Login / Signup)
+// 2. AUTH SCREEN (Login / Signup / Reset — Supabase Auth)
 function AuthScreen({ mode, onComplete, onBack }) {
-  const [authMode, setAuthMode] = useState(mode);
+  const [authMode, setAuthMode] = useState(mode); // signup | login | reset
   const [form, setForm] = useState({ name: "", email: "", password: "", city: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resetSent, setResetSent] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError("");
     const email = form.email.trim().toLowerCase();
     const password = form.password;
+
+    if (authMode === "reset") {
+      if (!email) { setError("Enter your email address"); return; }
+      setLoading(true);
+      const { supabase: supabaseLib } = await import("../lib/supabase");
+      const { error: resetErr } = await supabaseLib.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+      setLoading(false);
+      if (resetErr) { setError(resetErr.message); return; }
+      setResetSent(true);
+      return;
+    }
+
     if (!email || !password) { setError("Email and password are required"); return; }
     if (authMode === "signup" && password.length < 6) { setError("Password must be at least 6 characters"); return; }
 
     setLoading(true);
-    setTimeout(() => {
-      try {
-        const usersRaw = localStorage.getItem("tt-users");
-        const users = usersRaw ? JSON.parse(usersRaw) : {};
+    try {
+      const { supabase: supabaseLib } = await import("../lib/supabase");
 
-        if (authMode === "signup") {
-          if (users[email]) { setError("Account already exists. Sign in instead."); setLoading(false); return; }
-          // Hash password (simple for prototype — production would use bcrypt on server)
-          const passHash = btoa(password + ":tunes-tacos-salt");
-          const newUser = {
-            id: "user_" + Date.now(),
-            name: form.name.trim() || "Taco Fan",
-            email,
-            passHash,
-            city: form.city.trim() || "Texas",
-            role: "user", // "user" | "admin"
-            joinedAt: new Date().toISOString(),
-            reviewCount: 0,
-            agreeCount: 0,
-            xp: 0,
+      if (authMode === "signup") {
+        const { data, error: signUpErr } = await supabaseLib.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name: form.name.trim() || "Taco Fan",
+              city: form.city.trim() || "Texas",
+            },
+          },
+        });
+        if (signUpErr) { setError(signUpErr.message); setLoading(false); return; }
+        if (data.user) {
+          const userData = {
+            id: data.user.id,
+            name: data.user.user_metadata?.name || form.name.trim() || "Taco Fan",
+            email: data.user.email,
+            city: data.user.user_metadata?.city || form.city.trim() || "Texas",
+            role: "user",
+            joinedAt: data.user.created_at,
+            reviewCount: 0, agreeCount: 0, xp: 0,
           };
-          users[email] = newUser;
-          localStorage.setItem("tt-users", JSON.stringify(users));
-          localStorage.setItem("tt-session", JSON.stringify(newUser));
-          onComplete(newUser);
-        } else {
-          // Login
-          const existing = users[email];
-          if (!existing) { setError("No account found with that email"); setLoading(false); return; }
-          const passHash = btoa(password + ":tunes-tacos-salt");
-          if (existing.passHash !== passHash) { setError("Incorrect password"); setLoading(false); return; }
-          localStorage.setItem("tt-session", JSON.stringify(existing));
-          onComplete(existing);
+          onComplete(userData);
         }
-      } catch (e) {
-        setError("Something went wrong. Try again.");
-        setLoading(false);
+      } else {
+        // Login
+        const { data, error: signInErr } = await supabaseLib.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (signInErr) { setError(signInErr.message); setLoading(false); return; }
+        if (data.user) {
+          const userData = {
+            id: data.user.id,
+            name: data.user.user_metadata?.name || "Taco Fan",
+            email: data.user.email,
+            city: data.user.user_metadata?.city || "Texas",
+            role: data.user.user_metadata?.role || "user",
+            joinedAt: data.user.created_at,
+            reviewCount: 0, agreeCount: 0, xp: 0,
+          };
+          onComplete(userData);
+        }
       }
-    }, 400);
+    } catch (e) {
+      setError("Something went wrong. Try again.");
+    }
+    setLoading(false);
   };
 
   return (
     <div style={{ minHeight: "100vh", padding: "60px 24px 24px" }}>
       <button onClick={onBack} style={{ background: "none", border: "none", color: "#666", fontSize: 12, cursor: "pointer", marginBottom: 24, fontFamily: "inherit" }}>← Back</button>
       <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", fontFamily: "'Bitter', serif", margin: "0 0 4px" }}>
-        {authMode === "signup" ? "Join Tacos Setlist" : "Welcome Back"}
+        {authMode === "signup" ? "Join Tacos Setlist" : authMode === "reset" ? "Reset Password" : "Welcome Back"}
       </h1>
       <p style={{ fontSize: 12, color: "#888", margin: "0 0 28px" }}>
-        {authMode === "signup" ? "Create your account to rate tacos, make recommendations, and debate Rich" : "Sign in to your account"}
+        {authMode === "signup" ? "Create your account to rate tacos, make recommendations, and debate Rich"
+          : authMode === "reset" ? "We'll send you a link to reset your password"
+          : "Sign in to your account"}
       </p>
 
       {error && (
@@ -285,37 +314,54 @@ function AuthScreen({ mode, onComplete, onBack }) {
         </div>
       )}
 
-      {/* Form fields */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {authMode === "signup" && (
-          <input placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-            style={inputStyle} />
-        )}
-        <input placeholder="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-          style={{ ...inputStyle, fontSize: 16 }} />
-        <input placeholder="Password" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
-          onKeyDown={e => e.key === "Enter" && handleSubmit()}
-          style={{ ...inputStyle, fontSize: 16 }} />
-        {authMode === "signup" && (
-          <input placeholder="Home city (for local taco recs)" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
-            style={inputStyle} />
-        )}
-        <button onClick={handleSubmit} disabled={loading} style={{ ...btnPrimary, opacity: loading ? 0.6 : 1 }}>
-          {loading ? "Loading..." : authMode === "signup" ? "Create Account" : "Sign In"}
-        </button>
-      </div>
+      {resetSent ? (
+        <div style={{ padding: "16px", borderRadius: 12, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", textAlign: "center" }}>
+          <div style={{ fontSize: 28, marginBottom: 8 }}>📧</div>
+          <div style={{ fontSize: 14, color: "#22C55E", fontWeight: 700, marginBottom: 4 }}>Check your email</div>
+          <div style={{ fontSize: 12, color: "#888" }}>We sent a password reset link to {form.email}</div>
+          <button onClick={() => { setAuthMode("login"); setResetSent(false); }} style={{ ...btnSecondary, marginTop: 16, fontSize: 12 }}>Back to Sign In</button>
+        </div>
+      ) : (
+        <>
+          {/* Form fields */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {authMode === "signup" && (
+              <input placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+                style={inputStyle} />
+            )}
+            <input placeholder="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+              style={{ ...inputStyle, fontSize: 16 }} />
+            {authMode !== "reset" && (
+              <input placeholder="Password" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+                onKeyDown={e => e.key === "Enter" && handleSubmit()}
+                style={{ ...inputStyle, fontSize: 16 }} />
+            )}
+            {authMode === "signup" && (
+              <input placeholder="Home city (for local taco recs)" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
+                style={inputStyle} />
+            )}
+            <button onClick={handleSubmit} disabled={loading} style={{ ...btnPrimary, opacity: loading ? 0.6 : 1 }}>
+              {loading ? "Loading..." : authMode === "signup" ? "Create Account" : authMode === "reset" ? "Send Reset Link" : "Sign In"}
+            </button>
+          </div>
 
-      <div style={{ textAlign: "center", marginTop: 20 }}>
-        <button onClick={() => { setAuthMode(authMode === "signup" ? "login" : "signup"); setError(""); }}
-          style={{ background: "none", border: "none", color: "#E8B100", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
-          {authMode === "signup" ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
-        </button>
-      </div>
+          {authMode === "login" && (
+            <div style={{ textAlign: "center", marginTop: 12 }}>
+              <button onClick={() => { setAuthMode("reset"); setError(""); }}
+                style={{ background: "none", border: "none", color: "#888", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>
+                Forgot password?
+              </button>
+            </div>
+          )}
 
-      <div style={{ textAlign: "center", marginTop: 32, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ fontSize: 11, color: "#555", marginBottom: 8 }}>PROTOTYPE MODE</div>
-        <div style={{ fontSize: 10, color: "#444" }}>Accounts are stored locally on this device for testing</div>
-      </div>
+          <div style={{ textAlign: "center", marginTop: 20 }}>
+            <button onClick={() => { setAuthMode(authMode === "signup" ? "login" : "signup"); setError(""); setResetSent(false); }}
+              style={{ background: "none", border: "none", color: "#E8B100", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+              {authMode === "signup" ? "Already have an account? Sign in" : authMode === "reset" ? "Back to Sign In" : "Don't have an account? Sign up"}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -1639,41 +1685,52 @@ export default function TacoTourApp() {
   const [regionFilter, setRegionFilter] = useState("All");
   const [showIntro, setShowIntro] = useState(false);
 
-  // Seed admin account + restore session on mount
+  // Restore Supabase Auth session on mount
   useEffect(() => {
-    try {
-      const usersRaw = localStorage.getItem("tt-users");
-      const users = usersRaw ? JSON.parse(usersRaw) : {};
-      // Seed Rich's admin account if not exists
-      if (!users["rich@richotoole.com"]) {
-        users["rich@richotoole.com"] = {
-          id: "admin_rich",
-          name: "Rich O'Toole",
-          email: "rich@richotoole.com",
-          passHash: btoa("GodTexasTacos2026:tunes-tacos-salt"),
-          city: "Houston, TX",
-          role: "admin",
-          joinedAt: "2025-12-01T00:00:00Z",
-          reviewCount: 16,
-          agreeCount: 4200,
-          xp: 9999,
-        };
-        localStorage.setItem("tt-users", JSON.stringify(users));
-      }
-      // Restore session
-      const sessionRaw = localStorage.getItem("tt-session");
-      if (sessionRaw) {
-        const session = JSON.parse(sessionRaw);
-        // Verify user still exists in users db
-        if (users[session.email]) {
-          setUser(users[session.email]);
+    let ignore = false;
+    async function restoreSession() {
+      try {
+        const { supabase } = await import("../lib/supabase");
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && !ignore) {
+          const u = session.user;
+          setUser({
+            id: u.id,
+            name: u.user_metadata?.name || "Taco Fan",
+            email: u.email,
+            city: u.user_metadata?.city || "Texas",
+            role: u.user_metadata?.role || "user",
+            joinedAt: u.created_at,
+            reviewCount: 0, agreeCount: 0, xp: 0,
+          });
+        } else if (!ignore) {
+          setUser({ name: "Guest", city: "Texas", guest: true, role: "guest" });
         }
+        // Listen for auth state changes (password reset, sign out, etc)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          if (event === "SIGNED_OUT" || !session) {
+            setUser({ name: "Guest", city: "Texas", guest: true, role: "guest" });
+            setTab("map");
+          } else if (session?.user) {
+            const u = session.user;
+            setUser({
+              id: u.id,
+              name: u.user_metadata?.name || "Taco Fan",
+              email: u.email,
+              city: u.user_metadata?.city || "Texas",
+              role: u.user_metadata?.role || "user",
+              joinedAt: u.created_at,
+              reviewCount: 0, agreeCount: 0, xp: 0,
+            });
+          }
+        });
+        return () => subscription?.unsubscribe();
+      } catch (e) {
+        if (!ignore) setUser({ name: "Guest", city: "Texas", guest: true, role: "guest" });
       }
-    } catch (e) {}
-    // Prototype: start in guest mode (skip splash)
-    if (!localStorage.getItem("tt-session")) {
-      setUser({ name: "Guest", city: "Texas", guest: true, role: "guest" });
     }
+    restoreSession();
+    return () => { ignore = true; };
   }, []);
 
   const handleAuthStart = (mode) => {
@@ -1691,8 +1748,11 @@ export default function TacoTourApp() {
     setScreen("main");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("tt-session");
+  const handleLogout = async () => {
+    try {
+      const { supabase } = await import("../lib/supabase");
+      await supabase.auth.signOut();
+    } catch (e) {}
     setUser({ name: "Guest", city: "Texas", guest: true, role: "guest" });
     setTab("map");
   };
