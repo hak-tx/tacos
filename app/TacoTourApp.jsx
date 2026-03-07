@@ -310,7 +310,7 @@ function AuthScreen({ mode, onComplete, onBack }) {
       </div>
 
       <div style={{ textAlign: "center", marginTop: 32, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ fontSize: 9, color: "#555", marginBottom: 8 }}>PROTOTYPE MODE</div>
+        <div style={{ fontSize: 11, color: "#555", marginBottom: 8 }}>PROTOTYPE MODE</div>
         <div style={{ fontSize: 10, color: "#444" }}>Accounts are stored locally on this device for testing</div>
       </div>
     </div>
@@ -508,7 +508,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
             <div>
               <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>{selectedSpot.name}</div>
               <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>{selectedSpot.city}</div>
-              {selectedSpot.tags && <div style={{ display: "flex", gap: 4, marginTop: 4 }}>{selectedSpot.tags.map(t => <span key={t} style={{ fontSize: 9, color: "#aaa", background: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: 4 }}>{t}</span>)}</div>}
+              {selectedSpot.tags && <div style={{ display: "flex", gap: 4, marginTop: 4 }}>{selectedSpot.tags.map(t => <span key={t} style={{ fontSize: 11, color: "#aaa", background: "rgba(255,255,255,0.06)", padding: "3px 8px", borderRadius: 4 }}>{t}</span>)}</div>}
             </div>
             <div style={{ display: "flex", gap: 16 }}>
               <div style={{ textAlign: "center" }}>
@@ -523,7 +523,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
             </div>
           </div>
           {selectedSpot.richQuote && <div style={{ fontSize: 11, color: "#ccc", fontStyle: "italic", marginTop: 8 }}>"{selectedSpot.richQuote}"</div>}
-          {selectedSpot.trending && <div style={{ fontSize: 9, color: "#E8B100", marginTop: 6 }}>🔥 TRENDING</div>}
+          {selectedSpot.trending && <div style={{ fontSize: 11, color: "#E8B100", marginTop: 6 }}>🔥 TRENDING</div>}
           <div onClick={() => onSelectSpot(null)} style={{ position: "absolute", top: 8, right: 12, fontSize: 16, color: "#666", cursor: "pointer" }}>✕</div>
         </div>
       )}
@@ -637,7 +637,7 @@ function ShareSection({ spot }) {
       }}>
         {ready ? "📲 Share This Take" : "Preparing share..."}
       </button>
-      <div style={{ textAlign: "center", marginTop: 4, fontSize: 9, color: "#555" }}>
+      <div style={{ textAlign: "center", marginTop: 4, fontSize: 11, color: "#555" }}>
         {ready && cachedFile.current ? "Image + text ready · tag @RichOToole 🔥" : "Tag @RichOToole 🔥"}
       </div>
     </div>
@@ -823,16 +823,16 @@ function ReviewCard({ spot, userVote, onVote, onFanRate, fanRatingSubmitted, exp
               {/* Rich vs You comparison */}
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, marginBottom: 12 }}>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 600, marginBottom: 2 }}>Rich</div>
+                  <div style={{ fontSize: 11, color: "#E8B100", fontWeight: 600, marginBottom: 2 }}>Rich</div>
                   <div style={{ fontSize: 18, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif" }}>{spot.richRating}</div>
                 </div>
                 <span style={{ fontSize: 11, color: "#444" }}>vs</span>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 9, color: "#60A5FA", fontWeight: 600, marginBottom: 2 }}>You</div>
+                  <div style={{ fontSize: 11, color: "#60A5FA", fontWeight: 600, marginBottom: 2 }}>You</div>
                   <div style={{ fontSize: 18, fontWeight: 900, color: ratingColor(sliderVal), fontFamily: "'Bitter', serif" }}>{sliderVal.toFixed(1)}</div>
                 </div>
                 {Math.abs(spot.richRating - sliderVal) > 2 && (
-                  <span style={{ fontSize: 9, color: "#EF4444", fontWeight: 700, background: "rgba(239,68,68,0.1)", padding: "2px 6px", borderRadius: 4 }}>🌶️ HOT TAKE</span>
+                  <span style={{ fontSize: 11, color: "#EF4444", fontWeight: 700, background: "rgba(239,68,68,0.1)", padding: "2px 6px", borderRadius: 4 }}>🌶️ HOT TAKE</span>
                 )}
               </div>
 
@@ -868,7 +868,7 @@ function ReviewCard({ spot, userVote, onVote, onFanRate, fanRatingSubmitted, exp
             <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "rgba(232,177,0,0.04)", borderRadius: 10, border: "1px solid rgba(232,177,0,0.1)" }}>
               <span style={{ fontSize: 16 }}>🎸</span>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>Nearby Show</div>
+                <div style={{ fontSize: 11, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>Nearby Show</div>
                 <div style={{ fontSize: 11, color: "#ccc" }}>{spot.tourDate}</div>
               </div>
               <button style={{ fontSize: 10, color: "#000", background: "#E8B100", border: "none", padding: "5px 10px", borderRadius: 5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>TICKETS</button>
@@ -1134,7 +1134,7 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
           {/* Rankings */}
           {searchQuery.length < 2 && rankings.length > 0 && (
             <>
-              <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase", letterSpacing: 1, padding: "8px 0 4px" }}>Fan Rankings</div>
+              <div style={{ fontSize: 11, color: "#888", textTransform: "uppercase", letterSpacing: 1, padding: "8px 0 4px" }}>Fan Rankings</div>
               {rankings.map((r, j) => (
                 <div key={r.id || r.name} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                   <div style={{ minWidth: 24, textAlign: "center", fontSize: j < 3 ? 14 : 12, color: j === 0 ? "#E8B100" : j === 1 ? "#C0C0C0" : j === 2 ? "#CD7F32" : "#444", fontWeight: 900 }}>
@@ -1142,7 +1142,7 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{r.name}</div>
-                    {r.address && <div style={{ fontSize: 9, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.address}</div>}
+                    {r.address && <div style={{ fontSize: 11, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.address}</div>}
                   </div>
                   <button onClick={() => handleUpvote(r)} disabled={voted[r.name]}
                     style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 10px", borderRadius: 6, border: voted[r.name] ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.1)", background: voted[r.name] ? "rgba(34,197,94,0.1)" : "rgba(255,255,255,0.04)", color: voted[r.name] ? "#22C55E" : "#fff", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: voted[r.name] ? "default" : "pointer", flexShrink: 0 }}>
@@ -1219,15 +1219,15 @@ function TourSection() {
         <div key={i} style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 14 }}>
             <div style={{ minWidth: 50, textAlign: "center" }}>
-              <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase" }}>{d.day}</div>
+              <div style={{ fontSize: 11, color: "#888", textTransform: "uppercase" }}>{d.day}</div>
               <div style={{ fontSize: 20, fontWeight: 900, color: "#E8B100", fontFamily: "'Bitter', serif" }}>{d.date.split(" ")[1]}</div>
-              <div style={{ fontSize: 9, color: "#666" }}>{d.date.split(" ")[0]}</div>
+              <div style={{ fontSize: 11, color: "#666" }}>{d.date.split(" ")[0]}</div>
             </div>
             <div style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,0.06)", paddingLeft: 12 }}>
               <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Bitter', serif" }}>{d.venue}</div>
               <div style={{ fontSize: 12, color: "#ccc", fontWeight: 500, marginTop: 2 }}>{d.city}</div>
               <div style={{ fontSize: 10, color: "#E8B100", marginTop: 3 }}>🌮 {d.tacoHunt}</div>
-              {d.rsvp > 0 && <div style={{ fontSize: 9, color: "#555", marginTop: 2 }}>{d.rsvp} fans going</div>}
+              {d.rsvp > 0 && <div style={{ fontSize: 11, color: "#555", marginTop: 2 }}>{d.rsvp} fans going</div>}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "stretch", minWidth: 90 }}>
               {d.soldOut ? (
@@ -1361,7 +1361,7 @@ function ProfileSection({ user, onLogout }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid " + (isAdmin ? "rgba(232,177,0,0.2)" : "rgba(255,255,255,0.06)"), borderRadius: 14, padding: 20, textAlign: "center" }}>
         {isAdmin && (
-          <div style={{ display: "inline-block", padding: "3px 10px", borderRadius: 6, background: "rgba(232,177,0,0.15)", border: "1px solid rgba(232,177,0,0.3)", color: "#E8B100", fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>
+          <div style={{ display: "inline-block", padding: "3px 10px", borderRadius: 6, background: "rgba(232,177,0,0.15)", border: "1px solid rgba(232,177,0,0.3)", color: "#E8B100", fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>
             🎸 Admin · Artist Account
           </div>
         )}
@@ -1371,13 +1371,13 @@ function ProfileSection({ user, onLogout }) {
         <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", fontFamily: "'Bitter', serif" }}>{user?.name || "Taco Fan"}</div>
         <div style={{ fontSize: 11, color: "#888" }}>{user?.email}</div>
         <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>{user?.city || "Texas"} · Joined {user?.joinedAt ? new Date(user.joinedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "Mar 2026"}</div>
-        <div style={{ display: "inline-block", marginTop: 8, padding: "3px 10px", borderRadius: 6, background: isAdmin ? "rgba(232,177,0,0.1)" : "rgba(59,130,246,0.1)", color: isAdmin ? "#E8B100" : "#60A5FA", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
+        <div style={{ display: "inline-block", marginTop: 8, padding: "3px 10px", borderRadius: 6, background: isAdmin ? "rgba(232,177,0,0.1)" : "rgba(59,130,246,0.1)", color: isAdmin ? "#E8B100" : "#60A5FA", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
           {isAdmin ? "Artist" : "Fan"} Account
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 14 }}>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#E8B100" }}>{user?.reviewCount || 0}</div><div style={{ fontSize: 9, color: "#666" }}>Reviews</div></div>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#4ADE80" }}>{user?.agreeCount || 0}</div><div style={{ fontSize: 9, color: "#666" }}>Agrees</div></div>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#60A5FA" }}>{user?.xp || 0}</div><div style={{ fontSize: 9, color: "#666" }}>XP</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#E8B100" }}>{user?.reviewCount || 0}</div><div style={{ fontSize: 11, color: "#666" }}>Reviews</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#4ADE80" }}>{user?.agreeCount || 0}</div><div style={{ fontSize: 11, color: "#666" }}>Agrees</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 800, color: "#60A5FA" }}>{user?.xp || 0}</div><div style={{ fontSize: 11, color: "#666" }}>XP</div></div>
         </div>
       </div>
 
@@ -1438,7 +1438,7 @@ function ProfileSection({ user, onLogout }) {
             <div key={b.name} style={{ width: "calc(50% - 5px)", padding: 10, background: "rgba(255,255,255,0.02)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.04)", opacity: b.locked ? 0.4 : 1 }}>
               <div style={{ fontSize: 20, marginBottom: 4 }}>{b.icon}</div>
               <div style={{ fontSize: 11, color: "#ccc", fontWeight: 600 }}>{b.name}</div>
-              <div style={{ fontSize: 9, color: "#666" }}>{b.desc}</div>
+              <div style={{ fontSize: 11, color: "#666" }}>{b.desc}</div>
             </div>
           ))}
         </div>
@@ -1462,14 +1462,14 @@ function ProfileSection({ user, onLogout }) {
                 <div style={{ fontSize: 12, color: s.color, fontWeight: 600 }}>{s.platform}</div>
                 <div style={{ fontSize: 10, color: "#666" }}>{s.handle}</div>
               </div>
-              {s.note && <span style={{ fontSize: 9, color: "#555" }}>{s.note}</span>}
+              {s.note && <span style={{ fontSize: 11, color: "#555" }}>{s.note}</span>}
             </a>
           ))}
         </div>
       </div>
 
       <button onClick={onLogout} style={{ ...btnSecondary, color: "#EF4444", borderColor: "rgba(239,68,68,0.2)" }}>Sign Out</button>
-      <div style={{ textAlign: "center", fontSize: 9, color: "#333", padding: "4px 0" }}>Prototype v1 · Accounts stored locally</div>
+      <div style={{ textAlign: "center", fontSize: 11, color: "#333", padding: "4px 0" }}>Prototype v1 · Accounts stored locally</div>
     </div>
   );
 }
@@ -1634,7 +1634,7 @@ export default function TacoTourApp() {
         <div style={{ padding: "16px 16px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div>
-              <div style={{ fontSize: 9, color: "#E8B100", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>Rich O'Toole's</div>
+              <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>Rich O'Toole's</div>
               <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: 0, fontFamily: "'Bitter', serif" }}>Tacos Setlist</h1>
             </div>
             <button onClick={() => setShowIntro(true)} style={{
@@ -1647,7 +1647,7 @@ export default function TacoTourApp() {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: 10, color: user?.role === "admin" ? "#E8B100" : "#888" }}>{user?.name || "Guest"}{user?.role === "admin" ? " 🎸" : ""}</div>
-              <div style={{ fontSize: 9, color: "#555" }}>{user?.guest ? "Guest" : user?.role === "admin" ? "Admin" : "Fan"} · {TACO_SPOTS.length} spots</div>
+              <div style={{ fontSize: 11, color: "#555" }}>{user?.guest ? "Guest" : user?.role === "admin" ? "Admin" : "Fan"} · {TACO_SPOTS.length} spots</div>
             </div>
             <div onClick={() => setTab("profile")} style={{
               width: 34, height: 34, borderRadius: "50%",
@@ -1719,16 +1719,16 @@ export default function TacoTourApp() {
                           style={{ scrollSnapAlign: "start", minWidth: 160, maxWidth: 160, background: "rgba(255,255,255,0.03)", border: expandedReview === spot.id ? "1px solid rgba(232,177,0,0.4)" : "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden", cursor: "pointer", flexShrink: 0 }}>
                           <div style={{ height: 90, backgroundImage: `url(${spot.images[0]})`, backgroundSize: "cover", backgroundPosition: "center" }} />
                           <div style={{ padding: "8px 10px" }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 4 }}>{spot.name}</div>
-                            <div style={{ fontSize: 9, color: "#888", marginBottom: 6 }}>{spot.city}</div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 4 }}>{spot.name}</div>
+                            <div style={{ fontSize: 12, color: "#888", marginBottom: 6 }}>{spot.city}</div>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                               <div style={{ textAlign: "left" }}>
-                                <div style={{ fontSize: 7, color: "#E8B100", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Rich</div>
+                                <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Rich</div>
                                 <span style={{ fontSize: 16, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif" }}>{spot.richRating}</span>
                               </div>
-                              <div style={{ fontSize: 9, color: "#444", alignSelf: "flex-end", marginBottom: 2 }}>vs</div>
+                              <div style={{ fontSize: 11, color: "#555", alignSelf: "flex-end", marginBottom: 2 }}>vs</div>
                               <div style={{ textAlign: "right" }}>
-                                <div style={{ fontSize: 7, color: "#60A5FA", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Fans</div>
+                                <div style={{ fontSize: 10, color: "#60A5FA", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Fans</div>
                                 <span style={{ fontSize: 16, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif" }}>{spot.fanRating}</span>
                               </div>
                             </div>
@@ -1754,16 +1754,16 @@ export default function TacoTourApp() {
                             <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(0,0,0,0.7)", color: "#E8B100", fontSize: 11, fontWeight: 800, padding: "2px 6px", borderRadius: 4 }}>#{i + 1}</div>
                           </div>
                           <div style={{ padding: "8px 10px" }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 4 }}>{spot.name}</div>
-                            <div style={{ fontSize: 9, color: "#888", marginBottom: 6 }}>{spot.city}</div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 4 }}>{spot.name}</div>
+                            <div style={{ fontSize: 12, color: "#888", marginBottom: 6 }}>{spot.city}</div>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                               <div style={{ textAlign: "left" }}>
-                                <div style={{ fontSize: 7, color: "#E8B100", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Rich</div>
+                                <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Rich</div>
                                 <span style={{ fontSize: 16, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif" }}>{spot.richRating}</span>
                               </div>
-                              <div style={{ fontSize: 9, color: "#444", alignSelf: "flex-end", marginBottom: 2 }}>vs</div>
+                              <div style={{ fontSize: 11, color: "#555", alignSelf: "flex-end", marginBottom: 2 }}>vs</div>
                               <div style={{ textAlign: "right" }}>
-                                <div style={{ fontSize: 7, color: "#60A5FA", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Fans</div>
+                                <div style={{ fontSize: 10, color: "#60A5FA", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Fans</div>
                                 <span style={{ fontSize: 16, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif" }}>{spot.fanRating}</span>
                               </div>
                             </div>
@@ -1809,7 +1809,7 @@ export default function TacoTourApp() {
                         background: regionFilter === r ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.03)",
                         color: regionFilter === r ? "#22C55E" : "#aaa", fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
                       }}>
-                        {r === "All" ? "All" : r} <span style={{ color: "#555", fontSize: 9 }}>{count}</span>
+                        {r === "All" ? "All" : r} <span style={{ color: "#555", fontSize: 10 }}>{count}</span>
                       </button>
                     );
                   })}
@@ -1832,9 +1832,9 @@ export default function TacoTourApp() {
                       borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 6,
                     }}>
                       <span style={{ fontSize: 13, fontWeight: 800, color: "#22C55E", fontFamily: "'Bitter', serif" }}>{region}</span>
-                      <span style={{ fontSize: 9, color: "#555" }}>{grouped[region].length}</span>
+                      <span style={{ fontSize: 11, color: "#555" }}>{grouped[region].length}</span>
                       <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.04)" }} />
-                      <span style={{ fontSize: 9, color: "#666" }}>Avg {(grouped[region].reduce((a, s) => a + s.richRating, 0) / grouped[region].length).toFixed(1)}</span>
+                      <span style={{ fontSize: 11, color: "#666" }}>Avg {(grouped[region].reduce((a, s) => a + s.richRating, 0) / grouped[region].length).toFixed(1)}</span>
                     </div>
                     {grouped[region].map(spot => (
                       <ReviewCard key={spot.id} spot={spot} userVote={votes[spot.id]} onVote={handleVote} onFanRate={handleFanRate} fanRatingSubmitted={fanRatings[spot.id]}
@@ -1874,7 +1874,7 @@ export default function TacoTourApp() {
                   <button onClick={() => { setScreen("auth"); setAuthMode("login"); }} style={btnSecondary}>Sign In</button>
                 </div>
                 <div style={{ marginTop: 24, padding: "12px 0", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div style={{ fontSize: 9, color: "#444", marginBottom: 6 }}>GUEST PERMISSIONS</div>
+                  <div style={{ fontSize: 11, color: "#444", marginBottom: 6 }}>GUEST PERMISSIONS</div>
                   <div style={{ fontSize: 11, color: "#666" }}>✓ View reviews · ✓ Browse map · ✓ See tour dates</div>
                   <div style={{ fontSize: 11, color: "#444", marginTop: 2 }}>✕ Rate · ✕ Recommend · ✕ Vote</div>
                 </div>
@@ -1919,7 +1919,7 @@ export default function TacoTourApp() {
               }}>
                 {tabIcons[t.id](iconColor)}
               </div>
-              <span style={{ fontSize: 9, color: active ? "#E8B100" : "#666", fontWeight: active ? 700 : 500, letterSpacing: active ? 0.5 : 0, transition: "all 0.3s" }}>{t.label}</span>
+              <span style={{ fontSize: 10, color: active ? "#E8B100" : "#666", fontWeight: active ? 700 : 500, letterSpacing: active ? 0.5 : 0, transition: "all 0.3s" }}>{t.label}</span>
             </button>
           );
         })}
