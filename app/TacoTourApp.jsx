@@ -982,18 +982,31 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
   const [loading, setLoading] = useState(true);
   const searchTimeout = useRef(null);
 
-  // Load rankings from server
+  // Load rankings - cache first, then server sync
   const fetchRankings = async () => {
+    // 1. Show cached data INSTANTLY
+    try {
+      const cached = localStorage.getItem("taco-recs-" + tourIndex);
+      if (cached) {
+        const cachedData = JSON.parse(cached);
+        if (Array.isArray(cachedData) && cachedData.length > 0) {
+          setRankings(cachedData);
+          setLoading(false); // Instantly show cached data
+        }
+      }
+    } catch (e) {}
+
+    // 2. Fetch fresh data from server in background
     try {
       const res = await fetch("/api/recs?stop=" + tourIndex);
       const data = await res.json();
-      if (Array.isArray(data)) setRankings(data);
+      if (Array.isArray(data)) {
+        setRankings(data);
+        // Update cache with fresh data
+        localStorage.setItem("taco-recs-" + tourIndex, JSON.stringify(data));
+      }
     } catch (e) {
-      // Fallback to localStorage if API fails
-      try {
-        const saved = localStorage.getItem("taco-recs-" + tourIndex);
-        if (saved) setRankings(JSON.parse(saved));
-      } catch (e2) {}
+      // Server failed — cached data already showing, no problem
     }
     setLoading(false);
   };
@@ -1004,6 +1017,13 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
       try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch (e) {}
     }
   }, []);
+
+  // Sync rankings to localStorage cache whenever they change
+  useEffect(() => {
+    if (rankings.length > 0) {
+      localStorage.setItem("taco-recs-" + tourIndex, JSON.stringify(rankings));
+    }
+  }, [rankings, tourIndex]);
 
   const handleUpvote = async (rec) => {
     if (voted[rec.name]) return;
@@ -1167,23 +1187,31 @@ function TourSection() {
   const [recModal, setRecModal] = useState(null); // tour date index
   const [recCounts, setRecCounts] = useState({}); // { index: count }
 
-  // Load recommendation counts from API
+  // Load recommendation counts - cache first, then parallel API fetch
   useEffect(() => {
+    // 1. Show cached counts instantly
+    const cachedCounts = {};
+    for (let i = 0; i < TOUR_DATES.length; i++) {
+      try {
+        const saved = localStorage.getItem("taco-recs-" + i);
+        if (saved) { const d = JSON.parse(saved); if (d.length > 0) cachedCounts[i] = d.length; }
+      } catch (e) {}
+    }
+    if (Object.keys(cachedCounts).length > 0) setRecCounts(cachedCounts);
+
+    // 2. Fetch fresh counts from server in parallel (not sequential!)
     async function loadCounts() {
+      const promises = TOUR_DATES.map((_, i) =>
+        fetch("/api/recs?stop=" + i).then(r => r.json()).catch(() => [])
+      );
+      const results = await Promise.all(promises);
       const counts = {};
-      for (let i = 0; i < TOUR_DATES.length; i++) {
-        try {
-          const res = await fetch("/api/recs?stop=" + i);
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) counts[i] = data.length;
-        } catch (e) {
-          // Fallback to localStorage
-          try {
-            const saved = localStorage.getItem("taco-recs-" + i);
-            if (saved) counts[i] = JSON.parse(saved).length;
-          } catch (e2) {}
+      results.forEach((data, i) => {
+        if (Array.isArray(data) && data.length > 0) {
+          counts[i] = data.length;
+          localStorage.setItem("taco-recs-" + i, JSON.stringify(data));
         }
-      }
+      });
       setRecCounts(counts);
     }
     loadCounts();
