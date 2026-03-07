@@ -409,41 +409,77 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         });
         tourAnnsRef.current = tourAnns;
 
-        // --- TACO SPOT PINS (MarkerAnnotation, always renders on top of custom Annotations) ---
+        // --- TACO SPOT PINS (custom Annotation, scalable with zoom) ---
         const tacoAnns = [];
+        const tacoEls = [];
         spots.forEach((spot) => {
-          const ann = new mapkit.MarkerAnnotation(new mapkit.Coordinate(spot.lat, spot.lng), {
-            title: spot.name,
-            subtitle: "Rich: " + spot.richRating + " · Fans: " + spot.fanRating,
-            color: "#22C55E",
-            glyphColor: "#000",
-            glyphText: "🌮",
-          });
+          const ann = new mapkit.Annotation(
+            new mapkit.Coordinate(spot.lat, spot.lng),
+            function() {
+              const el = document.createElement("div");
+              el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;";
+              const pin = document.createElement("div");
+              pin.style.cssText = "width:16px;height:16px;border-radius:50%;background:#22C55E;display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,0.8);box-shadow:0 1px 4px rgba(0,0,0,0.4);transition:all 0.25s ease;font-size:9px;line-height:1;";
+              pin.textContent = "🌮";
+              el.appendChild(pin);
+              const lbl = document.createElement("div");
+              lbl.style.cssText = "background:rgba(0,0,0,0.6);color:rgba(255,255,255,0.9);font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;opacity:0;transition:opacity 0.25s ease;max-width:100px;overflow:hidden;text-overflow:ellipsis;";
+              lbl.textContent = spot.name;
+              el.appendChild(lbl);
+              el._pin = pin; el._label = lbl;
+              tacoEls.push(el);
+              return el;
+            },
+            { anchorOffset: new DOMPoint(0, -8), displayPriority: 1000 }
+          );
           ann.addEventListener("select", () => onSelectSpotRef.current(spot));
           map.addAnnotation(ann);
           tacoAnns.push(ann);
         });
         tacoAnnsRef.current = tacoAnns;
 
-        // --- ZOOM HANDLER for dynamic pin scaling ---
+        // --- ZOOM HANDLER for dynamic pin scaling (both tour + taco) ---
         function updatePinSizes() {
           const span = map.region.span;
           const delta = span.latitudeDelta;
-          // Tour pins: 16px zoomed out → 32px zoomed in
-          let pinSize, svgSize, lblFs, lblOpacity, borderW;
-          if (delta > 10) { pinSize = 14; svgSize = 7; lblFs = 0; lblOpacity = 0; borderW = 1; }
-          else if (delta > 6) { pinSize = 16; svgSize = 8; lblFs = 7; lblOpacity = 0; borderW = 1.5; }
-          else if (delta > 3) { pinSize = 20; svgSize = 9; lblFs = 8; lblOpacity = 0.7; borderW = 1.5; }
-          else if (delta > 1.5) { pinSize = 26; svgSize = 11; lblFs = 9; lblOpacity = 1; borderW = 2; }
-          else { pinSize = 32; svgSize = 13; lblFs = 10; lblOpacity = 1; borderW = 2; }
+
+          // Tier settings: [pinSize, iconSize, lblOpacity, borderW]
+          let tourPin, tourSvg, tourLblFs, tourLblOp, tourBorder;
+          let tacoPin, tacoIcon, tacoLblOp, tacoBorder;
+
+          if (delta > 10) {
+            tourPin = 14; tourSvg = 7; tourLblFs = 0; tourLblOp = 0; tourBorder = 1;
+            tacoPin = 14; tacoIcon = 8; tacoLblOp = 0; tacoBorder = 1;
+          } else if (delta > 6) {
+            tourPin = 16; tourSvg = 8; tourLblFs = 7; tourLblOp = 0; tourBorder = 1.5;
+            tacoPin = 16; tacoIcon = 9; tacoLblOp = 0; tacoBorder = 1.5;
+          } else if (delta > 3) {
+            tourPin = 20; tourSvg = 9; tourLblFs = 8; tourLblOp = 0.7; tourBorder = 1.5;
+            tacoPin = 22; tacoIcon = 11; tacoLblOp = 0.7; tacoBorder = 1.5;
+          } else if (delta > 1.5) {
+            tourPin = 26; tourSvg = 11; tourLblFs = 9; tourLblOp = 1; tourBorder = 2;
+            tacoPin = 28; tacoIcon = 14; tacoLblOp = 1; tacoBorder = 2;
+          } else {
+            tourPin = 32; tourSvg = 13; tourLblFs = 10; tourLblOp = 1; tourBorder = 2;
+            tacoPin = 34; tacoIcon = 18; tacoLblOp = 1; tacoBorder = 2;
+          }
+
           tourEls.forEach(el => {
-            el._pin.style.width = pinSize + "px";
-            el._pin.style.height = pinSize + "px";
-            el._pin.style.borderWidth = borderW + "px";
-            el._pin.querySelector("svg").setAttribute("width", svgSize);
-            el._pin.querySelector("svg").setAttribute("height", svgSize);
-            el._label.style.fontSize = lblFs + "px";
-            el._label.style.opacity = lblOpacity;
+            el._pin.style.width = tourPin + "px";
+            el._pin.style.height = tourPin + "px";
+            el._pin.style.borderWidth = tourBorder + "px";
+            el._pin.querySelector("svg").setAttribute("width", tourSvg);
+            el._pin.querySelector("svg").setAttribute("height", tourSvg);
+            el._label.style.fontSize = tourLblFs + "px";
+            el._label.style.opacity = tourLblOp;
+          });
+
+          tacoEls.forEach(el => {
+            el._pin.style.width = tacoPin + "px";
+            el._pin.style.height = tacoPin + "px";
+            el._pin.style.borderWidth = tacoBorder + "px";
+            el._pin.style.fontSize = tacoIcon + "px";
+            el._label.style.opacity = tacoLblOp;
           });
         }
         map.addEventListener("region-change-end", updatePinSizes);
