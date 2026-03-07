@@ -390,7 +390,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
             el._label = label;
             tourEls.push(el);
             return el;
-          }, { anchorOffset: new DOMPoint(0, -12), displayPriority: 250 });
+          }, { anchorOffset: new DOMPoint(0, -12), displayPriority: 750 });
           ann.addEventListener("select", (e) => {
             const el = e.target.element;
             if (el && el._bubble) { el._bubble.style.display = "block"; el._pin.style.transform = "scale(1.4)"; el._pin.style.background = "#C41E3A"; }
