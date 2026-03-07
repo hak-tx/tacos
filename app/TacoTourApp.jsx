@@ -651,17 +651,8 @@ function ReviewCard({ spot, userVote, onVote, onFanRate, fanRatingSubmitted, exp
   const [sliderVal, setSliderVal] = useState(spot.fanRating);
   const [showSlider, setShowSlider] = useState(false);
 
-  // Show slider when user disagrees
-  const handleDisagree = () => {
-    onVote(spot.id, "disagree");
-    setShowSlider(true);
-    setSliderVal(spot.fanRating);
-  };
-
-  const handleAgree = () => {
-    onVote(spot.id, "agree");
-    setShowSlider(false);
-  };
+  const handleDisagree = () => { onVote(spot.id, "disagree"); setShowSlider(true); setSliderVal(spot.fanRating); };
+  const handleAgree = () => { onVote(spot.id, "agree"); setShowSlider(false); };
 
   return (
     <div onClick={onToggle} style={{
@@ -673,109 +664,112 @@ function ReviewCard({ spot, userVote, onVote, onFanRate, fanRatingSubmitted, exp
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>{spot.name}</span>
+            <span style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Bitter', serif" }}>{spot.name}</span>
             {spot.trending && <span style={badgeStyle("#E8B100")}>TRENDING</span>}
             {hotTake && <span style={badgeStyle("#EF4444")}>HOT TAKE</span>}
           </div>
-          <div style={{ fontSize: 11, color: "#666", marginTop: 3 }}>{spot.city} · {spot.reviewDate}</div>
+          <div style={{ fontSize: 13, color: "#888", marginTop: 3 }}>{spot.city} · {spot.reviewDate}</div>
           <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
-            {spot.tags.map(t => <span key={t} style={{ fontSize: 10, color: "#888", background: "rgba(255,255,255,0.04)", padding: "2px 8px", borderRadius: 20 }}>{t}</span>)}
+            {spot.tags.map(t => <span key={t} style={{ fontSize: 11, color: "#aaa", background: "rgba(255,255,255,0.04)", padding: "3px 10px", borderRadius: 20 }}>{t}</span>)}
           </div>
         </div>
         <div style={{ textAlign: "center", minWidth: 54 }}>
-          <div style={{ fontSize: 30, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.richRating}</div>
-          <div style={{ fontSize: 8, color: ratingColor(spot.richRating), textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginTop: 2 }}>{ratingLabel(spot.richRating)}</div>
+          <div style={{ fontSize: 32, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.richRating}</div>
+          <div style={{ fontSize: 10, color: ratingColor(spot.richRating), textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginTop: 2 }}>{ratingLabel(spot.richRating)}</div>
         </div>
       </div>
 
       {/* Expanded */}
       {expanded && (
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.05)" }} onClick={e => e.stopPropagation()}>
-          {/* Rich's take */}
-          <div style={{ background: "rgba(232,177,0,0.05)", borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: "2px solid #E8B100" }}>
-            <div style={{ fontSize: 12, color: "#ddd", fontStyle: "italic", lineHeight: 1.6 }}>"{spot.richQuote}"</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
-              <div style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, color: "#000" }}>R</div>
-              <span style={{ fontSize: 11, color: "#E8B100", fontWeight: 600 }}>Rich O'Toole</span>
+          {/* Rich's quote — prominent, highlighted */}
+          <div style={{ background: "linear-gradient(135deg, rgba(232,177,0,0.08), rgba(232,177,0,0.02))", borderRadius: 12, padding: "16px 16px 14px", marginBottom: 16, borderLeft: "3px solid #E8B100" }}>
+            <div style={{ fontSize: 16, color: "#eee", fontStyle: "italic", lineHeight: 1.6, fontWeight: 500 }}>"{spot.richQuote}"</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
+              <div style={{ width: 26, height: 26, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: "#000" }}>R</div>
+              <span style={{ fontSize: 13, color: "#E8B100", fontWeight: 700 }}>Rich O'Toole</span>
             </div>
           </div>
 
           {/* Photo Gallery */}
-          <div style={{ marginBottom: 14 }}>
+          <div style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
               {(spot.images || [0, 1, 2]).map((img, i) => (
                 <div key={i} style={{
                   flex: i === 0 ? "0 0 65%" : "0 0 30%", height: i === 0 ? 160 : 76,
                   borderRadius: 10, position: "relative", overflow: "hidden",
-                  border: "1px solid rgba(255,255,255,0.04)",
-                  background: "#111",
+                  border: "1px solid rgba(255,255,255,0.04)", background: "#111",
                 }}>
                   {typeof img === "string" ? (
-                    <img src={img} alt={`${spot.name} photo ${i + 1}`} style={{
-                      width: "100%", height: "100%", objectFit: "cover", display: "block",
-                    }} />
+                    <img src={img} alt={`${spot.name} photo ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                   ) : (
-                    <div style={{
-                      width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-                      background: `linear-gradient(${120 + i * 40}deg, rgba(232,177,0,${0.08 + i * 0.03}), rgba(${50 + spot.id * 20},${30 + i * 15},${10 + i * 20},0.4))`,
-                    }}>
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(${120 + i * 40}deg, rgba(232,177,0,0.08), rgba(50,30,10,0.4))` }}>
                       <span style={{ fontSize: i === 0 ? 48 : 28, opacity: 0.6 }}>🌮</span>
                     </div>
-                  )}
-                  {i === 0 && (
-                    <>
-                      <div style={{ position: "absolute", top: 8, left: 8, display: "flex", alignItems: "center", gap: 4 }}>
-                        <div style={{ width: 20, height: 20, borderRadius: "50%", background: "linear-gradient(135deg, #E8B100, #D97706)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 7, fontWeight: 900, color: "#000" }}>R</div>
-                        <span style={{ fontSize: 9, color: "#fff", fontWeight: 600, textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>Rich O'Toole</span>
-                      </div>
-                      <div style={{ position: "absolute", bottom: 8, left: 8, fontSize: 9, color: "#ccc", textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>📸 {spot.name}</div>
-                      <div style={{ position: "absolute", bottom: 8, right: 8, fontSize: 8, color: "#999", background: "rgba(0,0,0,0.5)", padding: "2px 6px", borderRadius: 4 }}>📷 {spot.reviewDate}</div>
-                    </>
                   )}
                 </div>
               ))}
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
-              <span style={{ fontSize: 9, color: "#666" }}>{spot.images ? spot.images.length : 3} photos</span>
-            </div>
           </div>
 
-          {/* Rating comparison */}
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 11, color: "#E8B100", fontWeight: 700 }}>🌮 Rich: {spot.richRating}</span>
-              <span style={{ fontSize: 11, color: "#60A5FA", fontWeight: 700 }}>👥 Fans: {spot.fanRating}</span>
+          {/* Score comparison — visual, clear, labeled */}
+          <div style={{ background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: 14, marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: "#E8B100", fontWeight: 700, marginBottom: 2 }}>Rich's Score</div>
+                <div style={{ fontSize: 28, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.richRating}</div>
+              </div>
+              <div style={{ fontSize: 14, color: "#444", marginBottom: 4 }}>vs</div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 11, color: "#60A5FA", fontWeight: 700, marginBottom: 2 }}>Fan Average</div>
+                <div style={{ fontSize: 28, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif", lineHeight: 1 }}>{spot.fanRating}</div>
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 4, height: 8, background: "rgba(255,255,255,0.03)", borderRadius: 4, overflow: "hidden" }}>
-              <div style={{ width: `${(spot.richRating / 10) * 100}%`, background: `linear-gradient(90deg, ${ratingColor(spot.richRating)}, ${ratingColor(spot.richRating)}66)`, borderRadius: 4, transition: "width 0.5s" }} />
+            {/* Visual bars */}
+            <div style={{ marginBottom: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: "#E8B100", fontWeight: 600, minWidth: 36 }}>Rich</span>
+                <div style={{ flex: 1, height: 12, background: "rgba(255,255,255,0.04)", borderRadius: 6, overflow: "hidden" }}>
+                  <div style={{ width: `${(spot.richRating / 10) * 100}%`, height: "100%", background: `linear-gradient(90deg, ${ratingColor(spot.richRating)}, ${ratingColor(spot.richRating)}aa)`, borderRadius: 6, transition: "width 0.6s" }} />
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 11, color: "#60A5FA", fontWeight: 600, minWidth: 36 }}>Fans</span>
+                <div style={{ flex: 1, height: 12, background: "rgba(255,255,255,0.04)", borderRadius: 6, overflow: "hidden" }}>
+                  <div style={{ width: `${(spot.fanRating / 10) * 100}%`, height: "100%", background: "linear-gradient(90deg, #60A5FA, #60A5FAaa)", borderRadius: 6, transition: "width 0.6s" }} />
+                </div>
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 4, height: 8, background: "rgba(255,255,255,0.03)", borderRadius: 4, overflow: "hidden", marginTop: 4 }}>
-              <div style={{ width: `${(spot.fanRating / 10) * 100}%`, background: "linear-gradient(90deg, #60A5FA, #60A5FA66)", borderRadius: 4, transition: "width 0.5s" }} />
-            </div>
-            <div style={{ fontSize: 10, color: "#555", marginTop: 4, textAlign: "right" }}>{spot.fanVotes.toLocaleString()} fan votes</div>
+            <div style={{ fontSize: 12, color: "#666", textAlign: "right" }}>{spot.fanVotes.toLocaleString()} fan votes</div>
           </div>
 
-          {/* Vote buttons */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          {/* Vote buttons — BOLD, inviting */}
+          <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
             <button onClick={handleAgree} style={{
-              ...voteBtn, background: userVote === "agree" ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.04)",
-              color: userVote === "agree" ? "#4ADE80" : "#888", border: userVote === "agree" ? "1px solid rgba(74,222,128,0.3)" : "1px solid rgba(255,255,255,0.06)",
-            }}>🤝 Agree{userVote === "agree" ? "d" : ""} with Rich</button>
+              flex: 1, padding: "14px 0", borderRadius: 10, cursor: "pointer", fontFamily: "inherit",
+              fontSize: 15, fontWeight: 700, transition: "all 0.2s",
+              background: userVote === "agree" ? "rgba(74,222,128,0.2)" : "rgba(74,222,128,0.06)",
+              color: userVote === "agree" ? "#4ADE80" : "#4ADE80",
+              border: userVote === "agree" ? "2px solid #4ADE80" : "2px solid rgba(74,222,128,0.2)",
+            }}>🤝 {userVote === "agree" ? "Agreed!" : "Agree with Rich"}</button>
             <button onClick={handleDisagree} style={{
-              ...voteBtn, background: userVote === "disagree" ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.04)",
-              color: userVote === "disagree" ? "#EF4444" : "#888", border: userVote === "disagree" ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.06)",
-            }}>🌶️ Wrong, Rich!</button>
+              flex: 1, padding: "14px 0", borderRadius: 10, cursor: "pointer", fontFamily: "inherit",
+              fontSize: 15, fontWeight: 700, transition: "all 0.2s",
+              background: userVote === "disagree" ? "rgba(239,68,68,0.2)" : "rgba(239,68,68,0.06)",
+              color: userVote === "disagree" ? "#EF4444" : "#EF4444",
+              border: userVote === "disagree" ? "2px solid #EF4444" : "2px solid rgba(239,68,68,0.2)",
+            }}>🌶️ {userVote === "disagree" ? "Disagreed!" : "Wrong, Rich!"}</button>
           </div>
 
-          {/* Agree confirmation with tally */}
+          {/* Agree confirmation */}
           {userVote === "agree" && (
             <div style={{
-              background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.15)",
-              borderRadius: 10, padding: 10, marginBottom: 8,
+              background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)",
+              borderRadius: 10, padding: 12, marginBottom: 10,
               display: "flex", alignItems: "center", justifyContent: "space-between",
             }}>
-              <span style={{ fontSize: 11, color: "#4ADE80", fontWeight: 700 }}>✓ You agreed with Rich's {spot.richRating}</span>
-              <span style={{ fontSize: 10, color: "#4ADE80" }}>👥 {(spot.fanVotes + 1).toLocaleString()} fans agree</span>
+              <span style={{ fontSize: 13, color: "#4ADE80", fontWeight: 700 }}>✓ You agreed with Rich's {spot.richRating}</span>
+              <span style={{ fontSize: 12, color: "#4ADE80" }}>{(spot.fanVotes + 1).toLocaleString()} fans</span>
             </div>
           )}
 
@@ -818,12 +812,12 @@ function ReviewCard({ spot, userVote, onVote, onFanRate, fanRatingSubmitted, exp
 
               {/* Scale labels */}
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                <span style={{ fontSize: 8, color: "#EF4444" }}>1</span>
-                <span style={{ fontSize: 8, color: "#F97316" }}>3</span>
-                <span style={{ fontSize: 8, color: "#E8B100" }}>5</span>
-                <span style={{ fontSize: 8, color: "#E8B100" }}>7</span>
-                <span style={{ fontSize: 8, color: "#22C55E" }}>9</span>
-                <span style={{ fontSize: 8, color: "#22C55E" }}>10</span>
+                <span style={{ fontSize: 11, color: "#EF4444" }}>1</span>
+                <span style={{ fontSize: 11, color: "#F97316" }}>3</span>
+                <span style={{ fontSize: 11, color: "#E8B100" }}>5</span>
+                <span style={{ fontSize: 11, color: "#E8B100" }}>7</span>
+                <span style={{ fontSize: 11, color: "#22C55E" }}>9</span>
+                <span style={{ fontSize: 11, color: "#22C55E" }}>10</span>
               </div>
 
               {/* Rich vs You comparison */}
@@ -1349,7 +1343,7 @@ function MusicSection() {
                   <div style={{ fontSize: 13, color: a.current ? "#E8B100" : "#eee", fontWeight: 700, fontFamily: "'Bitter', serif" }}>{a.title}</div>
                   <div style={{ fontSize: 10, color: "#777", marginTop: 2 }}>{a.year} · {RICH.label}</div>
                 </div>
-                {a.current && <span style={{ fontSize: 8, color: "#E8B100", background: "rgba(232,177,0,0.15)", padding: "3px 8px", borderRadius: 4, fontWeight: 700 }}>NEW</span>}
+                {a.current && <span style={{ fontSize: 11, color: "#E8B100", background: "rgba(232,177,0,0.15)", padding: "3px 8px", borderRadius: 4, fontWeight: 700 }}>NEW</span>}
                 <span style={{ fontSize: 9, color: "#1DB954", fontWeight: 700 }}>Play</span>
               </a>
             );
