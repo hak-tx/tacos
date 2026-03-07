@@ -1899,28 +1899,32 @@ export default function TacoTourApp() {
       {/* Bottom nav */}
       <div className="shell-nav" style={{
         position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%",
-        background: "#1a1a28", backdropFilter: "blur(24px)", borderTop: "1px solid rgba(232,177,0,0.25)",
-        display: "flex", justifyContent: "space-around", alignItems: "center",
-        paddingTop: 8, paddingBottom: "calc(8px + env(safe-area-inset-bottom, 0px))",
+        background: "#1c1c2e", borderTop: "2px solid rgba(232,177,0,0.15)",
+        display: "flex", justifyContent: "space-around", alignItems: "stretch",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
         zIndex: 100,
-        boxShadow: "0 -6px 30px rgba(0,0,0,0.6)",
+        boxShadow: "0 -4px 24px rgba(0,0,0,0.7)",
       }}>
         {tabs.map(t => {
           const active = tab === t.id;
-          const iconColor = active ? "#E8B100" : "#888";
+          const iconColor = active ? "#E8B100" : "#999";
           return (
             <button key={t.id} onClick={() => { setTab(t.id); setShowReviewForm(false); setShowShareCard(null); }}
-              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, padding: "4px 14px", position: "relative" }}>
+              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: "10px 16px", position: "relative", flex: 1 }}>
+              {/* Active indicator bar at top */}
+              {active && <div style={{ position: "absolute", top: -2, left: "20%", right: "20%", height: 3, background: "#E8B100", borderRadius: "0 0 3px 3px" }} />}
+              {/* Icon */}
               <div style={{
-                width: 46, height: 46, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                background: active ? "rgba(232,177,0,0.18)" : "transparent",
-                border: active ? "2px solid rgba(232,177,0,0.7)" : "2px solid transparent",
-                boxShadow: active ? "0 0 18px rgba(232,177,0,0.35), inset 0 0 10px rgba(232,177,0,0.1)" : "none",
-                transition: "all 0.3s ease",
+                width: 40, height: 40, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center",
+                background: active ? "rgba(232,177,0,0.15)" : "transparent",
+                transition: "all 0.2s ease",
               }}>
                 {tabIcons[t.id](iconColor)}
               </div>
-              <span style={{ fontSize: 10, color: active ? "#E8B100" : "#666", fontWeight: active ? 700 : 500, letterSpacing: active ? 0.5 : 0, transition: "all 0.3s" }}>{t.label}</span>
+              {/* Label */}
+              <span style={{ fontSize: 12, color: active ? "#E8B100" : "#777", fontWeight: active ? 800 : 500, transition: "all 0.2s" }}>{t.label}</span>
+              {/* Notification dot for Tour tab */}
+              {t.id === "tour" && !active && <div style={{ position: "absolute", top: 8, right: "22%", width: 7, height: 7, borderRadius: "50%", background: "#EF4444" }} />}
             </button>
           );
         })}
