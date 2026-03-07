@@ -352,7 +352,59 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           isZoomEnabled: true,
         });
         mapInstanceRef.current = map;
-        // Stagger taco spot pins with animation
+
+        // Tour date pins — added FIRST so they render BEHIND taco spots
+        const seen = {};
+        const tourEls = [];
+        const tourAnns = [];
+        TOUR_DATES.forEach((td) => {
+          if (!td.lat || !td.lng) return;
+          const key = td.lat + "," + td.lng;
+          if (seen[key]) return;
+          seen[key] = true;
+          const coord = new mapkit.Coordinate(td.lat, td.lng);
+          const ann = new mapkit.Annotation(coord, (coordinate, options) => {
+            const el = document.createElement("div");
+            el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;";
+            const pin = document.createElement("div");
+            pin.style.cssText = "width:24px;height:24px;border-radius:50%;background:rgba(196,30,58,0.75);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.7);box-shadow:0 1px 4px rgba(0,0,0,0.4);transition:transform 0.3s,background 0.3s;cursor:pointer;";
+            pin.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
+            el.appendChild(pin);
+            const label = document.createElement("div");
+            label.style.cssText = "background:rgba(0,0,0,0.6);color:rgba(255,255,255,0.8);font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;";
+            label.textContent = td.date;
+            el.appendChild(label);
+            const bubble = document.createElement("div");
+            bubble.style.cssText = "display:none;position:absolute;bottom:48px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.97);border:1px solid rgba(196,30,58,0.4);border-radius:12px;padding:10px 14px;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,0.7);z-index:50;min-width:160px;text-align:center;";
+            bubble.innerHTML = "<div style='font-size:13px;font-weight:800;color:#fff;font-family:system-ui;'>" + td.venue + "</div>" +
+              "<div style='font-size:11px;color:#ccc;margin-top:3px;'>" + td.city + "</div>" +
+              "<div style='font-size:10px;color:#C41E3A;margin-top:4px;font-weight:700;'>♪ " + td.day + " " + td.date + "</div>" +
+              (td.rsvp ? "<div style='font-size:11px;color:#555;margin-top:2px;'>" + td.rsvp + " fans going</div>" : "") +
+              "<a href='https://www.bandsintown.com/a/39860-rich-otoole' target='_blank' rel='noopener' style='display:inline-block;margin-top:8px;padding:6px 14px;background:#E8B100;color:#000;font-size:11px;font-weight:800;border-radius:6px;text-decoration:none;font-family:system-ui;'>Get Tickets →</a>";
+            const arrow = document.createElement("div");
+            arrow.style.cssText = "position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(13,13,20,0.97);";
+            bubble.appendChild(arrow);
+            el.appendChild(bubble);
+            el._bubble = bubble;
+            el._pin = pin;
+            el._label = label;
+            tourEls.push(el);
+            return el;
+          }, { anchorOffset: new DOMPoint(0, -12) });
+          ann.addEventListener("select", (e) => {
+            const el = e.target.element;
+            if (el && el._bubble) { el._bubble.style.display = "block"; el._pin.style.transform = "scale(1.4)"; el._pin.style.background = "#C41E3A"; }
+          });
+          ann.addEventListener("deselect", (e) => {
+            const el = e.target.element;
+            if (el && el._bubble) { el._bubble.style.display = "none"; el._pin.style.transform = "scale(1)"; el._pin.style.background = "rgba(196,30,58,0.75)"; }
+          });
+          map.addAnnotation(ann);
+          tourAnns.push(ann);
+        });
+        tourAnnsRef.current = tourAnns;
+
+        // Taco spot pins — added AFTER tour pins so they render ON TOP
         spots.forEach((spot, idx) => {
           const coord = new mapkit.Coordinate(spot.lat, spot.lng);
           const ann = new mapkit.MarkerAnnotation(coord, {
@@ -366,63 +418,6 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           ann.addEventListener("select", () => onSelectSpotRef.current(spot));
           setTimeout(() => { if (!cancelled) map.addAnnotation(ann); }, 80 * idx);
         });
-        // Tour date pins — delayed after taco spots, with scale-in animation
-        const tourDelay = 80 * spots.length + 400; // wait for all taco pins + 400ms gap
-        const seen = {};
-        const tourEls = [];
-        const tourAnns = [];
-        let tourIdx = 0;
-        TOUR_DATES.forEach((td) => {
-          if (!td.lat || !td.lng) return;
-          const key = td.lat + "," + td.lng;
-          if (seen[key]) return;
-          seen[key] = true;
-          const coord = new mapkit.Coordinate(td.lat, td.lng);
-          const ann = new mapkit.Annotation(coord, (coordinate, options) => {
-            const el = document.createElement("div");
-            el.style.cssText = "display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;";
-            const pin = document.createElement("div");
-            pin.style.cssText = "width:30px;height:30px;border-radius:50%;background:#C41E3A;display:flex;align-items:center;justify-content:center;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5);transition:transform 0.3s;cursor:pointer;";
-            pin.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
-            el.appendChild(pin);
-            const label = document.createElement("div");
-            label.style.cssText = "background:rgba(0,0,0,0.75);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;font-family:system-ui;letter-spacing:0.3px;";
-            label.textContent = td.date;
-            el.appendChild(label);
-            // Info bubble with venue details and ticket link
-            const bubble = document.createElement("div");
-            bubble.style.cssText = "display:none;position:absolute;bottom:52px;left:50%;transform:translateX(-50%);background:rgba(13,13,20,0.97);border:1px solid rgba(196,30,58,0.4);border-radius:12px;padding:10px 14px;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,0.7);z-index:50;min-width:160px;text-align:center;";
-            bubble.innerHTML = "<div style='font-size:13px;font-weight:800;color:#fff;font-family:system-ui;'>" + td.venue + "</div>" +
-              "<div style='font-size:11px;color:#ccc;margin-top:3px;'>" + td.city + "</div>" +
-              "<div style='font-size:10px;color:#C41E3A;margin-top:4px;font-weight:700;'>♪ " + td.day + " " + td.date + "</div>" +
-              (td.rsvp ? "<div style='font-size:9px;color:#555;margin-top:2px;'>" + td.rsvp + " fans going</div>" : "") +
-              "<a href='https://www.bandsintown.com/a/39860-rich-otoole' target='_blank' rel='noopener' style='display:inline-block;margin-top:8px;padding:6px 14px;background:#E8B100;color:#000;font-size:10px;font-weight:800;border-radius:6px;text-decoration:none;font-family:system-ui;'>Get Tickets →</a>";
-            const arrow = document.createElement("div");
-            arrow.style.cssText = "position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(13,13,20,0.97);";
-            bubble.appendChild(arrow);
-            el.appendChild(bubble);
-            el._bubble = bubble;
-            el._pin = pin;
-            el._label = label;
-            tourEls.push(el);
-            return el;
-          }, { anchorOffset: new DOMPoint(0, -14) });
-          ann.addEventListener("select", (e) => {
-            const el = e.target.element;
-            if (el && el._bubble) { el._bubble.style.display = "block"; el._pin.style.transform = "scale(1.3)"; }
-          });
-          ann.addEventListener("deselect", (e) => {
-            const el = e.target.element;
-            if (el && el._bubble) { el._bubble.style.display = "none"; el._pin.style.transform = "scale(1)"; }
-          });
-          const thisIdx = tourIdx++;
-          setTimeout(() => {
-            if (cancelled) return;
-            map.addAnnotation(ann);
-          }, tourDelay + thisIdx * 100);
-          tourAnns.push(ann);
-        });
-        tourAnnsRef.current = tourAnns;
         // Listen for zoom changes to scale tour pins
         map.addEventListener("region-change-end", () => {
           const span = map.region.span;
@@ -430,13 +425,13 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           const veryZoomed = span.latitudeDelta < 1.5;
           tourEls.forEach(el => {
             if (veryZoomed) {
-              el._pin.style.width = "36px"; el._pin.style.height = "36px";
+              el._pin.style.width = "30px"; el._pin.style.height = "30px";
               el._label.style.fontSize = "10px";
             } else if (zoomed) {
-              el._pin.style.width = "33px"; el._pin.style.height = "33px";
+              el._pin.style.width = "27px"; el._pin.style.height = "27px";
               el._label.style.fontSize = "9px";
             } else {
-              el._pin.style.width = "30px"; el._pin.style.height = "30px";
+              el._pin.style.width = "24px"; el._pin.style.height = "24px";
               el._label.style.fontSize = "8px";
             }
           });
