@@ -324,6 +324,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const tourAnnsRef = useRef([]);
+  const tacoAnnsRef = useRef([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(null);
   const onSelectSpotRef = useRef(onSelectSpot);
@@ -405,6 +406,7 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
         tourAnnsRef.current = tourAnns;
 
         // Taco spot pins — added SECOND so they render ON TOP of tour pins
+        const tacoAnns = [];
         spots.forEach((spot) => {
           const coord = new mapkit.Coordinate(spot.lat, spot.lng);
           const ann = new mapkit.MarkerAnnotation(coord, {
@@ -416,7 +418,9 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
           });
           ann.addEventListener("select", () => onSelectSpotRef.current(spot));
           map.addAnnotation(ann);
+          tacoAnns.push(ann);
         });
+        tacoAnnsRef.current = tacoAnns;
 
         // Listen for zoom changes to scale tour pins
         map.addEventListener("region-change-end", () => {
@@ -467,13 +471,21 @@ function MapView({ spots, onSelectSpot, selectedSpot, showTourDates }) {
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !tourAnnsRef.current.length) return;
-    tourAnnsRef.current.forEach(ann => {
-      if (showTourDates) {
+    if (showTourDates) {
+      // Add tour pins first, then re-add taco pins on top
+      tourAnnsRef.current.forEach(ann => {
         if (!map.annotations.includes(ann)) map.addAnnotation(ann);
-      } else {
+      });
+      // Re-add taco spots so they render on top
+      tacoAnnsRef.current.forEach(ann => {
         map.removeAnnotation(ann);
-      }
-    });
+        map.addAnnotation(ann);
+      });
+    } else {
+      tourAnnsRef.current.forEach(ann => {
+        map.removeAnnotation(ann);
+      });
+    }
   }, [showTourDates]);
 
   return (
