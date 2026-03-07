@@ -949,25 +949,37 @@ function FanReviewForm({ user, onClose }) {
 // 7. POLL WIDGET
 function PollWidget({ debate, onVote, userVote }) {
   return (
-    <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
-      <div style={{ fontSize: 10, color: "#EF4444", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>🔥 Fan Debate</div>
-      <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Bitter', serif", marginBottom: 12, lineHeight: 1.4 }}>{debate.question}</div>
-      {debate.options.map((opt, i) => (
-        <button key={i} onClick={() => onVote(debate.id, i)} style={{
-          width: "100%", marginBottom: 6, padding: "10px 14px", borderRadius: 8, border: "none",
-          cursor: "pointer", position: "relative", overflow: "hidden", textAlign: "left",
-          background: userVote !== null ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.04)", fontFamily: "inherit",
-        }}>
-          {userVote !== null && (
-            <div style={{ position: "absolute", inset: "0 auto 0 0", width: `${opt.pct}%`, background: userVote === i ? "rgba(232,177,0,0.12)" : "rgba(255,255,255,0.02)", transition: "width 0.6s" }} />
-          )}
-          <div style={{ position: "relative", display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 12, color: userVote === i ? "#E8B100" : "#ccc", fontWeight: userVote === i ? 700 : 400 }}>{opt.label}</span>
-            {userVote !== null && <span style={{ fontSize: 12, color: "#666", fontWeight: 700 }}>{opt.pct}%</span>}
-          </div>
-        </button>
-      ))}
-      <div style={{ fontSize: 10, color: "#444", marginTop: 2 }}>{debate.totalVotes.toLocaleString()} votes</div>
+    <div style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.08), rgba(232,177,0,0.06))", border: "1px solid rgba(239,68,68,0.15)", borderRadius: 16, padding: "18px 16px", position: "relative", overflow: "hidden" }}>
+      <div style={{ fontSize: 11, color: "#EF4444", fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>🗳️ Fan Poll</div>
+      <div style={{ fontSize: 16, color: "#fff", fontWeight: 800, fontFamily: "'Bitter', serif", marginBottom: 14, lineHeight: 1.3 }}>{debate.question}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {debate.options.map((opt, i) => {
+          const isSelected = userVote === i;
+          const hasVoted = userVote !== null;
+          return (
+            <button key={i} onClick={() => onVote(debate.id, i)} style={{
+              width: "100%", padding: "14px 16px", borderRadius: 10, cursor: hasVoted ? "default" : "pointer",
+              position: "relative", overflow: "hidden", textAlign: "left", fontFamily: "inherit",
+              border: isSelected ? "2px solid #E8B100" : "2px solid rgba(255,255,255,0.08)",
+              background: isSelected ? "rgba(232,177,0,0.1)" : "rgba(255,255,255,0.04)",
+              transition: "all 0.2s",
+            }}>
+              {hasVoted && (
+                <div style={{ position: "absolute", inset: "0 auto 0 0", width: `${opt.pct}%`, background: isSelected ? "rgba(232,177,0,0.15)" : "rgba(255,255,255,0.04)", transition: "width 0.8s ease-out", borderRadius: 8 }} />
+              )}
+              <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 15, color: isSelected ? "#E8B100" : "#ddd", fontWeight: isSelected ? 800 : 500 }}>
+                  {isSelected && "✓ "}{opt.label}
+                </span>
+                {hasVoted && <span style={{ fontSize: 15, color: isSelected ? "#E8B100" : "#888", fontWeight: 800 }}>{opt.pct}%</span>}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 11, color: "#555", marginTop: 10, textAlign: "center" }}>
+        {userVote !== null ? `You voted · ${debate.totalVotes.toLocaleString()} total votes` : `${debate.totalVotes.toLocaleString()} fans have voted — tap to weigh in!`}
+      </div>
     </div>
   );
 }
@@ -1709,21 +1721,21 @@ export default function TacoTourApp() {
                     <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>🔥 Trending</div>
                     <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8, scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
                       {trending.map(spot => (
-                        <div key={spot.id} onClick={() => { setExpandedReview(expandedReview === spot.id ? null : spot.id); }}
+                        <div key={spot.id} onClick={() => { const newId = expandedReview === spot.id ? null : spot.id; setExpandedReview(newId); if (newId) setTimeout(() => { const el = document.getElementById("expanded-review"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100); }}
                           style={{ scrollSnapAlign: "start", minWidth: 160, maxWidth: 160, background: "rgba(255,255,255,0.03)", border: expandedReview === spot.id ? "1px solid rgba(232,177,0,0.4)" : "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden", cursor: "pointer", flexShrink: 0 }}>
                           <div style={{ height: 90, backgroundImage: `url(${spot.images[0]})`, backgroundSize: "cover", backgroundPosition: "center" }} />
                           <div style={{ padding: "8px 10px" }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 4 }}>{spot.name}</div>
                             <div style={{ fontSize: 9, color: "#888", marginBottom: 6 }}>{spot.city}</div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                                <span style={{ fontSize: 8, color: "#E8B100" }}>🌮</span>
-                                <span style={{ fontSize: 14, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif" }}>{spot.richRating}</span>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <div style={{ textAlign: "left" }}>
+                                <div style={{ fontSize: 7, color: "#E8B100", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Rich</div>
+                                <span style={{ fontSize: 16, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif" }}>{spot.richRating}</span>
                               </div>
-                              <div style={{ width: 1, height: 14, background: "rgba(255,255,255,0.1)" }} />
-                              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                                <span style={{ fontSize: 8, color: "#60A5FA" }}>👥</span>
-                                <span style={{ fontSize: 14, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif" }}>{spot.fanRating}</span>
+                              <div style={{ fontSize: 9, color: "#444", alignSelf: "flex-end", marginBottom: 2 }}>vs</div>
+                              <div style={{ textAlign: "right" }}>
+                                <div style={{ fontSize: 7, color: "#60A5FA", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Fans</div>
+                                <span style={{ fontSize: 16, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif" }}>{spot.fanRating}</span>
                               </div>
                             </div>
                           </div>
@@ -1742,7 +1754,7 @@ export default function TacoTourApp() {
                     <div style={{ fontSize: 10, color: "#22C55E", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>⭐ Top Rated</div>
                     <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8, scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
                       {topRated.map((spot, i) => (
-                        <div key={spot.id} onClick={() => { setExpandedReview(expandedReview === spot.id ? null : spot.id); }}
+                        <div key={spot.id} onClick={() => { const newId = expandedReview === spot.id ? null : spot.id; setExpandedReview(newId); if (newId) setTimeout(() => { const el = document.getElementById("expanded-review"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100); }}
                           style={{ scrollSnapAlign: "start", minWidth: 160, maxWidth: 160, background: "rgba(255,255,255,0.03)", border: expandedReview === spot.id ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden", cursor: "pointer", flexShrink: 0 }}>
                           <div style={{ height: 90, backgroundImage: `url(${spot.images[0]})`, backgroundSize: "cover", backgroundPosition: "center", position: "relative" }}>
                             <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(0,0,0,0.7)", color: "#E8B100", fontSize: 11, fontWeight: 800, padding: "2px 6px", borderRadius: 4 }}>#{i + 1}</div>
@@ -1750,15 +1762,15 @@ export default function TacoTourApp() {
                           <div style={{ padding: "8px 10px" }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 4 }}>{spot.name}</div>
                             <div style={{ fontSize: 9, color: "#888", marginBottom: 6 }}>{spot.city}</div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                                <span style={{ fontSize: 8, color: "#E8B100" }}>🌮</span>
-                                <span style={{ fontSize: 14, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif" }}>{spot.richRating}</span>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <div style={{ textAlign: "left" }}>
+                                <div style={{ fontSize: 7, color: "#E8B100", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Rich</div>
+                                <span style={{ fontSize: 16, fontWeight: 900, color: ratingColor(spot.richRating), fontFamily: "'Bitter', serif" }}>{spot.richRating}</span>
                               </div>
-                              <div style={{ width: 1, height: 14, background: "rgba(255,255,255,0.1)" }} />
-                              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                                <span style={{ fontSize: 8, color: "#60A5FA" }}>👥</span>
-                                <span style={{ fontSize: 14, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif" }}>{spot.fanRating}</span>
+                              <div style={{ fontSize: 9, color: "#444", alignSelf: "flex-end", marginBottom: 2 }}>vs</div>
+                              <div style={{ textAlign: "right" }}>
+                                <div style={{ fontSize: 7, color: "#60A5FA", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 }}>Fans</div>
+                                <span style={{ fontSize: 16, fontWeight: 900, color: "#60A5FA", fontFamily: "'Bitter', serif" }}>{spot.fanRating}</span>
                               </div>
                             </div>
                           </div>
@@ -1773,7 +1785,7 @@ export default function TacoTourApp() {
               {expandedReview && !selectedSpot && (() => {
                 const spot = TACO_SPOTS.find(s => s.id === expandedReview);
                 if (!spot) return null;
-                return <ReviewCard spot={spot} userVote={votes[spot.id]} onVote={handleVote} onFanRate={handleFanRate} fanRatingSubmitted={fanRatings[spot.id]} expanded={true} onToggle={() => setExpandedReview(null)} user={user} />;
+                return <div id="expanded-review"><ReviewCard spot={spot} userVote={votes[spot.id]} onVote={handleVote} onFanRate={handleFanRate} fanRatingSubmitted={fanRatings[spot.id]} expanded={true} onToggle={() => setExpandedReview(null)} user={user} /></div>;
               })()}
 
               {/* Fan Debate */}
