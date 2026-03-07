@@ -1682,18 +1682,17 @@ export default function TacoTourApp() {
                   </div>
                 </div>
               </div>
+
+              {/* Selected spot review - from map pin tap */}
               {selectedSpot && (
                 <div ref={el => {
                   if (el) {
                     setTimeout(() => {
                       const rect = el.getBoundingClientRect();
                       const viewH = window.innerHeight;
-                      // Scroll so review top sits at ~55% of viewport height (map still visible above)
                       const targetY = viewH * 0.55;
                       const scrollBy = rect.top - targetY;
-                      if (scrollBy > 20) {
-                        window.scrollBy({ top: scrollBy, behavior: "smooth" });
-                      }
+                      if (scrollBy > 20) window.scrollBy({ top: scrollBy, behavior: "smooth" });
                     }, 150);
                   }
                 }}>
@@ -1701,69 +1700,98 @@ export default function TacoTourApp() {
                 </div>
               )}
 
-              {/* Poll */}
+              {/* Trending — horizontal scroll tiles */}
+              {(() => {
+                const trending = TACO_SPOTS.filter(s => s.trending);
+                if (trending.length === 0) return null;
+                return (
+                  <div>
+                    <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>🔥 Trending</div>
+                    <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8, scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+                      {trending.map(spot => (
+                        <div key={spot.id} onClick={() => { setExpandedReview(expandedReview === spot.id ? null : spot.id); }}
+                          style={{ scrollSnapAlign: "start", minWidth: 160, maxWidth: 160, background: "rgba(255,255,255,0.03)", border: expandedReview === spot.id ? "1px solid rgba(232,177,0,0.4)" : "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden", cursor: "pointer", flexShrink: 0 }}>
+                          <div style={{ height: 90, backgroundImage: `url(${spot.images[0]})`, backgroundSize: "cover", backgroundPosition: "center", position: "relative" }}>
+                            <div style={{ position: "absolute", top: 6, right: 6, background: ratingColor(spot.richRating), color: "#000", fontSize: 14, fontWeight: 900, padding: "2px 7px", borderRadius: 6, fontFamily: "'Bitter', serif" }}>{spot.richRating}</div>
+                          </div>
+                          <div style={{ padding: "8px 10px" }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 2 }}>{spot.name}</div>
+                            <div style={{ fontSize: 9, color: "#888" }}>{spot.city}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Top Rated — horizontal scroll tiles */}
+              {(() => {
+                const topRated = [...TACO_SPOTS].sort((a, b) => b.richRating - a.richRating).slice(0, 6);
+                return (
+                  <div>
+                    <div style={{ fontSize: 10, color: "#22C55E", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>⭐ Top Rated</div>
+                    <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8, scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+                      {topRated.map((spot, i) => (
+                        <div key={spot.id} onClick={() => { setExpandedReview(expandedReview === spot.id ? null : spot.id); }}
+                          style={{ scrollSnapAlign: "start", minWidth: 160, maxWidth: 160, background: "rgba(255,255,255,0.03)", border: expandedReview === spot.id ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden", cursor: "pointer", flexShrink: 0 }}>
+                          <div style={{ height: 90, backgroundImage: `url(${spot.images[0]})`, backgroundSize: "cover", backgroundPosition: "center", position: "relative" }}>
+                            <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(0,0,0,0.7)", color: "#E8B100", fontSize: 11, fontWeight: 800, padding: "2px 6px", borderRadius: 4 }}>#{i + 1}</div>
+                            <div style={{ position: "absolute", top: 6, right: 6, background: ratingColor(spot.richRating), color: "#000", fontSize: 14, fontWeight: 900, padding: "2px 7px", borderRadius: 6, fontFamily: "'Bitter', serif" }}>{spot.richRating}</div>
+                          </div>
+                          <div style={{ padding: "8px 10px" }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 2 }}>{spot.name}</div>
+                            <div style={{ fontSize: 9, color: "#888" }}>{spot.city}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Expanded review from tile tap */}
+              {expandedReview && !selectedSpot && (() => {
+                const spot = TACO_SPOTS.find(s => s.id === expandedReview);
+                if (!spot) return null;
+                return <ReviewCard spot={spot} userVote={votes[spot.id]} onVote={handleVote} onFanRate={handleFanRate} fanRatingSubmitted={fanRatings[spot.id]} expanded={true} onToggle={() => setExpandedReview(null)} user={user} />;
+              })()}
+
+              {/* Fan Debate */}
               <PollWidget debate={DEBATES[0]} onVote={handlePollVote} userVote={pollVotes[DEBATES[0].id] ?? null} />
 
-              {/* Leaderboard teaser */}
-              <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 16 }}>
-                <div style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>📊 Top Taco Reviewers</div>
-                {LEADERBOARD.slice(0, 3).map((u, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.03)" : "none" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 14 }}>{u.badge}</span>
-                      <div>
-                        <div style={{ fontSize: 12, color: "#eee", fontWeight: 600 }}>{u.name}</div>
-                        <div style={{ fontSize: 9, color: "#555" }}>{u.city} · 🔥 {u.streak} streak</div>
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 11, color: "#E8B100", fontWeight: 700 }}>{u.reviews} reviews</div>
-                  </div>
-                ))}
+              {/* Region filters for full list */}
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0 10px" }}>
+                  <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+                  <span style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>All Reviews</span>
+                  <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+                </div>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 6 }}>
+                  {["All", ...ALL_REGIONS].map(r => {
+                    const count = r === "All" ? TACO_SPOTS.length : TACO_SPOTS.filter(s => getRegion(s.city) === r).length;
+                    return (
+                      <button key={r} onClick={() => {
+                        setRegionFilter(r);
+                        if (r !== "All") {
+                          setTimeout(() => {
+                            const el = document.getElementById("region-" + r.replace(/\s/g, "-"));
+                            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                          }, 50);
+                        }
+                      }} style={{
+                        padding: "5px 10px", borderRadius: 8, border: regionFilter === r ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(255,255,255,0.08)",
+                        background: regionFilter === r ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.03)",
+                        color: regionFilter === r ? "#22C55E" : "#aaa", fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                      }}>
+                        {r === "All" ? "All" : r} <span style={{ color: "#555", fontSize: 9 }}>{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Divider */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0" }}>
-                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-                <span style={{ fontSize: 10, color: "#E8B100", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>All Reviews</span>
-                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-              </div>
-
-              {/* Type Filters */}
-              <div style={{ display: "flex", gap: 6 }}>
-                {["All", "Trending", "Hot Takes", "Top Rated"].map(f => (
-                  <button key={f} onClick={() => setReviewFilter(f)} style={{
-                    padding: "6px 12px", borderRadius: 20, border: "none",
-                    background: reviewFilter === f ? "rgba(232,177,0,0.15)" : "rgba(255,255,255,0.04)",
-                    color: reviewFilter === f ? "#E8B100" : "#666", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                  }}>{f}</button>
-                ))}
-              </div>
-              {/* Region Filters - scroll to section on tap */}
-              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                {["All", ...ALL_REGIONS].map(r => {
-                  const count = r === "All" ? TACO_SPOTS.length : TACO_SPOTS.filter(s => getRegion(s.city) === r).length;
-                  return (
-                    <button key={r} onClick={() => {
-                      setRegionFilter(r);
-                      if (r !== "All") {
-                        setTimeout(() => {
-                          const el = document.getElementById("region-" + r.replace(/\s/g, "-"));
-                          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }, 50);
-                      }
-                    }} style={{
-                      padding: "6px 12px", borderRadius: 8, border: regionFilter === r ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(255,255,255,0.12)",
-                      background: regionFilter === r ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.06)",
-                      color: regionFilter === r ? "#22C55E" : "#ccc", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                      display: "flex", alignItems: "center", gap: 5,
-                    }}>
-                      {r === "All" ? "📍 All Regions" : r}
-                      <span style={{ fontSize: 9, color: regionFilter === r ? "#4ADE80" : "#888", fontWeight: 700 }}>{count}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              {/* Grouped reviews by region */}
+              {/* Grouped reviews */}
               {(() => {
                 const grouped = {};
                 filteredSpots.forEach(s => {
@@ -1775,11 +1803,11 @@ export default function TacoTourApp() {
                 return regionOrder.map(region => (
                   <div key={region} id={"region-" + region.replace(/\s/g, "-")}>
                     <div style={{
-                      display: "flex", alignItems: "center", gap: 8, padding: "10px 0 4px",
+                      display: "flex", alignItems: "center", gap: 8, padding: "8px 0 4px",
                       borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 6,
                     }}>
                       <span style={{ fontSize: 13, fontWeight: 800, color: "#22C55E", fontFamily: "'Bitter', serif" }}>{region}</span>
-                      <span style={{ fontSize: 9, color: "#555", fontWeight: 600 }}>{grouped[region].length} spot{grouped[region].length !== 1 ? "s" : ""}</span>
+                      <span style={{ fontSize: 9, color: "#555" }}>{grouped[region].length}</span>
                       <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.04)" }} />
                       <span style={{ fontSize: 9, color: "#666" }}>Avg {(grouped[region].reduce((a, s) => a + s.richRating, 0) / grouped[region].length).toFixed(1)}</span>
                     </div>
@@ -1790,6 +1818,7 @@ export default function TacoTourApp() {
                   </div>
                 ));
               })()}
+
               {/* Submit CTA */}
               {showReviewForm ? (
                 <FanReviewForm user={user} onClose={() => setShowReviewForm(false)} />
@@ -1797,7 +1826,7 @@ export default function TacoTourApp() {
                 <div style={{ background: "rgba(232,177,0,0.04)", border: "1px solid rgba(232,177,0,0.12)", borderRadius: 14, padding: 16, textAlign: "center" }}>
                   <div style={{ fontSize: 28, marginBottom: 6 }}>🌮</div>
                   <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, fontFamily: "'Bitter', serif", marginBottom: 4 }}>Got a Taco Take?</div>
-                  <div style={{ fontSize: 11, color: "#888", marginBottom: 12 }}>Rate a spot. Climb the leaderboard. Prove Rich wrong.</div>
+                  <div style={{ fontSize: 11, color: "#888", marginBottom: 12 }}>Rate a spot. Prove Rich wrong.</div>
                   <button onClick={() => setShowReviewForm(true)} style={{ ...btnPrimary, width: "auto", padding: "10px 28px", display: "inline-block" }}>SUBMIT A REVIEW</button>
                 </div>
               )}
