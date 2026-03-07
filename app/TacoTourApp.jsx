@@ -979,34 +979,55 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [loading, setLoading] = useState(true);
   const searchTimeout = useRef(null);
-  const storageKey = "taco-recs-" + tourIndex;
+
+  // Load rankings from server
+  const fetchRankings = async () => {
+    try {
+      const res = await fetch("/api/recs?stop=" + tourIndex);
+      const data = await res.json();
+      if (Array.isArray(data)) setRankings(data);
+    } catch (e) {
+      // Fallback to localStorage if API fails
+      try {
+        const saved = localStorage.getItem("taco-recs-" + tourIndex);
+        if (saved) setRankings(JSON.parse(saved));
+      } catch (e2) {}
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) setRankings(JSON.parse(saved));
-    } catch (e) {}
-    // Ensure mapkit
+    fetchRankings();
     if (window.mapkit) {
       try { mapkit.init({ authorizationCallback: (done) => done(MAPKIT_TOKEN) }); } catch (e) {}
     }
   }, []);
 
-  const save = (updated) => {
-    setRankings(updated);
-    try { localStorage.setItem(storageKey, JSON.stringify(updated)); } catch (e) {}
+  const handleUpvote = async (rec) => {
+    if (voted[rec.name]) return;
+    setVoted(prev => ({ ...prev, [rec.name]: true }));
+    // Optimistic update
+    setRankings(prev => prev.map(r => r.name === rec.name ? { ...r, votes: r.votes + 1 } : r).sort((a, b) => b.votes - a.votes));
+    try {
+      await fetch("/api/recs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stop: tourIndex, action: "upvote", recId: rec.id }),
+      });
+    } catch (e) {}
   };
 
-  const handleUpvote = (name) => {
-    if (voted[name]) return;
-    const updated = rankings.map(r => r.name === name ? { ...r, votes: r.votes + 1 } : r).sort((a, b) => b.votes - a.votes);
-    save(updated);
-    setVoted(prev => ({ ...prev, [name]: true }));
-  };
-
-  const handleRemove = (name) => {
-    save(rankings.filter(r => r.name !== name));
+  const handleRemove = async (rec) => {
+    setRankings(prev => prev.filter(r => r.id !== rec.id));
+    try {
+      await fetch("/api/recs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stop: tourIndex, action: "remove", recId: rec.id }),
+      });
+    } catch (e) {}
   };
 
   const handleSearch = (query) => {
@@ -1043,14 +1064,23 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
     }, 300);
   };
 
-  const handleSelect = (place) => {
+  const handleSelect = async (place) => {
+    // Optimistic update
     const existing = rankings.find(r => r.name.toLowerCase() === place.name.toLowerCase());
     if (existing) {
-      handleUpvote(existing.name);
+      handleUpvote(existing);
     } else {
-      const updated = [...rankings, { name: place.name, address: place.address, votes: 1 }].sort((a, b) => b.votes - a.votes);
-      save(updated);
+      setRankings(prev => [...prev, { id: "temp-" + Date.now(), name: place.name, address: place.address, votes: 1 }].sort((a, b) => b.votes - a.votes));
       setVoted(prev => ({ ...prev, [place.name]: true }));
+      try {
+        await fetch("/api/recs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stop: tourIndex, name: place.name, address: place.address, action: "add" }),
+        });
+        // Refresh from server to get real ID
+        fetchRankings();
+      } catch (e) {}
     }
     setSearchQuery("");
     setSearchResults([]);
@@ -1108,7 +1138,7 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
             <>
               <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase", letterSpacing: 1, padding: "8px 0 4px" }}>Fan Rankings</div>
               {rankings.map((r, j) => (
-                <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <div key={r.id || r.name} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                   <div style={{ minWidth: 24, textAlign: "center", fontSize: j < 3 ? 14 : 12, color: j === 0 ? "#E8B100" : j === 1 ? "#C0C0C0" : j === 2 ? "#CD7F32" : "#444", fontWeight: 900 }}>
                     {j === 0 ? "🥇" : j === 1 ? "🥈" : j === 2 ? "🥉" : (j + 1)}
                   </div>
@@ -1116,11 +1146,11 @@ function RecommendModal({ tourDate, tourIndex, onClose }) {
                     <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{r.name}</div>
                     {r.address && <div style={{ fontSize: 9, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.address}</div>}
                   </div>
-                  <button onClick={() => handleUpvote(r.name)} disabled={voted[r.name]}
+                  <button onClick={() => handleUpvote(r)} disabled={voted[r.name]}
                     style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 10px", borderRadius: 6, border: voted[r.name] ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.1)", background: voted[r.name] ? "rgba(34,197,94,0.1)" : "rgba(255,255,255,0.04)", color: voted[r.name] ? "#22C55E" : "#fff", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: voted[r.name] ? "default" : "pointer", flexShrink: 0 }}>
                     {voted[r.name] ? "✓" : "👍"} {r.votes}
                   </button>
-                  <button onClick={() => handleRemove(r.name)}
+                  <button onClick={() => handleRemove(r)}
                     style={{ background: "none", border: "none", color: "#444", fontSize: 14, cursor: "pointer", padding: "4px", flexShrink: 0 }}>✕</button>
                 </div>
               ))}
@@ -1145,19 +1175,26 @@ function TourSection() {
   const [recModal, setRecModal] = useState(null); // tour date index
   const [recCounts, setRecCounts] = useState({}); // { index: count }
 
-  // Load recommendation counts
+  // Load recommendation counts from API
   useEffect(() => {
-    const counts = {};
-    for (let i = 0; i < TOUR_DATES.length; i++) {
-      try {
-        const saved = localStorage.getItem("taco-recs-" + i);
-        if (saved) {
-          const recs = JSON.parse(saved);
-          counts[i] = recs.length;
+    async function loadCounts() {
+      const counts = {};
+      for (let i = 0; i < TOUR_DATES.length; i++) {
+        try {
+          const res = await fetch("/api/recs?stop=" + i);
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) counts[i] = data.length;
+        } catch (e) {
+          // Fallback to localStorage
+          try {
+            const saved = localStorage.getItem("taco-recs-" + i);
+            if (saved) counts[i] = JSON.parse(saved).length;
+          } catch (e2) {}
         }
-      } catch (e) {}
+      }
+      setRecCounts(counts);
     }
-    setRecCounts(counts);
+    loadCounts();
   }, [recModal]); // refresh counts when modal closes
 
   return (
